@@ -4,7 +4,10 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 DELTA_API_BASE_URL = "https://api.delta.exchange/v2"
 CANDLE_LIMIT = 500
 REFRESH_INTERVAL_SECONDS = 60
@@ -47,6 +50,12 @@ class Settings:
         not in ("0", "false", "no")
     )
     database_path: Path = field(default_factory=lambda: DATABASE_PATH)
+    telegram_bot_token: str | None = field(
+        default_factory=lambda: os.getenv("TELEGRAM_BOT_TOKEN")
+    )
+    telegram_chat_id: str | None = field(
+        default_factory=lambda: os.getenv("TELEGRAM_CHAT_ID")
+    )
 
 
 settings = Settings()

@@ -65,6 +65,21 @@ CREATE TABLE IF NOT EXISTS position_events (
 
 CREATE INDEX IF NOT EXISTS idx_position_events_position ON position_events(position_id);
 
+CREATE TABLE IF NOT EXISTS telegram_notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dedupe_key TEXT NOT NULL UNIQUE,
+    event_type TEXT NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    message_preview TEXT,
+    sent_at TEXT NOT NULL,
+    success INTEGER NOT NULL DEFAULT 0,
+    error TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_telegram_notifications_entity
+    ON telegram_notifications(entity_type, entity_id);
+
 CREATE TABLE IF NOT EXISTS paper_account (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     balance REAL NOT NULL DEFAULT 1000.0,

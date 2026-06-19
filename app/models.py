@@ -320,5 +320,16 @@ class ClosedTradesResponse(BaseModel):
     count: int
 
 
+class TelegramStatusResponse(BaseModel):
+    configured: bool
+    chat_id_set: bool
+    bot_token_set: bool
+
+
+class TelegramTestResponse(BaseModel):
+    ok: bool
+    message: str
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()

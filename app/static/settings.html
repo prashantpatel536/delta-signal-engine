@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="settings">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">SIGNAL ENGINE</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <a class="nav-item active" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok"></span> Configuration</div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-sub">Telegram alerts and server configuration</p>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <section class="settings-panel card-panel">
+        <h2 class="panel-title">Telegram Notifications</h2>
+        <p class="panel-desc">
+          Alerts are sent server-side when signals are generated, trades approved, and positions close (TP / SL / manual).
+          Configure credentials in <code>.env</code> on the server, then restart the app.
+        </p>
+
+        <dl class="settings-status" id="telegram-status">
+          <div><dt>Bot token</dt><dd id="status-token">—</dd></div>
+          <div><dt>Chat ID</dt><dd id="status-chat">—</dd></div>
+          <div><dt>Ready</dt><dd id="status-ready">—</dd></div>
+        </dl>
+
+        <div class="settings-actions">
+          <button type="button" id="test-telegram-btn" class="btn-primary">Test Telegram</button>
+          <button type="button" id="refresh-status-btn" class="btn-secondary">Refresh Status</button>
+        </div>
+        <p id="settings-message" class="settings-message" hidden></p>
+      </section>
+
+      <section class="settings-panel card-panel">
+        <h2 class="panel-title">Environment variables</h2>
+        <pre class="env-example">TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id</pre>
+        <p class="panel-desc muted">
+          Copy <code>.env.example</code> to <code>.env</code> in the project root. Values are loaded at startup.
+        </p>
+      </section>
+
+      <section class="settings-panel card-panel">
+        <h2 class="panel-title">Notification events</h2>
+        <ul class="settings-list">
+          <li>New signal generated (PENDING APPROVAL)</li>
+          <li>Trade approved and paper position opened</li>
+          <li>Take profit hit</li>
+          <li>Stop loss hit</li>
+          <li>Position closed manually</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/settings.js"></script>
+</body>
+</html>

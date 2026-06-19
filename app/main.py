@@ -24,6 +24,7 @@ from app.logging_config import setup_logging
 from app.market_data import delta_client, store
 from app.models import utc_now_iso
 from app.paper_api import router as paper_router
+from app.telegram_api import router as telegram_router
 from app.paper_trader import exit_status_label
 from app.services.paper_trading_service import PaperTradingService
 from app.services.signal_service import SignalService
@@ -228,6 +229,7 @@ app = FastAPI(
 app.include_router(market_router)
 app.include_router(approval_router)
 app.include_router(paper_router)
+app.include_router(telegram_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -281,6 +283,11 @@ def positions_page() -> FileResponse:
 @app.get("/debug/signals", include_in_schema=False)
 def debug_signals_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "debug-signals.html")
+
+
+@app.get("/settings", include_in_schema=False)
+def settings_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "settings.html")
 
 
 @app.get("/health/page", include_in_schema=False)
