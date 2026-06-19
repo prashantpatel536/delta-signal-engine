@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Analytics — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="performance">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">SIGNAL ENGINE</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item active" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok"></span> Strategy evaluation</div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Performance Analytics</h1>
+        <p class="page-sub">Evaluate paper-trading edge before connecting live execution</p>
+      </div>
+      <button type="button" id="perf-refresh" class="btn-secondary">Refresh</button>
+    </header>
+
+    <main class="page-content performance-page">
+      <section class="edge-banner" id="edge-banner">
+        <div class="edge-banner-label" id="edge-label">—</div>
+        <p class="edge-banner-summary" id="edge-summary">Loading analytics…</p>
+      </section>
+
+      <section class="perf-hero-grid" id="perf-hero-grid">
+        <div class="stat-card hero">
+          <span class="stat-label">Starting Balance</span>
+          <span class="stat-value" id="pa-start">—</span>
+        </div>
+        <div class="stat-card hero">
+          <span class="stat-label">Current Balance</span>
+          <span class="stat-value" id="pa-current">—</span>
+        </div>
+        <div class="stat-card hero">
+          <span class="stat-label">Net PnL</span>
+          <span class="stat-value" id="pa-net">—</span>
+        </div>
+      </section>
+
+      <section class="perf-chart-section">
+        <div class="perf-chart-head">
+          <h2 class="section-title">Daily Equity Curve</h2>
+          <span class="perf-chart-meta" id="equity-meta">—</span>
+        </div>
+        <div class="equity-chart-wrap">
+          <canvas id="equity-chart" height="220"></canvas>
+        </div>
+      </section>
+
+      <h2 class="section-title">Trade Statistics</h2>
+      <div class="stats-grid perf-metrics-grid" id="perf-metrics-grid">
+        <div class="stat-card"><span class="stat-label">Total Trades</span><span class="stat-value" id="pa-total">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Winning Trades</span><span class="stat-value" id="pa-wins">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Losing Trades</span><span class="stat-value" id="pa-losses">—</span></div>
+        <div class="stat-card"><span class="stat-label">Win Rate</span><span class="stat-value" id="pa-winrate">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Average Win</span><span class="stat-value" id="pa-avgwin">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Average Loss</span><span class="stat-value" id="pa-avgloss">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Largest Win</span><span class="stat-value" id="pa-maxwin">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Largest Loss</span><span class="stat-value" id="pa-maxloss">—</span></div>
+        <div class="stat-card"><span class="stat-label">Profit Factor</span><span class="stat-value" id="pa-pf">—</span></div>
+        <div class="stat-card"><span class="stat-label">Max Drawdown</span><span class="stat-value" id="pa-dd">—</span></div>
+        <div class="stat-card"><span class="stat-label">Avg Trade Duration</span><span class="stat-value stat-value-sm" id="pa-duration">—</span></div>
+        <div class="stat-card pending"><span class="stat-label">Open Positions</span><span class="stat-value" id="pa-open">—</span></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/performance-page.js"></script>
+</body>
+</html>

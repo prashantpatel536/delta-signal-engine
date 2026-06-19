@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Terminal — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body class="app-shell terminal-shell" data-page="terminal">
+  <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
+
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">TERMINAL</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+    </nav>
+    <div class="sidebar-status">
+      <span class="dot ok" id="sidebar-dot"></span>
+      <span id="sidebar-status-text">Live</span>
+    </div>
+  </aside>
+
+  <div class="main-area terminal-layout">
+    <header class="terminal-header terminal-header-full" id="terminal-header-bar"></header>
+
+    <div class="terminal-grid">
+      <section class="terminal-main-col">
+        <div class="symbol-tabs" id="symbol-tabs"></div>
+        <div class="tf-toolbar">
+          <span class="tf-label">Chart TF</span>
+          <button type="button" class="tf-btn chart-tf-btn" data-tf="1m">1m</button>
+          <button type="button" class="tf-btn chart-tf-btn active" data-tf="5m">5m</button>
+          <button type="button" class="tf-btn chart-tf-btn" data-tf="15m">15m</button>
+          <button type="button" class="tf-btn chart-tf-btn" data-tf="1h">1h</button>
+          <span class="tf-spacer"></span>
+          <label class="ctrl ctrl-inline">
+            <span>Bars</span>
+            <select id="window-select">
+              <option value="60">60</option>
+              <option value="100" selected>100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+          <button id="refresh-btn" type="button" class="btn-primary btn-sm">Refresh</button>
+        </div>
+        <div class="tf-toolbar signal-tf-toolbar">
+          <span class="tf-label">Signal TF</span>
+          <button type="button" class="tf-btn signal-tf-btn" data-tf="1m">1m</button>
+          <button type="button" class="tf-btn signal-tf-btn active" data-tf="5m">5m</button>
+          <button type="button" class="tf-btn signal-tf-btn" data-tf="15m">15m</button>
+          <button type="button" class="tf-btn signal-tf-btn" data-tf="1h">1h</button>
+        </div>
+
+        <div class="chart-symbol-header">
+          <h2 id="chart-symbol">ETHUSDT</h2>
+          <span class="live-price" id="last-price">—</span>
+          <span class="price-change" id="price-change"></span>
+        </div>
+
+        <div class="chart-legend chart-legend-bar chart-legend-compact">
+          <span class="leg-time" id="leg-time">—</span>
+          <span>O <b id="leg-o">—</b></span>
+          <span>H <b id="leg-h">—</b></span>
+          <span>L <b id="leg-l">—</b></span>
+          <span>C <b id="leg-c">—</b></span>
+          <span class="leg-sep">|</span>
+          <span>Vol <b id="leg-v">—</b></span>
+          <span class="leg-sep">|</span>
+          <span class="ind-sma">SMA84 <b id="leg-sma">—</b></span>
+          <span class="ind-hh">HH50 <b id="leg-hh">—</b></span>
+          <span class="ind-ll">LL50 <b id="leg-ll">—</b></span>
+        </div>
+
+        <div class="chart-stage terminal-chart-stage">
+          <div id="trade-pnl-overlay" class="trade-pnl-overlay hidden"></div>
+          <div id="trade-line-tooltip" class="trade-line-tooltip hidden"></div>
+          <div id="chart-container"></div>
+        </div>
+        <div class="chart-foot chart-foot-debug">
+          <span id="signal-marker-count" class="muted"></span>
+          <span class="tf-debug">Chart TF: <b id="debug-chart-tf">—</b></span>
+          <span class="tf-debug">Signal TF: <b id="debug-signal-tf">—</b></span>
+          <span class="tf-debug muted">Live: <b id="debug-live-refresh">—</b></span>
+        </div>
+      </section>
+
+      <aside class="terminal-right-col">
+        <div class="panel terminal-panel" id="signal-review"></div>
+        <div class="panel terminal-panel" id="position-sizing"></div>
+        <div class="panel terminal-panel">
+          <div class="panel-head">
+            <h2>Open Positions</h2>
+            <span id="open-count" class="badge">0</span>
+          </div>
+          <div id="position-cards" class="position-cards"></div>
+        </div>
+        <div class="panel terminal-panel alert-settings-panel" id="alert-settings"></div>
+      </aside>
+
+      <section class="terminal-recent-panel panel">
+        <div class="panel-head">
+          <h2>Recent Signals</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table compact-table" id="recent-signals-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Symbol</th>
+                <th>Side</th>
+                <th>Entry</th>
+                <th>SL</th>
+                <th>TP</th>
+                <th>RR</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-signals-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/audio-manager.js"></script>
+  <script src="/static/chart-engine.js"></script>
+  <script src="/static/position-management.js"></script>
+  <script src="/static/terminal.js"></script>
+  <script src="/static/terminal-page.js"></script>
+</body>
+</html>

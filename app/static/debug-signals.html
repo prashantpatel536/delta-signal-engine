@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signal Diagnostics — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="debug">
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">DIAGNOSTICS</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" href="/health/page"><span class="nav-icon">♥</span> Health</a>
+      <a class="nav-item active" href="/debug/signals"><span class="nav-icon">🔬</span> Signals</a>
+    </nav>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Signal Diagnostics</h1>
+        <p class="page-sub">Latest signal, timestamps, and indicator values</p>
+      </div>
+      <div class="topbar-controls">
+        <label class="ctrl">
+          <span>Symbol</span>
+          <select id="symbol-select">
+            <option value="BTC">BTC</option>
+            <option value="ETH" selected>ETH</option>
+            <option value="SOL">SOL</option>
+          </select>
+        </label>
+        <label class="ctrl">
+          <span>Timeframe</span>
+          <select id="timeframe-select">
+            <option value="1m">1m</option>
+            <option value="5m" selected>5m</option>
+            <option value="15m">15m</option>
+            <option value="1h">1h</option>
+          </select>
+        </label>
+        <button id="refresh-btn" type="button" class="btn-primary">Refresh</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="diag-grid" id="diag-body">
+        <p class="empty">Loading…</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/debug-signals.js"></script>
+</body>
+</html>

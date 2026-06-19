@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Positions — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="positions">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">SIGNAL ENGINE</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok"></span> Paper positions</div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Open Positions</h1>
+        <p class="page-sub">Virtual paper trades · synced symbol from preferences</p>
+      </div>
+      <div class="topbar-controls">
+        <label class="ctrl">
+          <span>Symbol filter</span>
+          <select id="symbol-select">
+            <option value="">All</option>
+            <option value="BTC">BTCUSDT</option>
+            <option value="ETH">ETHUSDT</option>
+            <option value="SOL">SOLUSDT</option>
+          </select>
+        </label>
+        <button id="refresh-btn" type="button" class="btn-primary">Refresh</button>
+      </div>
+    </header>
+
+    <main class="page-content page-content-fill">
+      <div class="table-wrap scroll-panel scroll-panel-tall">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Entry</th>
+              <th>Current</th>
+              <th>Margin</th>
+              <th>Lev</th>
+              <th>Pos Value</th>
+              <th>Qty</th>
+              <th>PnL</th>
+              <th>ROE</th>
+              <th>Orig TP</th>
+              <th>TP</th>
+              <th>Orig SL</th>
+              <th>SL</th>
+              <th>RR</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="positions-body">
+            <tr><td colspan="16" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/position-management.js"></script>
+  <script src="/static/positions-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistics — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="performance">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">SIGNAL ENGINE</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item" data-nav="performance" href="/stats"><span class="nav-icon">◔</span> Performance</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok"></span> All systems operational</div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Performance</h1>
+        <p class="page-sub">Signals & paper trading statistics</p>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <h2 class="section-title">Signal Workflow</h2>
+      <div class="stats-grid" id="signal-stats-grid">
+        <div class="stat-card"><span class="stat-label">Total Signals</span><span class="stat-value" id="sig-total">—</span></div>
+        <div class="stat-card pending"><span class="stat-label">Pending</span><span class="stat-value" id="sig-pending">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Approved</span><span class="stat-value" id="sig-approved">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Rejected</span><span class="stat-value" id="sig-rejected">—</span></div>
+      </div>
+
+      <h2 class="section-title">Paper Trading</h2>
+      <div class="stats-grid" id="paper-stats-grid">
+        <div class="stat-card"><span class="stat-label">Total Trades</span><span class="stat-value" id="pt-total">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Wins</span><span class="stat-value" id="pt-wins">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Losses</span><span class="stat-value" id="pt-losses">—</span></div>
+        <div class="stat-card"><span class="stat-label">Win Rate</span><span class="stat-value" id="pt-winrate">—</span></div>
+        <div class="stat-card"><span class="stat-label">Net PnL</span><span class="stat-value" id="pt-net">—</span></div>
+        <div class="stat-card approved"><span class="stat-label">Avg Win</span><span class="stat-value" id="pt-avgwin">—</span></div>
+        <div class="stat-card rejected"><span class="stat-label">Avg Loss</span><span class="stat-value" id="pt-avgloss">—</span></div>
+        <div class="stat-card"><span class="stat-label">Profit Factor</span><span class="stat-value" id="pt-pf">—</span></div>
+        <div class="stat-card pending"><span class="stat-label">Open Positions</span><span class="stat-value" id="pt-open">—</span></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/stats.js"></script>
+</body>
+</html>
