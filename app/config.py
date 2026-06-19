@@ -13,6 +13,7 @@ CANDLE_LIMIT = 500
 REFRESH_INTERVAL_SECONDS = 60
 LIVE_PRICE_REFRESH_SECONDS = 10
 PENDING_SIGNAL_EXPIRY_MINUTES = 15
+DEFAULT_SIGNAL_TIMEFRAME = "5m"
 TIMEFRAMES = ("1m", "5m", "15m", "1h")
 MARK_CANDLE_PREFIX = "MARK:"
 DATABASE_PATH = PROJECT_ROOT / "data" / "signals.db"
@@ -43,6 +44,9 @@ class Settings:
     refresh_interval_seconds: int = REFRESH_INTERVAL_SECONDS
     live_price_refresh_seconds: int = LIVE_PRICE_REFRESH_SECONDS
     pending_signal_expiry_minutes: int = PENDING_SIGNAL_EXPIRY_MINUTES
+    default_signal_timeframe: str = field(
+        default_factory=lambda: os.getenv("SIGNAL_TIMEFRAME", DEFAULT_SIGNAL_TIMEFRAME)
+    )
     timeframes: tuple[str, ...] = TIMEFRAMES
     symbol_map: dict[str, str] = field(default_factory=lambda: SYMBOL_MAP.copy())
     enrich_flat_candles_with_mark: bool = field(
@@ -56,6 +60,13 @@ class Settings:
     telegram_chat_id: str | None = field(
         default_factory=lambda: os.getenv("TELEGRAM_CHAT_ID")
     )
+    smtp_server: str | None = field(default_factory=lambda: os.getenv("SMTP_SERVER"))
+    smtp_port: int | None = field(
+        default_factory=lambda: int(os.getenv("SMTP_PORT", "587") or "587")
+    )
+    smtp_username: str | None = field(default_factory=lambda: os.getenv("SMTP_USERNAME"))
+    smtp_password: str | None = field(default_factory=lambda: os.getenv("SMTP_PASSWORD"))
+    alert_email_to: str | None = field(default_factory=lambda: os.getenv("ALERT_EMAIL_TO"))
 
 
 settings = Settings()

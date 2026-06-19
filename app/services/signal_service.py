@@ -9,7 +9,7 @@ from typing import Any
 from app.config import settings
 from app.repositories.signal_repository import SignalRepository
 from app.services.paper_trading_service import InsufficientMarginError, PaperTradingService
-from app.services.telegram_service import TelegramService, telegram_service
+from app.services.alert_service import AlertService, alert_service
 from app.trade_planner import build_trade_plan
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,11 @@ class SignalService:
         self,
         repository: SignalRepository | None = None,
         paper_service: PaperTradingService | None = None,
-        telegram: TelegramService | None = None,
+        alerts: AlertService | None = None,
     ) -> None:
         self.repository = repository or SignalRepository()
         self.paper_service = paper_service or PaperTradingService()
-        self.telegram = telegram if telegram is not None else telegram_service
+        self.alerts = alerts if alerts is not None else alert_service
 
     def persist_detected_signal(
         self,
@@ -77,9 +77,9 @@ class SignalService:
         )
         logger.info("Persisted pending signal id=%s %s %s %s", record["id"], symbol, timeframe, side)
         try:
-            self.telegram.notify_signal_generated(record)
+            self.alerts.notify_signal_generated(record)
         except Exception:
-            logger.exception("Telegram signal notification failed — continuing")
+            logger.exception("Alert signal notification failed — continuing")
         return record
 
     def persist_from_runtime_signal(
@@ -274,9 +274,9 @@ class SignalService:
 
         updated = self._transition(signal_id, from_status="PENDING", to_status="APPROVED")
         try:
-            self.telegram.notify_trade_approved(updated, position)
+            self.alerts.notify_trade_approved(updated, position)
         except Exception:
-            logger.exception("Telegram trade approved notification failed — continuing")
+            logger.exception("Alert trade approved notification failed — continuing")
         return updated, position
 
     def get_statistics(self) -> dict[str, int]:

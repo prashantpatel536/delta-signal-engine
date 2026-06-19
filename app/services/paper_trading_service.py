@@ -48,7 +48,7 @@ from app.repositories.position_repository import PositionRepository
 
 from app.repositories.signal_repository import SignalRepository
 
-from app.services.telegram_service import TelegramService, telegram_service
+from app.services.alert_service import AlertService, alert_service
 
 
 
@@ -80,7 +80,7 @@ class PaperTradingService:
 
         event_repository: PositionEventRepository | None = None,
 
-        telegram: TelegramService | None = None,
+        alerts: AlertService | None = None,
 
     ) -> None:
 
@@ -92,7 +92,7 @@ class PaperTradingService:
 
         self.event_repository = event_repository or PositionEventRepository()
 
-        self.telegram = telegram if telegram is not None else telegram_service
+        self.alerts = alerts if alerts is not None else alert_service
 
 
 
@@ -900,11 +900,11 @@ class PaperTradingService:
 
             try:
 
-                self.telegram.notify_position_closed(updated)
+                self.alerts.notify_position_closed(updated)
 
             except Exception:
 
-                logger.exception("Telegram position close notification failed — continuing")
+                logger.exception("Alert position close notification failed — continuing")
 
         return updated
 

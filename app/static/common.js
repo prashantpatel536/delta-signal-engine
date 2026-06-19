@@ -1,21 +1,46 @@
 window.DSE = {
   PREFS_KEY: "dse-prefs",
+  PREFS_VERSION: 3,
   SYMBOL_MAP: { BTC: "BTCUSDT", ETH: "ETHUSDT", SOL: "SOLUSDT" },
 
   defaultPrefs() {
-    return { symbol: "ETH", chartTimeframe: "5m", signalTimeframe: "5m", bars: 100 };
+    return {
+      symbol: "ETH",
+      chartTimeframe: "5m",
+      signalTimeframe: "5m",
+      bars: 100,
+      prefsVersion: this.PREFS_VERSION,
+    };
   },
 
   getPrefs() {
     try {
       const raw = localStorage.getItem(this.PREFS_KEY);
       const parsed = raw ? JSON.parse(raw) : {};
-      const merged = { ...this.defaultPrefs(), ...parsed };
-      if (parsed.timeframe && !parsed.chartTimeframe) {
-        merged.chartTimeframe = parsed.timeframe;
-        merged.signalTimeframe = parsed.signalTimeframe || parsed.timeframe;
+      const defaults = this.defaultPrefs();
+
+      // One-time migration: older saves often stuck chart + signal on 1m
+      if ((parsed.prefsVersion || 0) < this.PREFS_VERSION) {
+        const migrated = {
+          ...defaults,
+          symbol: parsed.symbol || defaults.symbol,
+          bars: parsed.bars || defaults.bars,
+          chartTimeframe: "5m",
+          signalTimeframe: "5m",
+          prefsVersion: this.PREFS_VERSION,
+        };
+        localStorage.setItem(this.PREFS_KEY, JSON.stringify(migrated));
+        return migrated;
       }
-      return merged;
+
+      return {
+        ...defaults,
+        symbol: parsed.symbol ?? defaults.symbol,
+        bars: parsed.bars ?? defaults.bars,
+        chartTimeframe: parsed.chartTimeframe ?? defaults.chartTimeframe,
+        signalTimeframe: parsed.signalTimeframe ?? defaults.signalTimeframe,
+        prefsVersion: this.PREFS_VERSION,
+      };
     } catch (_) {
       return this.defaultPrefs();
     }

@@ -31,17 +31,45 @@
     <header class="topbar">
       <div>
         <h1 class="page-title">Settings</h1>
-        <p class="page-sub">Telegram alerts and server configuration</p>
+        <p class="page-sub">Notifications and signal timeframe</p>
       </div>
     </header>
 
     <main class="page-content">
       <section class="settings-panel card-panel">
-        <h2 class="panel-title">Telegram Notifications</h2>
+        <h2 class="panel-title">Signal Timeframe</h2>
         <p class="panel-desc">
-          Alerts are sent server-side when signals are generated, trades approved, and positions close (TP / SL / manual).
-          Configure credentials in <code>.env</code> on the server, then restart the app.
+          The engine generates and persists signals only for the active Signal TF.
+          Change it from the Trading Terminal toolbar — selection is saved in the browser and synced to the server.
         </p>
+        <dl class="settings-status settings-status-2">
+          <div><dt>Server Signal TF</dt><dd id="server-signal-tf">—</dd></div>
+          <div><dt>Default</dt><dd>5m</dd></div>
+        </dl>
+      </section>
+
+      <section class="settings-panel card-panel">
+        <h2 class="panel-title">Email Notifications</h2>
+        <p class="panel-desc">
+          Primary alert channel. Configure SMTP credentials in <code>.env</code>, restart the app, then send a test email.
+        </p>
+
+        <dl class="settings-status" id="email-status">
+          <div><dt>SMTP server</dt><dd id="email-smtp-server">—</dd></div>
+          <div><dt>Username</dt><dd id="email-smtp-user">—</dd></div>
+          <div><dt>Alert to</dt><dd id="email-alert-to">—</dd></div>
+          <div><dt>Ready</dt><dd id="email-status-ready">—</dd></div>
+        </dl>
+
+        <div class="settings-actions">
+          <button type="button" id="test-email-btn" class="btn-primary">Send Test Email</button>
+        </div>
+        <p id="email-test-result" class="settings-message" hidden></p>
+      </section>
+
+      <section class="settings-panel card-panel">
+        <h2 class="panel-title">Telegram Notifications</h2>
+        <p class="panel-desc">Optional backup channel via Telegram Bot API.</p>
 
         <dl class="settings-status" id="telegram-status">
           <div><dt>Bot token</dt><dd id="status-token">—</dd></div>
@@ -50,7 +78,7 @@
         </dl>
 
         <div class="settings-actions">
-          <button type="button" id="test-telegram-btn" class="btn-primary">Test Telegram</button>
+          <button type="button" id="test-telegram-btn" class="btn-secondary">Test Telegram</button>
           <button type="button" id="refresh-status-btn" class="btn-secondary">Refresh Status</button>
         </div>
         <p id="settings-message" class="settings-message" hidden></p>
@@ -58,20 +86,28 @@
 
       <section class="settings-panel card-panel">
         <h2 class="panel-title">Environment variables</h2>
-        <pre class="env-example">TELEGRAM_BOT_TOKEN=your_bot_token
+        <pre class="env-example">SIGNAL_TIMEFRAME=5m
+
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+ALERT_EMAIL_TO=your_email@gmail.com
+
+TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=your_chat_id</pre>
         <p class="panel-desc muted">
-          Copy <code>.env.example</code> to <code>.env</code> in the project root. Values are loaded at startup.
+          Copy <code>.env.example</code> to <code>.env</code> in the project root. Values load at startup.
         </p>
       </section>
 
       <section class="settings-panel card-panel">
         <h2 class="panel-title">Notification events</h2>
         <ul class="settings-list">
-          <li>New signal generated (PENDING APPROVAL)</li>
+          <li>New BUY / SELL signal (PENDING APPROVAL)</li>
           <li>Trade approved and paper position opened</li>
-          <li>Take profit hit</li>
-          <li>Stop loss hit</li>
+          <li>Take profit hit (PnL + ROE)</li>
+          <li>Stop loss hit (PnL + ROE)</li>
           <li>Position closed manually</li>
         </ul>
       </section>

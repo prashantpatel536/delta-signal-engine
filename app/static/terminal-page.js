@@ -304,6 +304,25 @@ window.refreshTerminal = refreshTerminal;
 
 
 
+async function syncTerminalTimeframesFromServer() {
+  try {
+    const payload = await DSE.fetchJson("/settings/signal-timeframe");
+    const signalTf = payload.signal_timeframe || "5m";
+    DSE.setPrefs({ chartTimeframe: "5m", signalTimeframe: signalTf });
+    document.querySelectorAll(".chart-tf-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tf === "5m");
+    });
+    document.querySelectorAll(".signal-tf-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tf === signalTf);
+    });
+  } catch (error) {
+    console.warn("[terminal] timeframe sync failed:", error.message);
+    DSE.setPrefs({ chartTimeframe: "5m", signalTimeframe: "5m" });
+  }
+}
+
+
+
 function initTerminal() {
 
   Terminal.initMobileNav();
@@ -344,16 +363,6 @@ function initTerminal() {
 
 
 
-  Terminal.bindTimeframeButtons(() => {
-
-    chartEngine?.resetPan();
-
-    refreshTerminal();
-
-  });
-
-
-
   const engine = buildEngine();
 
   if (!engine.init()) {
@@ -364,9 +373,21 @@ function initTerminal() {
 
   }
 
-  refreshTerminal();
+  syncTerminalTimeframesFromServer().then(() => {
 
-  setInterval(refreshTerminal, 10000);
+    Terminal.bindTimeframeButtons(() => {
+
+      chartEngine?.resetPan();
+
+      refreshTerminal();
+
+    });
+
+    refreshTerminal();
+
+    setInterval(refreshTerminal, 10000);
+
+  });
 
 }
 

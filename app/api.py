@@ -28,6 +28,7 @@ from app.models import (
     WatchlistResponse,
 )
 from app.health import build_health_payload
+from app.services.runtime_settings import get_signal_timeframe
 from app.services.signal_service import SignalService
 
 signal_service = SignalService()
@@ -228,7 +229,7 @@ def get_chart(
             matches = signal_trade_df.index[signal_trade_df["time"] == candle_time].tolist()
             if matches:
                 sig_idx = matches[0]
-        if sig_idx is not None and sig_idx >= 0:
+        if sig_idx is not None and sig_idx >= 0 and signal_tf == get_signal_timeframe():
             hh_val = signal_hh50.iloc[sig_idx]
             ll_val = signal_ll50.iloc[sig_idx]
             if not pd.isna(hh_val) and not pd.isna(ll_val):

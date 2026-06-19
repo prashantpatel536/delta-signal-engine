@@ -46,12 +46,25 @@ window.Terminal = {
       });
     };
 
+    const syncServer = async (tf) => {
+      try {
+        await DSE.fetchJson("/settings/signal-timeframe", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ signal_timeframe: tf }),
+        });
+      } catch (error) {
+        console.warn("[signal-tf] server sync failed:", error.message);
+      }
+    };
+
     setActive(prefs.signalTimeframe);
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const tf = btn.dataset.tf;
         DSE.setPrefs({ signalTimeframe: tf });
         setActive(tf);
+        syncServer(tf);
         onChange?.(DSE.getPrefs());
       });
     });

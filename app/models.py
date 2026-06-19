@@ -331,5 +331,27 @@ class TelegramTestResponse(BaseModel):
     message: str
 
 
+class EmailStatusResponse(BaseModel):
+    configured: bool
+    smtp_server_set: bool
+    smtp_port_set: bool
+    smtp_username_set: bool
+    smtp_password_set: bool
+    alert_email_to_set: bool
+
+
+class EmailTestResponse(BaseModel):
+    ok: bool
+    message: str
+
+
+class SignalTimeframeResponse(BaseModel):
+    signal_timeframe: str
+
+
+class SignalTimeframeUpdate(BaseModel):
+    signal_timeframe: str
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()

@@ -80,6 +80,12 @@ CREATE TABLE IF NOT EXISTS telegram_notifications (
 CREATE INDEX IF NOT EXISTS idx_telegram_notifications_entity
     ON telegram_notifications(entity_type, entity_id);
 
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS paper_account (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     balance REAL NOT NULL DEFAULT 1000.0,

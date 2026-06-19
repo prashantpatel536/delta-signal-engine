@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.repositories.telegram_notification_repository import TelegramNotificationRepository
 from app.services.signal_service import SignalService
+from app.services.alert_service import AlertService
 from app.services.telegram_service import TelegramService
 from app.services.paper_trading_service import PaperTradingService
 from tests.conftest import utc_now_iso
@@ -27,11 +28,20 @@ def mock_telegram_post(monkeypatch):
         chat_id="12345",
         session=session,
     )
+    from app.services.alert_service import AlertService
+    from app.services.email_service import EmailService
+
+    mock_email = MagicMock(spec=EmailService)
+    mock_email.notify_signal_generated.return_value = False
+    mock_email.notify_trade_approved.return_value = False
+    mock_email.notify_position_closed.return_value = False
+    alerts = AlertService(telegram=service, email=mock_email)
+
     from app import approval_api
     from app import paper_api
 
-    monkeypatch.setattr(approval_api.signal_service, "telegram", service)
-    monkeypatch.setattr(paper_api.paper_service, "telegram", service)
+    monkeypatch.setattr(approval_api.signal_service, "alerts", alerts)
+    monkeypatch.setattr(paper_api.paper_service, "alerts", alerts)
     monkeypatch.setattr("app.main.paper_service", paper_api.paper_service)
     monkeypatch.setattr("app.telegram_api.telegram_service", service)
     return session
@@ -139,7 +149,7 @@ def test_telegram_failure_does_not_raise(temp_db, monkeypatch):
     session = MagicMock()
     session.post.side_effect = ConnectionError("network down")
     tg = TelegramService(bot_token="tok", chat_id="99", session=session)
-    signal_service = SignalService(telegram=tg)
+    signal_service = SignalService(alerts=AlertService(telegram=tg))
     record = signal_service.persist_detected_signal(
         symbol="ETHUSDT",
         timeframe="5m",

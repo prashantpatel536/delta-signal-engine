@@ -24,8 +24,11 @@ from app.logging_config import setup_logging
 from app.market_data import delta_client, store
 from app.models import utc_now_iso
 from app.paper_api import router as paper_router
+from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
 from app.paper_trader import exit_status_label
+from app.services.email_service import email_service
+from app.services.runtime_settings import get_signal_timeframe, initialize_signal_timeframe
 from app.services.paper_trading_service import PaperTradingService
 from app.services.signal_service import SignalService
 from app.signals import generate_signals_for_pair
@@ -41,6 +44,8 @@ async def refresh_market_data() -> None:
     signal_service.expire_stale_pending()
     cycle_errors: list[str] = []
     successful_updates = 0
+    active_signal_tf = get_signal_timeframe()
+    logger.info("Signal engine using timeframe: %s candles only", active_signal_tf)
 
     for short_symbol, delta_symbol in settings.symbol_map.items():
         store.ensure_symbol(delta_symbol)
@@ -73,7 +78,7 @@ async def refresh_market_data() -> None:
                     delta_symbol,
                     timeframe,
                 )
-                if signal is not None:
+                if signal is not None and timeframe == active_signal_tf:
                     hh_val = hh50.iloc[-1]
                     ll_val = ll50.iloc[-1]
                     if not pd.isna(hh_val) and not pd.isna(ll_val):
@@ -90,6 +95,13 @@ async def refresh_market_data() -> None:
                                 persisted["timeframe"],
                                 persisted["id"],
                             )
+                elif signal is not None and timeframe != active_signal_tf:
+                    logger.debug(
+                        "Skip signal persist for %s %s — active Signal TF is %s",
+                        delta_symbol,
+                        timeframe,
+                        active_signal_tf,
+                    )
 
                 store.update(
                     delta_symbol,
@@ -201,6 +213,14 @@ async def lifespan(app: FastAPI):
     log_path = setup_logging()
     logger.info("Delta Signal Engine starting up — log file %s", log_path)
     init_db()
+    initialize_signal_timeframe()
+    if email_service.is_configured():
+        logger.info("Email alerts enabled → %s", settings.alert_email_to)
+    else:
+        logger.warning(
+            "Email alerts not configured — set SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, "
+            "SMTP_PASSWORD, ALERT_EMAIL_TO in .env"
+        )
     refresh_task = asyncio.create_task(scheduler_loop())
     live_price_task = asyncio.create_task(live_price_loop())
     try:
@@ -229,6 +249,7 @@ app = FastAPI(
 app.include_router(market_router)
 app.include_router(approval_router)
 app.include_router(paper_router)
+app.include_router(settings_router)
 app.include_router(telegram_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
