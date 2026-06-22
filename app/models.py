@@ -401,6 +401,21 @@ class ClosedTradesResponse(BaseModel):
     count: int
 
 
+class PushoverStatusResponse(BaseModel):
+    configured: bool
+    enabled: bool
+    user_key_set: bool
+    app_token_set: bool
+    user_key_valid: bool = False
+    app_token_valid: bool = False
+    config_hint: str | None = None
+
+
+class PushoverTestResponse(BaseModel):
+    ok: bool
+    message: str
+
+
 class TelegramStatusResponse(BaseModel):
     configured: bool
     chat_id_set: bool

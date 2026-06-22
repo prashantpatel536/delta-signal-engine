@@ -24,10 +24,12 @@ from app.logging_config import setup_logging
 from app.market_data import delta_client, store
 from app.models import utc_now_iso
 from app.paper_api import router as paper_router
+from app.pushover_api import router as pushover_router
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
 from app.paper_trader import exit_status_label
 from app.services.email_service import email_service
+from app.services.pushover_service import pushover_service
 from app.services.runtime_settings import get_signal_timeframe, initialize_signal_timeframe
 from app.services.paper_trading_service import PaperTradingService
 from app.services.missed_opportunity_service import missed_opportunity_service
@@ -248,6 +250,12 @@ async def lifespan(app: FastAPI):
         logger.warning(
             "Telegram alerts not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env"
         )
+    if pushover_service.is_configured():
+        logger.info("Pushover alerts enabled")
+    elif pushover_service.enabled:
+        logger.warning(
+            "Pushover enabled but not configured — set PUSHOVER_USER_KEY and PUSHOVER_APP_TOKEN"
+        )
     refresh_task = asyncio.create_task(scheduler_loop())
     live_price_task = asyncio.create_task(live_price_loop())
     try:
@@ -278,6 +286,7 @@ app.include_router(approval_router)
 app.include_router(paper_router)
 app.include_router(settings_router)
 app.include_router(telegram_router)
+app.include_router(pushover_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

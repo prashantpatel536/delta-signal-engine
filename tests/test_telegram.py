@@ -35,7 +35,7 @@ def mock_telegram_post(monkeypatch):
     mock_email.notify_signal_generated.return_value = False
     mock_email.notify_trade_approved.return_value = False
     mock_email.notify_position_closed.return_value = False
-    alerts = AlertService(telegram=service, email=mock_email)
+    alerts = AlertService(telegram=service, email=mock_email, blocking=True)
 
     from app import approval_api
     from app import paper_api
@@ -151,7 +151,7 @@ def test_telegram_failure_does_not_raise(temp_db, monkeypatch):
     session = MagicMock()
     session.post.side_effect = ConnectionError("network down")
     tg = TelegramService(bot_token="tok", chat_id="99", session=session)
-    signal_service = SignalService(alerts=AlertService(telegram=tg))
+    signal_service = SignalService(alerts=AlertService(telegram=tg, blocking=True))
     record = signal_service.persist_detected_signal(
         symbol="ETHUSDT",
         timeframe="5m",

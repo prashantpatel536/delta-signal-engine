@@ -5,11 +5,18 @@ const emailReadyEl = document.getElementById("email-status-ready");
 const smtpServerEl = document.getElementById("email-smtp-server");
 const smtpUserEl = document.getElementById("email-smtp-user");
 const smtpToEl = document.getElementById("email-alert-to");
+const pushoverEnabledEl = document.getElementById("pushover-enabled");
+const pushoverUserKeyEl = document.getElementById("pushover-user-key");
+const pushoverAppTokenEl = document.getElementById("pushover-app-token");
+const pushoverReadyEl = document.getElementById("pushover-ready");
+const pushoverHintEl = document.getElementById("pushover-hint");
 const signalTfEl = document.getElementById("server-signal-tf");
 const messageEl = document.getElementById("settings-message");
 const emailTestResultEl = document.getElementById("email-test-result");
+const pushoverTestResultEl = document.getElementById("pushover-test-result");
 const testTelegramBtn = document.getElementById("test-telegram-btn");
 const testEmailBtn = document.getElementById("test-email-btn");
+const testPushoverBtn = document.getElementById("test-pushover-btn");
 const refreshBtn = document.getElementById("refresh-status-btn");
 
 function showMessage(text, isError = false, target = messageEl) {
@@ -21,9 +28,10 @@ function showMessage(text, isError = false, target = messageEl) {
 
 async function loadStatus() {
   try {
-    const [tgStatus, emailStatus, signalTf] = await Promise.all([
+    const [tgStatus, emailStatus, pushoverStatus, signalTf] = await Promise.all([
       DSE.fetchJson("/telegram/status"),
       DSE.fetchJson("/email/status"),
+      DSE.fetchJson("/pushover/status"),
       DSE.fetchJson("/settings/signal-timeframe"),
     ]);
 
@@ -43,6 +51,26 @@ async function loadStatus() {
       emailReadyEl.className = emailStatus.configured ? "up" : "down";
     }
     if (testEmailBtn) testEmailBtn.disabled = !emailStatus.configured;
+
+    if (pushoverEnabledEl) {
+      pushoverEnabledEl.textContent = pushoverStatus.enabled ? "Yes" : "No";
+      pushoverEnabledEl.className = pushoverStatus.enabled ? "up" : "down";
+    }
+    if (pushoverUserKeyEl) {
+      pushoverUserKeyEl.textContent = pushoverStatus.user_key_set ? "Configured" : "Missing";
+    }
+    if (pushoverAppTokenEl) {
+      pushoverAppTokenEl.textContent = pushoverStatus.app_token_set ? "Configured" : "Missing";
+    }
+    if (pushoverReadyEl) {
+      pushoverReadyEl.textContent = pushoverStatus.configured ? "Yes" : "No";
+      pushoverReadyEl.className = pushoverStatus.configured ? "up" : "down";
+    }
+    if (pushoverHintEl) {
+      pushoverHintEl.textContent = pushoverStatus.config_hint || "—";
+      pushoverHintEl.className = pushoverStatus.config_hint ? "down" : "";
+    }
+    if (testPushoverBtn) testPushoverBtn.disabled = !pushoverStatus.configured;
 
     if (signalTfEl) signalTfEl.textContent = signalTf.signal_timeframe || "5m";
   } catch (error) {
@@ -79,7 +107,27 @@ async function sendEmailTest() {
   }
 }
 
+async function sendPushoverTest() {
+  if (!testPushoverBtn) return;
+  testPushoverBtn.disabled = true;
+  if (pushoverTestResultEl) pushoverTestResultEl.hidden = true;
+  try {
+    const result = await DSE.fetchJson("/pushover/test", { method: "POST" });
+    showMessage(
+      result.ok ? "✓ Test Pushover notification sent." : result.message,
+      !result.ok,
+      pushoverTestResultEl
+    );
+  } catch (error) {
+    showMessage(`✗ ${error.message}`, true, pushoverTestResultEl);
+  } finally {
+    testPushoverBtn.disabled = false;
+    loadStatus();
+  }
+}
+
 testTelegramBtn?.addEventListener("click", sendTelegramTest);
 testEmailBtn?.addEventListener("click", sendEmailTest);
+testPushoverBtn?.addEventListener("click", sendPushoverTest);
 refreshBtn?.addEventListener("click", loadStatus);
 loadStatus();

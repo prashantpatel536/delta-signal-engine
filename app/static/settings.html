@@ -68,6 +68,27 @@
       </section>
 
       <section class="settings-panel card-panel">
+        <h2 class="panel-title">Pushover Notifications</h2>
+        <p class="panel-desc">
+          Real-time mobile push alerts via <a href="https://pushover.net/" target="_blank" rel="noopener">Pushover</a>.
+          Set credentials in <code>.env</code> and restart the app.
+        </p>
+
+        <dl class="settings-status" id="pushover-status">
+          <div><dt>Enabled</dt><dd id="pushover-enabled">—</dd></div>
+          <div><dt>User key</dt><dd id="pushover-user-key">—</dd></div>
+          <div><dt>App token</dt><dd id="pushover-app-token">—</dd></div>
+          <div><dt>Ready</dt><dd id="pushover-ready">—</dd></div>
+          <div><dt>Hint</dt><dd id="pushover-hint">—</dd></div>
+        </dl>
+
+        <div class="settings-actions">
+          <button type="button" id="test-pushover-btn" class="btn-primary">Send Test Pushover</button>
+        </div>
+        <p id="pushover-test-result" class="settings-message" hidden></p>
+      </section>
+
+      <section class="settings-panel card-panel">
         <h2 class="panel-title">Telegram Notifications</h2>
         <p class="panel-desc">Optional backup channel via Telegram Bot API.</p>
 
@@ -95,7 +116,11 @@ SMTP_PASSWORD=your_app_password
 ALERT_EMAIL_TO=your_email@gmail.com
 
 TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id</pre>
+TELEGRAM_CHAT_ID=your_chat_id
+
+PUSHOVER_ENABLED=true
+PUSHOVER_USER_KEY=your_pushover_user_key
+PUSHOVER_APP_TOKEN=your_pushover_app_token</pre>
         <p class="panel-desc muted">
           Template only — your real values live in <code>.env</code> (not shown here for security).
           Restart the app after editing <code>.env</code>.
@@ -107,9 +132,9 @@ TELEGRAM_CHAT_ID=your_chat_id</pre>
         <ul class="settings-list">
           <li>New BUY / SELL signal (PENDING APPROVAL)</li>
           <li>Trade approved and paper position opened</li>
-          <li>Take profit hit (PnL + ROE)</li>
-          <li>Stop loss hit (PnL + ROE)</li>
-          <li>Position closed manually</li>
+          <li>Take profit hit</li>
+          <li>Stop loss hit</li>
+          <li>Pushover, Email, and Telegram (when configured)</li>
         </ul>
       </section>
     </main>

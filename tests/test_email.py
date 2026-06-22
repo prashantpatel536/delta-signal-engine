@@ -44,7 +44,7 @@ def alert_mocks(monkeypatch, smtp_env, mock_smtp):
 
     tg = TelegramService(bot_token="tok", chat_id="1", session=tg_session)
     email = EmailService()
-    alerts = AlertService(telegram=tg, email=email)
+    alerts = AlertService(telegram=tg, email=email, blocking=True)
 
     from app import approval_api
     from app import paper_api
@@ -136,7 +136,7 @@ def test_email_failure_does_not_raise(temp_db, smtp_env):
         ok = service.send_test()["ok"]
     assert ok is False
 
-    signal_service = SignalService(alerts=AlertService(email=service))
+    signal_service = SignalService(alerts=AlertService(email=service, blocking=True))
     record = signal_service.persist_detected_signal(
         symbol="ETHUSDT",
         timeframe="5m",

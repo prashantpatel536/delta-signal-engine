@@ -7,8 +7,11 @@ from typing import Any
 from app.config import settings
 from app.database import get_connection
 from app.market_data import store
+from app.services.email_service import email_service
 from app.services.paper_trading_service import PaperTradingService
+from app.services.pushover_service import pushover_service
 from app.services.signal_service import SignalService
+from app.services.telegram_service import telegram_service
 
 signal_service = SignalService()
 paper_service = PaperTradingService()
@@ -62,14 +65,28 @@ def check_paper_trading() -> dict[str, Any]:
         return _subsystem("fail", str(exc))
 
 
+def check_notifications() -> dict[str, Any]:
+    channels: list[str] = []
+    if pushover_service.is_configured():
+        channels.append("Pushover")
+    if telegram_service.is_configured():
+        channels.append("Telegram")
+    if email_service.is_configured():
+        channels.append("Email")
+    if not channels:
+        return _subsystem("degraded", "No server push channels configured")
+    return _subsystem("ok", ", ".join(channels))
+
+
 def build_health_payload() -> dict[str, Any]:
     market = check_market_data()
     database = check_database()
     signals = check_signal_engine()
     paper = check_paper_trading()
+    notifications = check_notifications()
     ready, total = store.cache_pair_counts()
 
-    subsystems = [market, database, signals, paper]
+    subsystems = [market, database, signals, paper, notifications]
     if any(s["status"] == "fail" for s in subsystems):
         overall = "fail"
     elif any(s["status"] == "degraded" for s in subsystems):
@@ -89,8 +106,5 @@ def build_health_payload() -> dict[str, Any]:
         "database": database,
         "signal_engine": signals,
         "paper_trading": paper,
-        "notifications": _subsystem(
-            "ok",
-            "Client-side; requires browser permission and user gesture for audio",
-        ),
+        "notifications": notifications,
     }

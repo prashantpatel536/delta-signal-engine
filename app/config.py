@@ -68,6 +68,15 @@ class Settings:
     smtp_username: str | None = field(default_factory=lambda: os.getenv("SMTP_USERNAME"))
     smtp_password: str | None = field(default_factory=lambda: os.getenv("SMTP_PASSWORD"))
     alert_email_to: str | None = field(default_factory=lambda: os.getenv("ALERT_EMAIL_TO"))
+    pushover_enabled: str | None = field(
+        default_factory=lambda: os.getenv("PUSHOVER_ENABLED", "false")
+    )
+    pushover_user_key: str | None = field(
+        default_factory=lambda: os.getenv("PUSHOVER_USER_KEY")
+    )
+    pushover_app_token: str | None = field(
+        default_factory=lambda: os.getenv("PUSHOVER_APP_TOKEN")
+    )
     missed_opportunity_monitor_hours: int = field(
         default_factory=lambda: MISSED_OPPORTUNITY_MONITOR_HOURS
     )
