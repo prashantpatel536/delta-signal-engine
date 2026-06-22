@@ -13,6 +13,7 @@ from app.repositories.telegram_notification_repository import TelegramNotificati
 logger = logging.getLogger(__name__)
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
+_UNSET = object()
 
 
 def _format_price(value: float | int | None) -> str:
@@ -34,15 +35,33 @@ class TelegramService:
     def __init__(
         self,
         *,
-        bot_token: str | None = None,
-        chat_id: str | None = None,
+        bot_token: str | None | object = _UNSET,
+        chat_id: str | None | object = _UNSET,
         repository: TelegramNotificationRepository | None = None,
         session: requests.Session | None = None,
     ) -> None:
-        self.bot_token = bot_token if bot_token is not None else settings.telegram_bot_token
-        self.chat_id = chat_id if chat_id is not None else settings.telegram_chat_id
+        self._bot_token_override = bot_token
+        self._chat_id_override = chat_id
         self.repository = repository or TelegramNotificationRepository()
         self._session = session or requests.Session()
+
+    @staticmethod
+    def _clean(value: str | None) -> str | None:
+        if not value:
+            return None
+        return str(value).strip().strip('"').strip("'")
+
+    @property
+    def bot_token(self) -> str | None:
+        if self._bot_token_override is not _UNSET:
+            return self._clean(self._bot_token_override)  # type: ignore[arg-type]
+        return self._clean(settings.telegram_bot_token)
+
+    @property
+    def chat_id(self) -> str | None:
+        if self._chat_id_override is not _UNSET:
+            return self._clean(self._chat_id_override)  # type: ignore[arg-type]
+        return self._clean(settings.telegram_chat_id)
 
     def is_configured(self) -> bool:
         return bool(self.bot_token and self.chat_id)

@@ -8,13 +8,24 @@ from typing import Any
 from app.database import get_connection
 from app.models import utc_now_iso
 
-VALID_STATUSES = frozenset({"PENDING", "APPROVED", "REJECTED", "EXPIRED", "TP_HIT", "SL_HIT"})
+VALID_STATUSES = frozenset({
+    "PENDING",
+    "APPROVED",
+    "REJECTED",
+    "EXPIRED",
+    "TP_HIT",
+    "SL_HIT",
+    "MISSED_WINNER",
+    "MISSED_LOSER",
+})
 
 
 class SignalRepository:
     def _row_to_dict(self, row: sqlite3.Row) -> dict[str, Any]:
         data = dict(row)
         data["signal_timeframe"] = data.get("timeframe")
+        if "missed_monitoring" in data:
+            data["missed_monitoring"] = bool(data["missed_monitoring"])
         return data
 
     def create(
@@ -248,3 +259,160 @@ class SignalRepository:
                 tuple(ids),
             ).fetchall()
         return [self._row_to_dict(row) for row in expired]
+
+    def start_missed_monitoring(self, signal_id: int) -> dict[str, Any] | None:
+        now = utc_now_iso()
+        with get_connection() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE signals
+                SET missed_monitoring = 1,
+                    monitoring_started_at = COALESCE(monitoring_started_at, ?),
+                    updated_at = ?
+                WHERE id = ?
+                  AND status IN ('REJECTED', 'EXPIRED')
+                  AND missed_resolved_at IS NULL
+                """,
+                (now, now, signal_id),
+            )
+            conn.commit()
+            if cursor.rowcount == 0:
+                return None
+        return self.get_by_id(signal_id)
+
+    def list_missed_monitoring(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                WHERE missed_monitoring = 1
+                ORDER BY datetime(monitoring_started_at) ASC, id ASC
+                """
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
+    def list_unresolved_rejected_expired(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                WHERE status IN ('REJECTED', 'EXPIRED')
+                  AND missed_monitoring = 0
+                  AND missed_resolved_at IS NULL
+                ORDER BY id ASC
+                """
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
+    def update_excursions(
+        self,
+        signal_id: int,
+        max_favorable_excursion: float,
+        max_adverse_excursion: float,
+    ) -> None:
+        now = utc_now_iso()
+        with get_connection() as conn:
+            conn.execute(
+                """
+                UPDATE signals
+                SET max_favorable_excursion = ?,
+                    max_adverse_excursion = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (max_favorable_excursion, max_adverse_excursion, now, signal_id),
+            )
+            conn.commit()
+
+    def stop_missed_monitoring(self, signal_id: int) -> None:
+        now = utc_now_iso()
+        with get_connection() as conn:
+            conn.execute(
+                """
+                UPDATE signals
+                SET missed_monitoring = 0, updated_at = ?
+                WHERE id = ?
+                """,
+                (now, signal_id),
+            )
+            conn.commit()
+
+    def resolve_missed(
+        self,
+        signal_id: int,
+        status: str,
+        points_captured: float,
+    ) -> dict[str, Any] | None:
+        if status not in {"MISSED_WINNER", "MISSED_LOSER"}:
+            raise ValueError(f"Invalid missed status: {status}")
+        now = utc_now_iso()
+        with get_connection() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE signals
+                SET status = ?,
+                    points_captured = ?,
+                    missed_monitoring = 0,
+                    missed_resolved_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                  AND missed_monitoring = 1
+                """,
+                (status, points_captured, now, now, signal_id),
+            )
+            conn.commit()
+            if cursor.rowcount == 0:
+                return None
+        return self.get_by_id(signal_id)
+
+    def get_missed_summary(self) -> dict[str, float | int]:
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
+                    SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
+                    SUM(CASE WHEN status = 'MISSED_WINNER' THEN COALESCE(points_captured, 0) ELSE 0 END)
+                        AS potential_missed_profit,
+                    SUM(CASE WHEN missed_monitoring = 1 THEN 1 ELSE 0 END) AS monitoring
+                FROM signals
+                """
+            ).fetchone()
+        return {
+            "missed_winners": int(row["missed_winners"] or 0),
+            "missed_losers": int(row["missed_losers"] or 0),
+            "potential_missed_profit": round(float(row["potential_missed_profit"] or 0), 4),
+            "monitoring": int(row["monitoring"] or 0),
+        }
+
+    def get_missed_analytics(self, since_iso: str) -> dict[str, float | int]:
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?) THEN 1 ELSE 0 END)
+                        AS signals_generated,
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status IN ('APPROVED', 'TP_HIT', 'SL_HIT') THEN 1 ELSE 0 END)
+                        AS signals_approved,
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        AND datetime(missed_resolved_at) >= datetime(?) THEN 1 ELSE 0 END)
+                        AS missed_winners,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        AND datetime(missed_resolved_at) >= datetime(?) THEN 1 ELSE 0 END)
+                        AS missed_losers,
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(points_captured, 0) ELSE 0 END)
+                        AS potential_profit_missed
+                FROM signals
+                """,
+                (since_iso, since_iso, since_iso, since_iso, since_iso),
+            ).fetchone()
+        return {
+            "signals_generated": int(row["signals_generated"] or 0),
+            "signals_approved": int(row["signals_approved"] or 0),
+            "missed_winners": int(row["missed_winners"] or 0),
+            "missed_losers": int(row["missed_losers"] or 0),
+            "potential_profit_missed": round(float(row["potential_profit_missed"] or 0), 4),
+        }

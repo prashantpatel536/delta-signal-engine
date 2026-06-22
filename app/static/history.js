@@ -5,7 +5,22 @@ const refreshBtn = document.getElementById("refresh-btn");
 const historyBody = document.getElementById("history-body");
 
 function statusClass(status) {
-  return status.toLowerCase().replace(/\s+/g, "-");
+  return status.toLowerCase().replace(/_/g, "-");
+}
+
+function outcomeLabel(signal) {
+  if (signal.status === "MISSED_WINNER" || signal.status === "MISSED_LOSER") {
+    return signal.status.replace("_", " ");
+  }
+  if (signal.missed_monitoring) return "Monitoring";
+  return "—";
+}
+
+function formatPoints(value) {
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  const n = Number(value);
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}`;
 }
 
 async function loadHistory() {
@@ -15,13 +30,15 @@ async function loadHistory() {
   try {
     const payload = await fetchJson(url);
     if (!payload.signals.length) {
-      historyBody.innerHTML = `<tr><td colspan="8" class="empty">No signals found.</td></tr>`;
+      historyBody.innerHTML = `<tr><td colspan="11" class="empty">No signals found.</td></tr>`;
       return;
     }
 
     historyBody.innerHTML = payload.signals
-      .map(
-        (s) => `
+      .map((s) => {
+        const outcome = outcomeLabel(s);
+        const outcomeClass = statusClass(outcome.replace(" ", "-"));
+        return `
         <tr>
           <td>${formatTime(s.created_at)}</td>
           <td>${s.symbol}</td>
@@ -31,11 +48,15 @@ async function loadHistory() {
           <td>${formatPrice(s.stop_loss)}</td>
           <td>${formatPrice(s.take_profit)}</td>
           <td><span class="status-tag ${statusClass(s.status)}">${s.status}</span></td>
-        </tr>`
-      )
+          <td><span class="status-tag ${outcomeClass}">${outcome}</span></td>
+          <td>${s.max_favorable_excursion ? formatPoints(s.max_favorable_excursion) : "—"}</td>
+          <td>${s.max_adverse_excursion ? formatPoints(s.max_adverse_excursion) : "—"}</td>
+          <td>${formatPoints(s.points_captured)}</td>
+        </tr>`;
+      })
       .join("");
   } catch (error) {
-    historyBody.innerHTML = `<tr><td colspan="8" class="empty">Error: ${error.message}</td></tr>`;
+    historyBody.innerHTML = `<tr><td colspan="11" class="empty">Error: ${error.message}</td></tr>`;
   }
 }
 

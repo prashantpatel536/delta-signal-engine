@@ -93,6 +93,15 @@ CREATE TABLE IF NOT EXISTS paper_account (
 );
 """
 
+SIGNAL_MIGRATIONS = [
+    "ALTER TABLE signals ADD COLUMN max_favorable_excursion REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE signals ADD COLUMN max_adverse_excursion REAL NOT NULL DEFAULT 0",
+    "ALTER TABLE signals ADD COLUMN points_captured REAL",
+    "ALTER TABLE signals ADD COLUMN missed_monitoring INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE signals ADD COLUMN monitoring_started_at TEXT",
+    "ALTER TABLE signals ADD COLUMN missed_resolved_at TEXT",
+]
+
 MIGRATIONS = [
     "ALTER TABLE positions ADD COLUMN quantity REAL NOT NULL DEFAULT 1.0",
     "ALTER TABLE positions ADD COLUMN leverage REAL NOT NULL DEFAULT 1.0",
@@ -156,7 +165,17 @@ def _migrate_nullable_signal_id(conn: sqlite3.Connection) -> None:
     )
 
 
+def _apply_signal_migrations(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(signals)").fetchall()}
+    for sql in SIGNAL_MIGRATIONS:
+        col = sql.split("ADD COLUMN ")[1].split()[0]
+        if col not in existing:
+            conn.execute(sql)
+            existing.add(col)
+
+
 def _apply_migrations(conn: sqlite3.Connection) -> None:
+    _apply_signal_migrations(conn)
     existing = {row[1] for row in conn.execute("PRAGMA table_info(positions)").fetchall()}
     for sql in MIGRATIONS:
         col = sql.split("ADD COLUMN ")[1].split()[0]

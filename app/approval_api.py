@@ -11,11 +11,14 @@ from app.config import settings
 from app.models import (
     ApproveTradeRequest,
     ApproveTradeResponse,
+    MissedOpportunityAnalytics,
+    MissedOpportunitySummary,
     SignalStatistics,
     StoredSignal,
     StoredSignalsResponse,
 )
 from app.market_data import store
+from app.services.missed_opportunity_service import missed_opportunity_service
 from app.services.paper_trading_service import PaperTradingService
 from app.services.signal_service import SignalService
 
@@ -89,6 +92,8 @@ def get_signal_history(
         "EXPIRED",
         "TP_HIT",
         "SL_HIT",
+        "MISSED_WINNER",
+        "MISSED_LOSER",
     }:
         raise HTTPException(status_code=400, detail=f"Invalid status filter: {status}")
     tf = _resolve_signal_timeframe(timeframe, signal_timeframe)
@@ -103,6 +108,20 @@ def get_signal_history(
     )
     signals = [_to_stored(item) for item in records]
     return StoredSignalsResponse(signals=signals, count=len(signals))
+
+
+@router.get("/missed-opportunities/summary", response_model=MissedOpportunitySummary)
+def get_missed_summary() -> MissedOpportunitySummary:
+    summary = missed_opportunity_service.get_summary()
+    return MissedOpportunitySummary(**summary)
+
+
+@router.get("/missed-opportunities/analytics", response_model=MissedOpportunityAnalytics)
+def get_missed_analytics(
+    period: str = Query(default="today", pattern="^(today|7d|30d)$"),
+) -> MissedOpportunityAnalytics:
+    data = missed_opportunity_service.get_analytics(period)
+    return MissedOpportunityAnalytics(**data)
 
 
 @router.get("/signal/{signal_id}", response_model=StoredSignal)
@@ -174,10 +193,15 @@ def get_latest_signal() -> StoredSignal | None:
 @router.get("/signal-statistics", response_model=SignalStatistics)
 def get_signal_statistics() -> SignalStatistics:
     counts = signal_service.get_statistics()
+    missed = missed_opportunity_service.get_summary()
     return SignalStatistics(
         total=counts.get("TOTAL", 0),
         pending=counts.get("PENDING", 0),
         approved=counts.get("APPROVED", 0),
         rejected=counts.get("REJECTED", 0),
         expired=counts.get("EXPIRED", 0),
+        missed_winners=int(missed["missed_winners"]),
+        missed_losers=int(missed["missed_losers"]),
+        potential_missed_profit=float(missed["potential_missed_profit"]),
+        monitoring=int(missed["monitoring"]),
     )

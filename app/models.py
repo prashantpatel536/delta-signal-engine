@@ -6,7 +6,16 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-SignalStatus = Literal["PENDING", "APPROVED", "REJECTED", "EXPIRED", "TP_HIT", "SL_HIT"]
+SignalStatus = Literal[
+    "PENDING",
+    "APPROVED",
+    "REJECTED",
+    "EXPIRED",
+    "TP_HIT",
+    "SL_HIT",
+    "MISSED_WINNER",
+    "MISSED_LOSER",
+]
 
 
 class Candle(BaseModel):
@@ -127,11 +136,21 @@ class StoredSignal(BaseModel):
     status: SignalStatus
     created_at: str
     updated_at: str
+    max_favorable_excursion: float = 0.0
+    max_adverse_excursion: float = 0.0
+    points_captured: float | None = None
+    missed_monitoring: bool = False
+    monitoring_started_at: str | None = None
+    missed_resolved_at: str | None = None
 
     @classmethod
     def from_record(cls, record: dict) -> "StoredSignal":
         row = dict(record)
         row.setdefault("signal_timeframe", row.get("timeframe", ""))
+        row["missed_monitoring"] = bool(row.get("missed_monitoring"))
+        for field in ("max_favorable_excursion", "max_adverse_excursion", "points_captured"):
+            if row.get(field) is not None:
+                row[field] = float(row[field])
         return cls(**row)
 
 
@@ -173,6 +192,27 @@ class SignalStatistics(BaseModel):
     approved: int
     rejected: int
     expired: int
+    missed_winners: int = 0
+    missed_losers: int = 0
+    potential_missed_profit: float = 0.0
+    monitoring: int = 0
+
+
+class MissedOpportunitySummary(BaseModel):
+    missed_winners: int
+    missed_losers: int
+    potential_missed_profit: float
+    monitoring: int
+
+
+class MissedOpportunityAnalytics(BaseModel):
+    period: str
+    since: str
+    signals_generated: int
+    signals_approved: int
+    missed_winners: int
+    missed_losers: int
+    potential_profit_missed: float
 
 
 PositionStatus = Literal["OPEN", "CLOSED"]

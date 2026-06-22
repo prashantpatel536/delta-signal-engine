@@ -226,6 +226,8 @@ async function refreshTerminal() {
 
     });
 
+    Terminal.renderMissedOpportunities(signalStats);
+
     Terminal.renderSymbolTabs(symbol, () => refreshTerminal());
 
     Terminal.renderPositionCards(openPositions, null, symbol);

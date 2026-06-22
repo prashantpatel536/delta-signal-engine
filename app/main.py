@@ -30,6 +30,8 @@ from app.paper_trader import exit_status_label
 from app.services.email_service import email_service
 from app.services.runtime_settings import get_signal_timeframe, initialize_signal_timeframe
 from app.services.paper_trading_service import PaperTradingService
+from app.services.missed_opportunity_service import missed_opportunity_service
+from app.services.telegram_service import telegram_service
 from app.services.signal_service import SignalService
 from app.signals import generate_signals_for_pair
 
@@ -167,6 +169,20 @@ async def refresh_market_data() -> None:
     except Exception:
         logger.exception("Paper position monitor failed")
 
+    try:
+        prices = store.get_latest_prices()
+        if prices:
+            resolved = missed_opportunity_service.monitor_signals(prices)
+            for record in resolved:
+                logger.info(
+                    "Missed opportunity resolved: id=%s status=%s pts=%s",
+                    record["id"],
+                    record["status"],
+                    record.get("points_captured"),
+                )
+    except Exception:
+        logger.exception("Missed opportunity monitor failed")
+
     logger.info(
         "Market data refresh complete at %s (%d updates, %d errors)",
         refresh_time,
@@ -186,6 +202,10 @@ async def refresh_live_prices() -> None:
             logger.warning("Live price fetch failed for %s: %s", delta_symbol, exc)
     if prices:
         store.apply_live_prices(prices)
+        try:
+            missed_opportunity_service.monitor_signals(prices)
+        except Exception:
+            logger.exception("Missed opportunity live-price monitor failed")
 
 
 async def scheduler_loop() -> None:
@@ -220,6 +240,12 @@ async def lifespan(app: FastAPI):
         logger.warning(
             "Email alerts not configured — set SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, "
             "SMTP_PASSWORD, ALERT_EMAIL_TO in .env"
+        )
+    if telegram_service.is_configured():
+        logger.info("Telegram alerts enabled → chat_id %s", telegram_service.chat_id)
+    else:
+        logger.warning(
+            "Telegram alerts not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env"
         )
     refresh_task = asyncio.create_task(scheduler_loop())
     live_price_task = asyncio.create_task(live_price_loop())

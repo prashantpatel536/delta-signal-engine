@@ -13,6 +13,7 @@ CANDLE_LIMIT = 500
 REFRESH_INTERVAL_SECONDS = 60
 LIVE_PRICE_REFRESH_SECONDS = 10
 PENDING_SIGNAL_EXPIRY_MINUTES = 15
+MISSED_OPPORTUNITY_MONITOR_HOURS = int(os.getenv("MISSED_OPPORTUNITY_MONITOR_HOURS", "24") or "24")
 DEFAULT_SIGNAL_TIMEFRAME = "5m"
 TIMEFRAMES = ("1m", "5m", "15m", "1h")
 MARK_CANDLE_PREFIX = "MARK:"
@@ -67,6 +68,9 @@ class Settings:
     smtp_username: str | None = field(default_factory=lambda: os.getenv("SMTP_USERNAME"))
     smtp_password: str | None = field(default_factory=lambda: os.getenv("SMTP_PASSWORD"))
     alert_email_to: str | None = field(default_factory=lambda: os.getenv("ALERT_EMAIL_TO"))
+    missed_opportunity_monitor_hours: int = field(
+        default_factory=lambda: MISSED_OPPORTUNITY_MONITOR_HOURS
+    )
 
 
 settings = Settings()

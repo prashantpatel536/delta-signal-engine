@@ -128,6 +128,34 @@ function renderEquityChart(curve, startingBalance) {
 }
 
 let lastPerformanceData = null;
+let missedPeriod = "today";
+
+function renderMissedAnalytics(data) {
+  setText("mo-generated", data.signals_generated);
+  setText("mo-approved", data.signals_approved);
+  setText("mo-winners", data.missed_winners);
+  setText("mo-losers", data.missed_losers);
+  const profitEl = document.getElementById("mo-profit");
+  if (profitEl) {
+    const pts = Number(data.potential_profit_missed ?? 0);
+    profitEl.textContent = `${pts.toFixed(2)} pts`;
+    profitEl.className = "stat-value";
+    if (pts > 0) profitEl.classList.add("up");
+  }
+}
+
+async function loadMissedAnalytics(period = missedPeriod) {
+  missedPeriod = period;
+  try {
+    const data = await fetchJson(`/missed-opportunities/analytics?period=${encodeURIComponent(period)}`);
+    renderMissedAnalytics(data);
+  } catch (error) {
+    const grid = document.getElementById("missed-analytics-grid");
+    if (grid) {
+      grid.innerHTML = `<p class="empty">Error loading missed analytics: ${error.message}</p>`;
+    }
+  }
+}
 
 function renderPerformance(data) {
   lastPerformanceData = data;
@@ -186,10 +214,25 @@ async function loadPerformance() {
   }
 }
 
-document.getElementById("perf-refresh")?.addEventListener("click", loadPerformance);
+document.getElementById("perf-refresh")?.addEventListener("click", () => {
+  loadPerformance();
+  loadMissedAnalytics(missedPeriod);
+});
+
+document.getElementById("missed-period-tabs")?.addEventListener("click", (event) => {
+  const btn = event.target.closest(".period-tab");
+  if (!btn) return;
+  document.querySelectorAll("#missed-period-tabs .period-tab").forEach((el) => {
+    el.classList.toggle("active", el === btn);
+  });
+  loadMissedAnalytics(btn.dataset.period);
+});
+
 window.addEventListener("resize", () => {
   if (lastPerformanceData) renderEquityChart(lastPerformanceData.daily_equity_curve, lastPerformanceData.starting_balance);
 });
 
 loadPerformance();
+loadMissedAnalytics("today");
 setInterval(loadPerformance, 30000);
+setInterval(() => loadMissedAnalytics(missedPeriod), 30000);

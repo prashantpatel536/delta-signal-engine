@@ -8,6 +8,10 @@ from typing import Any
 
 from app.config import settings
 from app.repositories.signal_repository import SignalRepository
+from app.services.missed_opportunity_service import (
+    MissedOpportunityService,
+    missed_opportunity_service,
+)
 from app.services.paper_trading_service import InsufficientMarginError, PaperTradingService
 from app.services.alert_service import AlertService, alert_service
 from app.trade_planner import build_trade_plan
@@ -21,10 +25,14 @@ class SignalService:
         repository: SignalRepository | None = None,
         paper_service: PaperTradingService | None = None,
         alerts: AlertService | None = None,
+        missed_service: MissedOpportunityService | None = None,
     ) -> None:
         self.repository = repository or SignalRepository()
         self.paper_service = paper_service or PaperTradingService()
         self.alerts = alerts if alerts is not None else alert_service
+        self.missed_service = (
+            missed_service if missed_service is not None else missed_opportunity_service
+        )
 
     def persist_detected_signal(
         self,
@@ -177,6 +185,7 @@ class SignalService:
                 record["timeframe"],
                 minutes,
             )
+            self.missed_service.start_monitoring(record["id"])
         return expired
 
     def is_signal_expired(self, record: dict[str, Any]) -> bool:
@@ -229,7 +238,9 @@ class SignalService:
         return self._transition(signal_id, from_status="PENDING", to_status="APPROVED")
 
     def reject_signal(self, signal_id: int) -> dict[str, Any]:
-        return self._transition(signal_id, from_status="PENDING", to_status="REJECTED")
+        updated = self._transition(signal_id, from_status="PENDING", to_status="REJECTED")
+        self.missed_service.start_monitoring(signal_id)
+        return updated
 
     def approve_and_execute(
         self,
@@ -248,6 +259,7 @@ class SignalService:
         if record["status"] == "EXPIRED" or self.is_signal_expired(record):
             if record["status"] == "PENDING":
                 self.repository.update_status(signal_id, "EXPIRED")
+                self.missed_service.start_monitoring(signal_id)
             raise ValueError("Signal has expired and cannot be approved")
         if record["status"] != "PENDING":
             raise ValueError(

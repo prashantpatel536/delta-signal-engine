@@ -43,6 +43,9 @@
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
+          <option value="EXPIRED">Expired</option>
+          <option value="MISSED_WINNER">Missed Winner</option>
+          <option value="MISSED_LOSER">Missed Loser</option>
         </select>
       </label>
       <button id="refresh-btn" type="button" class="btn-primary">Refresh</button>
@@ -61,10 +64,14 @@
               <th>SL</th>
               <th>TP</th>
               <th>Status</th>
+              <th>Outcome</th>
+              <th>MFE</th>
+              <th>MAE</th>
+              <th>Pts Missed</th>
             </tr>
           </thead>
           <tbody id="history-body">
-            <tr><td colspan="8" class="empty">Loading…</td></tr>
+            <tr><td colspan="11" class="empty">Loading…</td></tr>
           </tbody>
         </table>
       </div>

@@ -691,6 +691,9 @@ select, button {
 .status-tag.approved { color: var(--buy); border-color: rgba(14, 203, 129, 0.4); background: rgba(14, 203, 129, 0.08); }
 .status-tag.rejected { color: var(--sell); border-color: rgba(246, 70, 93, 0.4); }
 .status-tag.expired { color: var(--muted); }
+.status-tag.missed-winner { color: var(--buy); border-color: rgba(14, 203, 129, 0.45); background: rgba(14, 203, 129, 0.1); }
+.status-tag.missed-loser { color: var(--sell); border-color: rgba(246, 70, 93, 0.45); background: rgba(246, 70, 93, 0.08); }
+.status-tag.monitoring { color: var(--accent); border-color: rgba(240, 185, 11, 0.45); }
 .status-tag.win, .status-tag.tp { color: var(--buy); border-color: rgba(14, 203, 129, 0.4); }
 .status-tag.loss, .status-tag.sl { color: var(--sell); border-color: rgba(246, 70, 93, 0.4); }
 
@@ -1230,8 +1233,69 @@ select, button {
 }
 
 .status-tag.tp-hit,
-.status-tag.sl-hit {
+.status-tag.sl-hit,
+.status-tag.missed-winner {
   color: var(--buy);
+}
+
+.missed-opportunities-panel .missed-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem 0.85rem;
+}
+
+.missed-stat {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.missed-stat-wide {
+  grid-column: 1 / -1;
+}
+
+.missed-stat-label {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.missed-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.missed-stat-value.accent { color: var(--accent); }
+
+.missed-analytics-section {
+  margin-top: 1.25rem;
+}
+
+.period-tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.period-tab {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.period-tab.active,
+.period-tab:hover {
+  color: var(--text);
+  border-color: var(--accent);
 }
 
 .badge.pending {

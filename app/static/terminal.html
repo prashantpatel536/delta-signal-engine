@@ -108,6 +108,26 @@
           <div id="position-cards" class="position-cards"></div>
         </div>
         <div class="panel terminal-panel alert-settings-panel" id="alert-settings"></div>
+        <div class="panel terminal-panel missed-opportunities-panel" id="missed-opportunities">
+          <div class="panel-head">
+            <h2>Missed Opportunities</h2>
+            <span id="missed-monitoring-count" class="badge">0</span>
+          </div>
+          <div class="missed-stats-grid">
+            <div class="missed-stat">
+              <span class="missed-stat-label">Missed Winners</span>
+              <span class="missed-stat-value up" id="missed-winners">0</span>
+            </div>
+            <div class="missed-stat">
+              <span class="missed-stat-label">Missed Losers</span>
+              <span class="missed-stat-value down" id="missed-losers">0</span>
+            </div>
+            <div class="missed-stat missed-stat-wide">
+              <span class="missed-stat-label">Potential Missed Profit</span>
+              <span class="missed-stat-value accent" id="missed-profit">0 pts</span>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <section class="terminal-recent-panel panel">

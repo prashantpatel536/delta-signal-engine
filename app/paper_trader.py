@@ -96,6 +96,37 @@ def risk_reward_usd(
     return risk, reward, rr
 
 
+def excursion_points(side: str, entry: float, price: float) -> tuple[float, float]:
+    """Return (favorable, adverse) price excursion from entry in points."""
+    entry = float(entry)
+    price = float(price)
+    if side == "BUY":
+        favorable = max(price - entry, 0.0)
+        adverse = max(entry - price, 0.0)
+    else:
+        favorable = max(entry - price, 0.0)
+        adverse = max(price - entry, 0.0)
+    return round(favorable, 4), round(adverse, 4)
+
+
+def reward_points(side: str, entry: float, take_profit: float) -> float:
+    """Hypothetical reward in price points if TP is hit."""
+    entry = float(entry)
+    tp = float(take_profit)
+    if side == "BUY":
+        return round(max(tp - entry, 0.0), 4)
+    return round(max(entry - tp, 0.0), 4)
+
+
+def risk_points(side: str, entry: float, stop_loss: float) -> float:
+    """Hypothetical risk in price points if SL is hit."""
+    entry = float(entry)
+    sl = float(stop_loss)
+    if side == "BUY":
+        return round(max(entry - sl, 0.0), 4)
+    return round(max(sl - entry, 0.0), 4)
+
+
 def check_exit_reason(
     side: str,
     price: float,

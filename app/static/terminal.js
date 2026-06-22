@@ -119,6 +119,19 @@ window.Terminal = {
       <span class="acct-pill">Open Positions: <strong>${openCount}</strong></span>`;
   },
 
+  renderMissedOpportunities(summary) {
+    const winnersEl = document.getElementById("missed-winners");
+    const losersEl = document.getElementById("missed-losers");
+    const profitEl = document.getElementById("missed-profit");
+    const monitoringEl = document.getElementById("missed-monitoring-count");
+    if (!winnersEl || !summary) return;
+    winnersEl.textContent = summary.missed_winners ?? 0;
+    losersEl.textContent = summary.missed_losers ?? 0;
+    const pts = Number(summary.potential_missed_profit ?? 0);
+    profitEl.textContent = `${pts.toFixed(2)} pts`;
+    if (monitoringEl) monitoringEl.textContent = summary.monitoring ?? 0;
+  },
+
   renderSymbolTabs(activeShort, onSelect) {
     const el = document.getElementById("symbol-tabs");
     if (!el) return;
@@ -140,6 +153,8 @@ window.Terminal = {
   signalDisplayStatus(signal, closedBySignalId) {
     if (signal.status === "TP_HIT") return "TP HIT";
     if (signal.status === "SL_HIT") return "SL HIT";
+    if (signal.status === "MISSED_WINNER") return "MISSED WINNER";
+    if (signal.status === "MISSED_LOSER") return "MISSED LOSER";
     const trade = closedBySignalId?.[signal.id];
     if (trade?.exit_reason === "TP") return "TP HIT";
     if (trade?.exit_reason === "SL") return "SL HIT";

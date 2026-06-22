@@ -60,7 +60,9 @@ def test_telegram_status_endpoint(temp_db):
     assert "bot_token_set" in body
 
 
-def test_telegram_test_not_configured(temp_db):
+def test_telegram_test_not_configured(temp_db, monkeypatch):
+    unconfigured = TelegramService(bot_token=None, chat_id=None)
+    monkeypatch.setattr("app.telegram_api.telegram_service", unconfigured)
     resp = client.post("/telegram/test")
     assert resp.status_code == 503
 
