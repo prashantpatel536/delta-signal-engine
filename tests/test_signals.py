@@ -44,14 +44,16 @@ def test_detect_all_signals_includes_candle_time():
 
 
 def test_buy_signal_on_cross_above_hh50_and_above_sma84():
-    count = 120
+    count = 121
     closes = [100.0] * count
-    closes[-2] = 100.0
-    closes[-1] = 130.0
+    closes[-3] = 100.0
+    closes[-2] = 130.0
+    closes[-1] = 131.0
 
     highs = [100.0] * count
-    highs[-51:-1] = [110.0] * 50
-    highs[-1] = 130.0
+    highs[-52:-2] = [110.0] * 50
+    highs[-2] = 130.0
+    highs[-1] = 131.0
 
     candles = _frame(closes, highs=highs)
     sma84 = calculate_sma84(candles["close"])
@@ -62,18 +64,20 @@ def test_buy_signal_on_cross_above_hh50_and_above_sma84():
     assert signal is not None
     assert signal["signal"] == "BUY"
     assert signal["price"] == 130.0
-    assert signal["candle_time"] == int(candles["time"].iloc[-1])
+    assert signal["candle_time"] == int(candles["time"].iloc[-2])
 
 
 def test_sell_signal_on_cross_below_ll50_and_below_sma84():
-    count = 120
+    count = 121
     closes = [100.0] * count
-    closes[-2] = 100.0
-    closes[-1] = 70.0
+    closes[-3] = 100.0
+    closes[-2] = 70.0
+    closes[-1] = 69.0
 
     lows = [100.0] * count
-    lows[-51:-1] = [90.0] * 50
-    lows[-1] = 70.0
+    lows[-52:-2] = [90.0] * 50
+    lows[-2] = 70.0
+    lows[-1] = 69.0
 
     candles = _frame(closes, lows=lows)
     sma84 = calculate_sma84(candles["close"])
@@ -84,6 +88,27 @@ def test_sell_signal_on_cross_below_ll50_and_below_sma84():
     assert signal is not None
     assert signal["signal"] == "SELL"
     assert signal["price"] == 70.0
+    assert signal["candle_time"] == int(candles["time"].iloc[-2])
+
+
+def test_no_signal_on_forming_bar_only():
+    count = 121
+    closes = [100.0] * count
+    closes[-2] = 100.0
+    closes[-1] = 130.0
+
+    highs = [100.0] * count
+    highs[-52:-2] = [110.0] * 50
+    highs[-2] = 100.0
+    highs[-1] = 130.0
+
+    candles = _frame(closes, highs=highs)
+    sma84 = calculate_sma84(candles["close"])
+    hh50 = calculate_hh50(candles["high"])
+    ll50 = calculate_ll50(candles["low"])
+
+    signal = detect_signal(candles, sma84, hh50, ll50, "ETHUSDT", "5m")
+    assert signal is None
 
 
 def test_no_signal_without_cross():

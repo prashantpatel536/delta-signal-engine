@@ -17,6 +17,7 @@ from app.config import MARK_CANDLE_PREFIX, RESOLUTION_SECONDS, settings
 from app.candle_utils import (
     enrich_flat_candles_with_mark,
     first_last_candles,
+    merge_mark_ohlc_with_trade_volume,
     normalize_candles,
     validate_candle_series,
 )
@@ -369,14 +370,14 @@ class DeltaExchangeClient:
         )
         return df, audit
 
-    def build_display_candles(
+    def resolve_ohlc_candles(
         self,
         trade_df: pd.DataFrame,
         symbol: str,
         resolution: str,
         limit: int | None = None,
     ) -> tuple[pd.DataFrame, dict]:
-        """Build chart candles by enriching flat trade bars with mark-price OHLC."""
+        """Mark-price OHLC for chart + indicators; trade volume merged by timestamp."""
         limit = limit or settings.candle_limit
         stats: dict = {
             "mark_enrichment_enabled": settings.enrich_flat_candles_with_mark,
@@ -385,28 +386,51 @@ class DeltaExchangeClient:
             else 0,
         }
 
-        if trade_df.empty or not settings.enrich_flat_candles_with_mark:
-            stats.update({"enriched_from_mark": 0, "flat_after": stats["flat_before"]})
+        if trade_df.empty:
+            stats.update({"ohlc_source": "empty", "flat_after": 0})
+            return trade_df.copy(), stats
+
+        if not settings.enrich_flat_candles_with_mark:
+            stats.update({"ohlc_source": "trade_only", "flat_after": stats["flat_before"]})
             return trade_df.copy(), stats
 
         mark_symbol = f"{MARK_CANDLE_PREFIX}{symbol}"
         try:
             mark_df = self._fetch_normalized_candles(mark_symbol, resolution, limit)
-            display_df = enrich_flat_candles_with_mark(trade_df, mark_df, stats=stats)
+            ohlc_df = merge_mark_ohlc_with_trade_volume(trade_df, mark_df, stats=stats)
             stats["mark_symbol"] = mark_symbol
-            stats["mark_candle_count"] = len(mark_df)
-            return display_df, stats
+            stats["flat_after"] = int(validate_candle_series(ohlc_df, resolution)["flat_count"])
+            logger.info(
+                "OHLC resolve %s %s: source=%s flat_before=%s flat_after=%s mark_bars=%d",
+                symbol,
+                resolution,
+                stats.get("ohlc_source", "mark_primary"),
+                stats.get("flat_before"),
+                stats.get("flat_after"),
+                stats.get("mark_candle_count", len(mark_df)),
+            )
+            return ohlc_df, stats
         except Exception as exc:
             logger.warning(
-                "Mark-price enrichment failed for %s %s: %s",
+                "Mark OHLC resolve failed for %s %s: %s — falling back to trade candles",
                 symbol,
                 resolution,
                 exc,
             )
             stats["mark_enrichment_error"] = str(exc)
-            stats["enriched_from_mark"] = 0
+            stats["ohlc_source"] = "trade_fallback"
             stats["flat_after"] = stats["flat_before"]
             return trade_df.copy(), stats
+
+    def build_display_candles(
+        self,
+        trade_df: pd.DataFrame,
+        symbol: str,
+        resolution: str,
+        limit: int | None = None,
+    ) -> tuple[pd.DataFrame, dict]:
+        """Backward-compatible alias for mark-primary OHLC resolution."""
+        return self.resolve_ohlc_candles(trade_df, symbol, resolution, limit)
 
     def fetch_candles(
         self,

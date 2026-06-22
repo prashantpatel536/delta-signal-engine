@@ -101,8 +101,14 @@ def test_missed_summary_endpoint(temp_db):
     resp = client.get("/missed-opportunities/summary")
     assert resp.status_code == 200
     body = resp.json()
+    assert body["missed_opportunities"] == 1
     assert body["missed_winners"] == 1
-    assert body["potential_missed_profit"] == 10.0
+    assert body["missed_losers"] == 0
+    assert body["gross_missed_profit"] == 10.0
+    assert body["net_missed_profit"] == 10.0
+    assert body["totals_valid"] is True
+    assert len(body["by_symbol"]) == 3
+    assert body["by_symbol"][0]["label"] == "BTC"
 
 
 def test_missed_analytics_endpoint(temp_db):
@@ -114,8 +120,9 @@ def test_missed_analytics_endpoint(temp_db):
     assert resp.status_code == 200
     body = resp.json()
     assert body["signals_generated"] >= 1
+    assert body["missed_opportunities"] == 1
     assert body["missed_winners"] == 1
-    assert body["potential_profit_missed"] == 10.0
+    assert body["net_missed_profit"] == 10.0
 
 
 def test_signal_statistics_includes_missed(temp_db):
@@ -126,8 +133,9 @@ def test_signal_statistics_includes_missed(temp_db):
     resp = client.get("/signal-statistics")
     assert resp.status_code == 200
     body = resp.json()
+    assert body["missed_opportunities"] == 1
     assert body["missed_winners"] == 1
-    assert body["potential_missed_profit"] == 10.0
+    assert body["net_missed_profit"] == 10.0
 
 
 def test_history_includes_missed_fields(temp_db):
@@ -179,3 +187,49 @@ def test_backfill_unmonitored_rejected(temp_db):
     assert queued == 1
     resolved = service.monitor_signals({"ETHUSDT": 110.0})
     assert resolved[0]["status"] == "MISSED_WINNER"
+
+
+def test_missed_totals_consistency_winner_and_loser(temp_db):
+    winner = _create_pending(
+        symbol="BTCUSDT",
+        entry=100.0,
+        hh50=110.0,
+        ll50=95.0,
+    )
+    loser = _create_pending(
+        side="SELL",
+        entry=200.0,
+        hh50=210.0,
+        ll50=190.0,
+    )
+    signal_service.reject_signal(winner["id"])
+    signal_service.reject_signal(loser["id"])
+
+    service = MissedOpportunityService()
+    service.monitor_signals({"BTCUSDT": 110.0, "ETHUSDT": 211.0})
+
+    summary = service.get_summary()
+    assert summary["missed_winners"] == 1
+    assert summary["missed_losers"] == 1
+    assert summary["missed_opportunities"] == 2
+    assert summary["totals_valid"] is True
+    assert summary["gross_missed_profit"] == 10.0
+    assert summary["gross_missed_loss"] == -10.0
+    assert summary["net_missed_profit"] == 0.0
+
+
+def test_debug_missed_opportunities_endpoint(temp_db):
+    record = _create_pending()
+    signal_service.reject_signal(record["id"])
+    MissedOpportunityService().monitor_signals({"ETHUSDT": 110.0})
+
+    resp = client.get("/debug/missed-opportunities")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["totals_consistent"] is True
+    assert body["total_missed"] == body["total_winners"] + body["total_losers"]
+    assert body["duplicate_outcome_count"] == 0
+    assert len(body["signals"]) == 1
+    assert body["signals"][0]["signal_id"] == record["id"]
+    assert body["signals"][0]["outcome"] == "MISSED_WINNER"
+    assert body["signals"][0]["points_missed"] == 10.0

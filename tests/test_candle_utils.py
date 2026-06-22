@@ -2,7 +2,12 @@
 
 import pandas as pd
 
-from app.candle_utils import enrich_flat_candles_with_mark, normalize_candles, validate_candle_series
+from app.candle_utils import (
+    enrich_flat_candles_with_mark,
+    merge_mark_ohlc_with_trade_volume,
+    normalize_candles,
+    validate_candle_series,
+)
 
 
 def test_normalize_sorts_ascending_and_dedupes():
@@ -91,3 +96,33 @@ def test_enrich_flat_candles_with_mark():
     assert enriched.iloc[0]["high"] > enriched.iloc[0]["low"]
     assert enriched.iloc[1]["close"] == 52.0
     assert enriched.iloc[1]["high"] == 55.0
+
+
+def test_merge_mark_ohlc_with_trade_volume():
+    trade = pd.DataFrame(
+        {
+            "time": [100, 200],
+            "open": [10.0, 10.0],
+            "high": [10.0, 10.0],
+            "low": [10.0, 10.0],
+            "close": [10.0, 10.0],
+            "volume": [5.0, 7.0],
+        }
+    )
+    mark = pd.DataFrame(
+        {
+            "time": [100, 200],
+            "open": [9.8, 10.2],
+            "high": [10.5, 10.8],
+            "low": [9.5, 9.9],
+            "close": [10.1, 10.4],
+            "volume": [0.0, 0.0],
+        }
+    )
+
+    merged = merge_mark_ohlc_with_trade_volume(trade, mark)
+    assert merged.iloc[0]["high"] == 10.5
+    assert merged.iloc[0]["low"] == 9.5
+    assert merged.iloc[0]["volume"] == 5.0
+    assert merged.iloc[1]["close"] == 10.4
+    assert merged.iloc[1]["volume"] == 7.0

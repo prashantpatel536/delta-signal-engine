@@ -119,17 +119,49 @@ window.Terminal = {
       <span class="acct-pill">Open Positions: <strong>${openCount}</strong></span>`;
   },
 
+  formatMissedPts(value) {
+    const n = Number(value ?? 0);
+    if (Number.isNaN(n)) return "0 pts";
+    const sign = n >= 0 ? "+" : "-";
+    const abs = Math.abs(n);
+    const formatted = Math.abs(abs - Math.round(abs)) < 0.05
+      ? String(Math.round(abs))
+      : abs.toFixed(1);
+    return `${sign}${formatted} pts`;
+  },
+
   renderMissedOpportunities(summary) {
+    const totalEl = document.getElementById("missed-opportunities-total");
     const winnersEl = document.getElementById("missed-winners");
     const losersEl = document.getElementById("missed-losers");
-    const profitEl = document.getElementById("missed-profit");
-    const monitoringEl = document.getElementById("missed-monitoring-count");
+    const bySymbolEl = document.getElementById("missed-by-symbol");
     if (!winnersEl || !summary) return;
-    winnersEl.textContent = summary.missed_winners ?? 0;
-    losersEl.textContent = summary.missed_losers ?? 0;
-    const pts = Number(summary.potential_missed_profit ?? 0);
-    profitEl.textContent = `${pts.toFixed(2)} pts`;
-    if (monitoringEl) monitoringEl.textContent = summary.monitoring ?? 0;
+
+    const winners = Number(summary.missed_winners ?? 0);
+    const losers = Number(summary.missed_losers ?? 0);
+    const total = Number(summary.missed_opportunities ?? winners + losers);
+    const net = Number(summary.net_missed_profit ?? 0);
+    const bySymbol = summary.by_symbol || [];
+
+    if (totalEl) totalEl.textContent = total;
+    winnersEl.textContent = winners;
+    losersEl.textContent = losers;
+
+    if (bySymbolEl) {
+      const rows = bySymbol.map(
+        (row) => `
+        <div class="missed-symbol-row">
+          <span class="missed-symbol-label">${row.label} Net Missed</span>
+          <span class="missed-symbol-value ${Number(row.net_missed_profit) >= 0 ? "up" : "down"}">${this.formatMissedPts(row.net_missed_profit)}</span>
+        </div>`
+      );
+      rows.push(`
+        <div class="missed-symbol-row missed-symbol-total">
+          <span class="missed-symbol-label">Total Net Missed</span>
+          <span class="missed-symbol-value ${net >= 0 ? "up" : "down"}">${this.formatMissedPts(net)}</span>
+        </div>`);
+      bySymbolEl.innerHTML = rows.join("");
+    }
   },
 
   renderSymbolTabs(activeShort, onSelect) {

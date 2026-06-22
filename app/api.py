@@ -129,7 +129,7 @@ def get_chart(
         display_df = trade_df.copy()
 
     signal_tf_data = chart_data.get(signal_tf)
-    signal_trade_df = (
+    signal_ohlc_df = (
         signal_tf_data.candles
         if signal_tf_data is not None and not signal_tf_data.candles.empty
         else pd.DataFrame()
@@ -180,15 +180,24 @@ def get_chart(
     # Chart indicators from chart timeframe candles.
     # Signal markers / review from independent signal timeframe.
     chart_signals: list[dict[str, Any]] = []
-    if not signal_trade_df.empty:
-        chart_signals = detect_all_signals(
-            signal_trade_df,
+    if not signal_ohlc_df.empty:
+        from app.signals import _closed_bar_slice
+
+        closed_signals_df, closed_sma, closed_hh, closed_ll = _closed_bar_slice(
+            signal_ohlc_df,
             signal_sma84,
             signal_hh50,
             signal_ll50,
-            delta_symbol,
-            signal_tf,
         )
+        if len(closed_signals_df) >= 2:
+            chart_signals = detect_all_signals(
+                closed_signals_df,
+                closed_sma,
+                closed_hh,
+                closed_ll,
+                delta_symbol,
+                signal_tf,
+            )
 
     audit = validate_candle_series(trade_df, timeframe)
 
@@ -202,9 +211,9 @@ def get_chart(
         "last_refresh": store.last_refresh,
         "last_live_price_refresh": store.last_live_price_refresh,
         "candle_count": sent_count,
-        "indicator_source": "trade_candles",
-        "signal_source": f"trade_candles_{signal_tf}",
-        "chart_display_source": "display_candles",
+        "indicator_source": "mark_ohlc_candles",
+        "signal_source": f"mark_ohlc_candles_{signal_tf}",
+        "chart_display_source": "mark_ohlc_candles",
         "symbol": delta_symbol,
     }
     if last_idx is not None and last_idx >= 0:
@@ -222,11 +231,11 @@ def get_chart(
     quality_signal = signal_tf_data.latest_signal if signal_tf_data else None
     active_stored: dict[str, Any] | None = None
     if quality_signal and quality_signal.get("timeframe") == signal_tf:
-        sig_last_idx = len(signal_trade_df) - 1 if len(signal_trade_df) else None
+        sig_last_idx = len(signal_ohlc_df) - 1 if len(signal_ohlc_df) else None
         candle_time = quality_signal.get("candle_time")
         sig_idx = sig_last_idx
-        if candle_time is not None and not signal_trade_df.empty:
-            matches = signal_trade_df.index[signal_trade_df["time"] == candle_time].tolist()
+        if candle_time is not None and not signal_ohlc_df.empty:
+            matches = signal_ohlc_df.index[signal_ohlc_df["time"] == candle_time].tolist()
             if matches:
                 sig_idx = matches[0]
         if sig_idx is not None and sig_idx >= 0 and signal_tf == get_signal_timeframe():

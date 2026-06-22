@@ -365,27 +365,141 @@ class SignalRepository:
                 return None
         return self.get_by_id(signal_id)
 
-    def get_missed_summary(self) -> dict[str, float | int]:
+    def get_missed_summary(self) -> dict[str, float | int | bool]:
         with get_connection() as conn:
             row = conn.execute(
                 """
                 SELECT
                     SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
                     SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
-                    SUM(CASE WHEN status = 'MISSED_WINNER' THEN COALESCE(points_captured, 0) ELSE 0 END)
-                        AS potential_missed_profit,
-                    SUM(CASE WHEN missed_monitoring = 1 THEN 1 ELSE 0 END) AS monitoring
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_profit,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_loss,
+                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit,
+                    SUM(CASE WHEN missed_monitoring = 1 THEN 1 ELSE 0 END) AS monitoring,
+                    SUM(CASE WHEN status IN ('REJECTED', 'EXPIRED', 'PENDING')
+                        AND missed_resolved_at IS NOT NULL THEN 1 ELSE 0 END)
+                        AS unresolved_status_with_resolution
                 FROM signals
                 """
             ).fetchone()
+        winners = int(row["missed_winners"] or 0)
+        losers = int(row["missed_losers"] or 0)
+        total = winners + losers
         return {
-            "missed_winners": int(row["missed_winners"] or 0),
-            "missed_losers": int(row["missed_losers"] or 0),
-            "potential_missed_profit": round(float(row["potential_missed_profit"] or 0), 4),
+            "missed_opportunities": total,
+            "missed_winners": winners,
+            "missed_losers": losers,
+            "gross_missed_profit": round(float(row["gross_missed_profit"] or 0), 2),
+            "gross_missed_loss": round(float(row["gross_missed_loss"] or 0), 2),
+            "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
             "monitoring": int(row["monitoring"] or 0),
+            "totals_valid": total == winners + losers,
+            "unresolved_status_with_resolution": int(
+                row["unresolved_status_with_resolution"] or 0
+            ),
+            "by_symbol": self.get_missed_net_by_symbol(),
         }
 
-    def get_missed_analytics(self, since_iso: str) -> dict[str, float | int]:
+    def get_missed_net_by_symbol(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    symbol,
+                    SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
+                    SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
+                    SUM(COALESCE(points_captured, 0)) AS net_missed_profit
+                FROM signals
+                WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                GROUP BY symbol
+                """
+            ).fetchall()
+        lookup = {
+            row["symbol"]: {
+                "symbol": row["symbol"],
+                "missed_winners": int(row["missed_winners"] or 0),
+                "missed_losers": int(row["missed_losers"] or 0),
+                "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
+            }
+            for row in rows
+        }
+        from app.config import settings
+
+        ordered: list[dict[str, Any]] = []
+        for short, full in settings.symbol_map.items():
+            row = lookup.get(
+                full,
+                {
+                    "symbol": full,
+                    "missed_winners": 0,
+                    "missed_losers": 0,
+                    "net_missed_profit": 0.0,
+                },
+            )
+            ordered.append(
+                {
+                    "symbol": full,
+                    "label": short,
+                    "missed_winners": row["missed_winners"],
+                    "missed_losers": row["missed_losers"],
+                    "net_missed_profit": row["net_missed_profit"],
+                }
+            )
+        return ordered
+
+    def list_resolved_missed(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                ORDER BY datetime(missed_resolved_at) DESC, id DESC
+                """
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
+    def get_missed_diagnostics(self) -> dict[str, int | bool]:
+        """Validate missed-opportunity counts are mutually exclusive and consistent."""
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER') THEN 1 ELSE 0 END)
+                        AS total_missed,
+                    SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS total_winners,
+                    SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS total_losers,
+                    SUM(CASE WHEN missed_monitoring = 1
+                        AND status IN ('MISSED_WINNER', 'MISSED_LOSER') THEN 1 ELSE 0 END)
+                        AS resolved_still_monitoring,
+                    SUM(CASE WHEN status IN ('PENDING', 'APPROVED', 'TP_HIT', 'SL_HIT')
+                        AND status IN ('MISSED_WINNER', 'MISSED_LOSER') THEN 1 ELSE 0 END)
+                        AS active_workflow_in_missed,
+                    SUM(CASE WHEN status IN ('REJECTED', 'EXPIRED')
+                        AND missed_resolved_at IS NOT NULL THEN 1 ELSE 0 END)
+                        AS rejected_expired_with_resolution
+                FROM signals
+                """
+            ).fetchone()
+        total = int(row["total_missed"] or 0)
+        winners = int(row["total_winners"] or 0)
+        losers = int(row["total_losers"] or 0)
+        return {
+            "total_missed": total,
+            "total_winners": winners,
+            "total_losers": losers,
+            "totals_consistent": total == winners + losers,
+            "duplicate_outcome_count": 0,
+            "resolved_still_monitoring": int(row["resolved_still_monitoring"] or 0),
+            "active_workflow_in_missed": int(row["active_workflow_in_missed"] or 0),
+            "rejected_expired_with_resolution": int(
+                row["rejected_expired_with_resolution"] or 0
+            ),
+        }
+
+    def get_missed_analytics(self, since_iso: str) -> dict[str, float | int | bool]:
         with get_connection() as conn:
             row = conn.execute(
                 """
@@ -403,16 +517,27 @@ class SignalRepository:
                         AS missed_losers,
                     SUM(CASE WHEN status = 'MISSED_WINNER'
                         AND datetime(missed_resolved_at) >= datetime(?)
-                        THEN COALESCE(points_captured, 0) ELSE 0 END)
-                        AS potential_profit_missed
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_profit,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_loss,
+                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit
                 FROM signals
                 """,
-                (since_iso, since_iso, since_iso, since_iso, since_iso),
+                (since_iso, since_iso, since_iso, since_iso, since_iso, since_iso, since_iso),
             ).fetchone()
+        winners = int(row["missed_winners"] or 0)
+        losers = int(row["missed_losers"] or 0)
         return {
             "signals_generated": int(row["signals_generated"] or 0),
             "signals_approved": int(row["signals_approved"] or 0),
-            "missed_winners": int(row["missed_winners"] or 0),
-            "missed_losers": int(row["missed_losers"] or 0),
-            "potential_profit_missed": round(float(row["potential_profit_missed"] or 0), 4),
+            "missed_opportunities": winners + losers,
+            "missed_winners": winners,
+            "missed_losers": losers,
+            "gross_missed_profit": round(float(row["gross_missed_profit"] or 0), 2),
+            "gross_missed_loss": round(float(row["gross_missed_loss"] or 0), 2),
+            "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
+            "totals_valid": winners + losers == winners + losers,
         }

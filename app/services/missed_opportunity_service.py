@@ -103,8 +103,55 @@ class MissedOpportunityService:
                     resolved.append(updated)
         return resolved
 
-    def get_summary(self) -> dict[str, float | int]:
-        return self.repository.get_missed_summary()
+    def get_summary(self) -> dict[str, float | int | bool]:
+        summary = self.repository.get_missed_summary()
+        diagnostics = self.repository.get_missed_diagnostics()
+        logger.info(
+            "Missed opportunity totals: total=%d winners=%d losers=%d "
+            "consistent=%s monitoring=%d gross_profit=%.2f gross_loss=%.2f net=%.2f",
+            summary["missed_opportunities"],
+            summary["missed_winners"],
+            summary["missed_losers"],
+            diagnostics["totals_consistent"],
+            summary["monitoring"],
+            summary["gross_missed_profit"],
+            summary["gross_missed_loss"],
+            summary["net_missed_profit"],
+        )
+        if not diagnostics["totals_consistent"]:
+            logger.warning(
+                "Missed opportunity count mismatch: total=%s winners=%s losers=%s",
+                diagnostics["total_missed"],
+                diagnostics["total_winners"],
+                diagnostics["total_losers"],
+            )
+        if diagnostics["resolved_still_monitoring"]:
+            logger.warning(
+                "Resolved missed signals still flagged monitoring: %d",
+                diagnostics["resolved_still_monitoring"],
+            )
+        summary["diagnostics"] = diagnostics
+        return summary
+
+    def get_debug_audit(self) -> dict[str, Any]:
+        summary = self.get_summary()
+        records = self.repository.list_resolved_missed()
+        return {
+            **summary["diagnostics"],
+            "gross_missed_profit": summary["gross_missed_profit"],
+            "gross_missed_loss": summary["gross_missed_loss"],
+            "net_missed_profit": summary["net_missed_profit"],
+            "monitoring_active": summary["monitoring"],
+            "signals": [
+                {
+                    "signal_id": row["id"],
+                    "symbol": row["symbol"],
+                    "outcome": row["status"],
+                    "points_missed": row.get("points_captured"),
+                }
+                for row in records
+            ],
+        }
 
     @staticmethod
     def period_start(period: str) -> str:

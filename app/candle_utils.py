@@ -133,6 +133,68 @@ def is_flat_candle(row) -> bool:
     return h <= l or (o == h == l == c)
 
 
+def merge_mark_ohlc_with_trade_volume(
+    trade_df: pd.DataFrame,
+    mark_df: pd.DataFrame,
+    *,
+    stats: dict | None = None,
+) -> pd.DataFrame:
+    """
+    Build chart/signal candles from mark-price OHLC (TradingView-aligned).
+
+    Mark candles carry real bodies and wicks; trade volume is merged by timestamp.
+    Falls back to trade candles with flat-bar enrichment when mark data is missing.
+    """
+    if mark_df.empty:
+        if stats is not None:
+            stats.update(
+                {
+                    "ohlc_source": "trade_only",
+                    "mark_candle_count": 0,
+                    "flat_before": int(validate_candle_series(trade_df, "5m")["flat_count"])
+                    if not trade_df.empty
+                    else 0,
+                }
+            )
+        return enrich_flat_candles_with_mark(trade_df, mark_df, stats=stats)
+
+    if trade_df.empty:
+        if stats is not None:
+            stats.update({"ohlc_source": "mark_only", "mark_candle_count": len(mark_df)})
+        return mark_df.copy()
+
+    trade_by_time = trade_df.set_index("time")
+    merged = mark_df.copy()
+    volumes: list[float] = []
+    for t in merged["time"].astype(int):
+        if int(t) in trade_by_time.index:
+            vol = trade_by_time.loc[int(t), "volume"]
+            volumes.append(float(vol) if pd.notna(vol) else 0.0)
+        else:
+            volumes.append(0.0)
+    merged["volume"] = volumes
+
+    flat_before = int(merged.apply(is_flat_candle, axis=1).sum())
+    if flat_before and not trade_df.empty:
+        merged = enrich_flat_candles_with_mark(merged, mark_df, stats=stats)
+    elif stats is not None:
+        stats.update(
+            {
+                "ohlc_source": "mark_primary",
+                "mark_candle_count": len(mark_df),
+                "flat_before": flat_before,
+                "enriched_from_mark": 0,
+                "flat_after": int(merged.apply(is_flat_candle, axis=1).sum()),
+            }
+        )
+
+    if stats is not None and "ohlc_source" not in stats:
+        stats["ohlc_source"] = "mark_primary"
+        stats["mark_candle_count"] = len(mark_df)
+
+    return merged.reset_index(drop=True)
+
+
 def enrich_flat_candles_with_mark(
     trade_df: pd.DataFrame,
     mark_df: pd.DataFrame,

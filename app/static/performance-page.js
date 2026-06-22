@@ -130,17 +130,30 @@ function renderEquityChart(curve, startingBalance) {
 let lastPerformanceData = null;
 let missedPeriod = "today";
 
+function formatPts(value, signed = false) {
+  const n = Number(value ?? 0);
+  if (Number.isNaN(n)) return "—";
+  if (!signed) return `${n.toFixed(2)} pts`;
+  const sign = n >= 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)} pts`;
+}
+
 function renderMissedAnalytics(data) {
+  const total = Number(data.missed_opportunities ?? (data.missed_winners + data.missed_losers));
   setText("mo-generated", data.signals_generated);
   setText("mo-approved", data.signals_approved);
   setText("mo-winners", data.missed_winners);
   setText("mo-losers", data.missed_losers);
-  const profitEl = document.getElementById("mo-profit");
-  if (profitEl) {
-    const pts = Number(data.potential_profit_missed ?? 0);
-    profitEl.textContent = `${pts.toFixed(2)} pts`;
-    profitEl.className = "stat-value";
-    if (pts > 0) profitEl.classList.add("up");
+  setText("mo-total", total);
+  setText("mo-gross-profit", formatPts(data.gross_missed_profit, true));
+  setText("mo-gross-loss", formatPts(data.gross_missed_loss, true));
+  const netEl = document.getElementById("mo-net");
+  if (netEl) {
+    const net = Number(data.net_missed_profit ?? 0);
+    netEl.textContent = formatPts(net, true);
+    netEl.className = "stat-value";
+    if (net > 0) netEl.classList.add("up");
+    if (net < 0) netEl.classList.add("down");
   }
 }
 

@@ -107,7 +107,18 @@
     const high = Number(candle.high);
     const low = Number(candle.low);
     const close = Number(candle.close);
-    if (high > low) return { open, high, low, close };
+    if (high > low) {
+      if (open !== close) return { open, high, low, close };
+      const span = high - low;
+      const body = Math.max(span * 0.12, Math.abs(close) * 0.00008, 0.02);
+      const mid = close;
+      return {
+        open: mid + body / 2,
+        high,
+        low,
+        close: mid - body / 2,
+      };
+    }
     const mid = close || open || 0;
     const pad = Math.max(Math.abs(mid) * 0.00012, 0.05);
     return { open, high: mid + pad, low: mid - pad, close };

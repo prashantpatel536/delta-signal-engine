@@ -99,6 +99,23 @@ def detect_all_signals(
     return signals
 
 
+def _closed_bar_slice(
+    candles: pd.DataFrame,
+    sma84: pd.Series,
+    hh50: pd.Series,
+    ll50: pd.Series,
+) -> tuple[pd.DataFrame, pd.Series, pd.Series, pd.Series]:
+    """Exclude the in-progress (forming) bar from signal evaluation."""
+    if len(candles) <= 1:
+        return candles.iloc[0:0], sma84.iloc[0:0], hh50.iloc[0:0], ll50.iloc[0:0]
+    return (
+        candles.iloc[:-1].reset_index(drop=True),
+        sma84.iloc[:-1].reset_index(drop=True),
+        hh50.iloc[:-1].reset_index(drop=True),
+        ll50.iloc[:-1].reset_index(drop=True),
+    )
+
+
 def detect_signal(
     candles: pd.DataFrame,
     sma84: pd.Series,
@@ -107,17 +124,22 @@ def detect_signal(
     symbol: str,
     timeframe: str,
 ) -> dict[str, Any] | None:
-    """Detect BUY/SELL on the latest candle, respecting alternation."""
-    if len(candles) < 2:
+    """Detect BUY/SELL on the latest closed candle only (matches TradingView)."""
+    closed_candles, closed_sma, closed_hh, closed_ll = _closed_bar_slice(
+        candles, sma84, hh50, ll50
+    )
+    if len(closed_candles) < 2:
         return None
 
-    all_signals = detect_all_signals(candles, sma84, hh50, ll50, symbol, timeframe)
+    all_signals = detect_all_signals(
+        closed_candles, closed_sma, closed_hh, closed_ll, symbol, timeframe
+    )
     if not all_signals:
         return None
 
     latest = all_signals[-1]
-    latest_time = int(candles["time"].iloc[-1])
-    if latest.get("candle_time") != latest_time:
+    last_closed_time = int(closed_candles["time"].iloc[-1])
+    if latest.get("candle_time") != last_closed_time:
         return None
 
     logger.info("%s signal generated: %s", latest["signal"], latest)

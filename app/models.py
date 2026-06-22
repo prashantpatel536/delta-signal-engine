@@ -186,23 +186,60 @@ class SignalDiagnosticsResponse(BaseModel):
     indicator_source: str = "trade_candles"
 
 
+class MissedOpportunitySymbolNet(BaseModel):
+    symbol: str
+    label: str
+    missed_winners: int = 0
+    missed_losers: int = 0
+    net_missed_profit: float = 0.0
+
+
 class SignalStatistics(BaseModel):
     total: int
     pending: int
     approved: int
     rejected: int
     expired: int
+    missed_opportunities: int = 0
     missed_winners: int = 0
     missed_losers: int = 0
-    potential_missed_profit: float = 0.0
+    gross_missed_profit: float = 0.0
+    gross_missed_loss: float = 0.0
+    net_missed_profit: float = 0.0
     monitoring: int = 0
+    by_symbol: list[MissedOpportunitySymbolNet] = Field(default_factory=list)
 
 
 class MissedOpportunitySummary(BaseModel):
+    missed_opportunities: int
     missed_winners: int
     missed_losers: int
-    potential_missed_profit: float
+    gross_missed_profit: float
+    gross_missed_loss: float
+    net_missed_profit: float
     monitoring: int
+    totals_valid: bool = True
+    by_symbol: list[MissedOpportunitySymbolNet] = Field(default_factory=list)
+
+
+class MissedOpportunityAuditItem(BaseModel):
+    signal_id: int
+    symbol: str
+    outcome: str
+    points_missed: float | None = None
+
+
+class MissedOpportunityDebugResponse(BaseModel):
+    total_missed: int
+    total_winners: int
+    total_losers: int
+    totals_consistent: bool
+    duplicate_outcome_count: int
+    monitoring_active: int
+    gross_missed_profit: float
+    gross_missed_loss: float
+    net_missed_profit: float
+    signals: list[MissedOpportunityAuditItem]
 
 
 class MissedOpportunityAnalytics(BaseModel):
@@ -210,9 +247,13 @@ class MissedOpportunityAnalytics(BaseModel):
     since: str
     signals_generated: int
     signals_approved: int
+    missed_opportunities: int
     missed_winners: int
     missed_losers: int
-    potential_profit_missed: float
+    gross_missed_profit: float
+    gross_missed_loss: float
+    net_missed_profit: float
+    totals_valid: bool = True
 
 
 PositionStatus = Literal["OPEN", "CLOSED"]

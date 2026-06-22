@@ -12,7 +12,10 @@ from app.models import (
     ApproveTradeRequest,
     ApproveTradeResponse,
     MissedOpportunityAnalytics,
+    MissedOpportunityAuditItem,
+    MissedOpportunityDebugResponse,
     MissedOpportunitySummary,
+    MissedOpportunitySymbolNet,
     SignalStatistics,
     StoredSignal,
     StoredSignalsResponse,
@@ -110,10 +113,41 @@ def get_signal_history(
     return StoredSignalsResponse(signals=signals, count=len(signals))
 
 
+def _symbol_net_models(items: list[dict]) -> list[MissedOpportunitySymbolNet]:
+    return [MissedOpportunitySymbolNet(**item) for item in items]
+
+
 @router.get("/missed-opportunities/summary", response_model=MissedOpportunitySummary)
 def get_missed_summary() -> MissedOpportunitySummary:
-    summary = missed_opportunity_service.get_summary()
-    return MissedOpportunitySummary(**summary)
+    raw = missed_opportunity_service.get_summary()
+    return MissedOpportunitySummary(
+        missed_opportunities=int(raw["missed_opportunities"]),
+        missed_winners=int(raw["missed_winners"]),
+        missed_losers=int(raw["missed_losers"]),
+        gross_missed_profit=float(raw["gross_missed_profit"]),
+        gross_missed_loss=float(raw["gross_missed_loss"]),
+        net_missed_profit=float(raw["net_missed_profit"]),
+        monitoring=int(raw["monitoring"]),
+        totals_valid=bool(raw["totals_valid"]),
+        by_symbol=_symbol_net_models(raw.get("by_symbol", [])),
+    )
+
+
+@router.get("/debug/missed-opportunities", response_model=MissedOpportunityDebugResponse)
+def debug_missed_opportunities() -> MissedOpportunityDebugResponse:
+    audit = missed_opportunity_service.get_debug_audit()
+    return MissedOpportunityDebugResponse(
+        total_missed=int(audit["total_missed"]),
+        total_winners=int(audit["total_winners"]),
+        total_losers=int(audit["total_losers"]),
+        totals_consistent=bool(audit["totals_consistent"]),
+        duplicate_outcome_count=int(audit["duplicate_outcome_count"]),
+        monitoring_active=int(audit["monitoring_active"]),
+        gross_missed_profit=float(audit["gross_missed_profit"]),
+        gross_missed_loss=float(audit["gross_missed_loss"]),
+        net_missed_profit=float(audit["net_missed_profit"]),
+        signals=[MissedOpportunityAuditItem(**item) for item in audit["signals"]],
+    )
 
 
 @router.get("/missed-opportunities/analytics", response_model=MissedOpportunityAnalytics)
@@ -200,8 +234,12 @@ def get_signal_statistics() -> SignalStatistics:
         approved=counts.get("APPROVED", 0),
         rejected=counts.get("REJECTED", 0),
         expired=counts.get("EXPIRED", 0),
+        missed_opportunities=int(missed["missed_opportunities"]),
         missed_winners=int(missed["missed_winners"]),
         missed_losers=int(missed["missed_losers"]),
-        potential_missed_profit=float(missed["potential_missed_profit"]),
+        gross_missed_profit=float(missed["gross_missed_profit"]),
+        gross_missed_loss=float(missed["gross_missed_loss"]),
+        net_missed_profit=float(missed["net_missed_profit"]),
         monitoring=int(missed["monitoring"]),
+        by_symbol=_symbol_net_models(missed.get("by_symbol", [])),
     )

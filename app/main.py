@@ -66,14 +66,15 @@ async def refresh_market_data() -> None:
                     continue
 
                 display_candles, enrich_stats = await asyncio.to_thread(
-                    delta_client.build_display_candles,
+                    delta_client.resolve_ohlc_candles,
                     candles,
                     delta_symbol,
                     timeframe,
                 )
-                sma84, hh50, ll50 = calculate_indicators(candles)
+                ohlc_candles = display_candles
+                sma84, hh50, ll50 = calculate_indicators(ohlc_candles)
                 signal = generate_signals_for_pair(
-                    candles,
+                    ohlc_candles,
                     sma84,
                     hh50,
                     ll50,
@@ -108,7 +109,7 @@ async def refresh_market_data() -> None:
                 store.update(
                     delta_symbol,
                     timeframe,
-                    candles,
+                    ohlc_candles,
                     sma84,
                     hh50,
                     ll50,
