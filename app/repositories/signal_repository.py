@@ -165,6 +165,17 @@ class SignalRepository:
             rows = conn.execute(query, tuple(params)).fetchall()
         return [self._row_to_dict(row) for row in rows]
 
+    def list_chronological(self) -> list[dict[str, Any]]:
+        """All signals ordered oldest-first for simulation replay."""
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                ORDER BY datetime(created_at) ASC, id ASC
+                """
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
     def list_pending(
         self,
         *,

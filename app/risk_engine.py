@@ -319,32 +319,23 @@ def missed_opportunity_metrics(
     balance: float,
     symbol: str,
     *,
+    stop_loss: float | None = None,
     margin_percent: float | None = None,
     leverage: float | None = None,
 ) -> dict[str, float]:
-    from app.paper_trader import realized_points
+    """Missed $ metrics using balance at signal time and liquidation-safe sizing."""
+    from app.delta_calculator import compute_trade_metrics
 
-    pts = realized_points(side, entry, exit_price)
-    sized = standard_sizing(
-        balance,
-        entry,
-        symbol,
+    return compute_trade_metrics(
+        side=side,
+        entry=entry,
+        exit_price=float(exit_price),
+        balance=balance,
+        symbol=symbol,
+        stop_loss=stop_loss,
         margin_percent=margin_percent,
         leverage=leverage,
     )
-    pnl = calculate_pnl(side, entry, float(exit_price), sized["quantity"])
-    roe = calculate_roe(pnl, sized["margin_used"])
-    impact = account_impact_pct(pnl, balance)
-    return {
-        "points": pts,
-        "pnl_usd": pnl,
-        "roe_pct": roe,
-        "account_impact_pct": impact,
-        "quantity": sized["quantity"],
-        "contracts": sized.get("contracts", 0.0),
-        "margin_used": sized["margin_used"],
-        "position_value": sized["position_value"],
-    }
 
 
 def enforce_trade_params(

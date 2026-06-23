@@ -5,10 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from app.delta_calculator import size_position
 from app.paper_trader import calculate_pnl, calculate_roe, realized_points
 from app.repositories.account_repository import AccountRepository, STARTING_BALANCE
 from app.repositories.position_repository import PositionRepository
-from app.risk_engine import account_impact_pct, enforce_trade_params, standard_sizing
+from app.risk_engine import account_impact_pct, enforce_trade_params
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,12 @@ class TradeRecalcService:
             exit_price = float(position.get("exit_price") or entry)
             side = position["side"]
 
-            sizing = standard_sizing(
+            sizing = size_position(
                 balance,
                 entry,
                 position["symbol"],
+                stop_loss=float(position.get("stop_loss") or 0) or None,
+                side=side,
                 margin_percent=margin_pct,
                 leverage=lev,
             )

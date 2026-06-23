@@ -15,7 +15,7 @@ from app.missed_recalc import (
     parse_utc,
 )
 from app.models import utc_now_iso
-from app.repositories.account_repository import AccountRepository
+from app.balance_timeline import BalanceTimeline
 from app.repositories.signal_repository import SignalRepository
 from app.risk_engine import missed_opportunity_metrics
 
@@ -39,6 +39,7 @@ class MissedOpportunityRecalcService:
         candidates = self.repository.list_missed_recalc_candidates()
         signal_index = self.repository.list_signal_recalc_index()
         candle_cache = self._build_candle_cache(candidates)
+        timeline = BalanceTimeline()
 
         records_out: list[dict[str, Any]] = []
         changed = 0
@@ -54,7 +55,7 @@ class MissedOpportunityRecalcService:
                 all_signals=signal_index,
                 candles=candles,
             )
-            outcome = self._with_dollar_metrics(record, outcome)
+            outcome = self._with_dollar_metrics(record, outcome, timeline)
             before = self._snapshot(record)
             updated = self.repository.apply_recalculated_missed(signal_id, outcome)
             after = self._snapshot(updated) if updated else before
@@ -151,16 +152,22 @@ class MissedOpportunityRecalcService:
         return [bar for bar in candles if start_ts <= int(bar["time"]) <= end_ts]
 
     @staticmethod
-    def _with_dollar_metrics(record: dict[str, Any], outcome: RecalcOutcome) -> RecalcOutcome:
+    def _with_dollar_metrics(
+        record: dict[str, Any],
+        outcome: RecalcOutcome,
+        timeline: BalanceTimeline | None = None,
+    ) -> RecalcOutcome:
         if not outcome.resolved or outcome.exit_price is None:
             return outcome
-        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        tl = timeline or BalanceTimeline()
+        balance = tl.balance_at_signal(str(record.get("created_at") or ""))
         metrics = missed_opportunity_metrics(
             record["side"],
             float(record["entry"]),
             float(outcome.exit_price),
             balance,
             record["symbol"],
+            stop_loss=float(record.get("stop_loss") or 0) or None,
         )
         return RecalcOutcome(
             resolved=outcome.resolved,

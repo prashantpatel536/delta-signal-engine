@@ -47,6 +47,12 @@ class ValidationService:
             if trade.get("exit_reason") == "Opposite Signal":
                 compliance["opposite_signal_exits"] += 1
 
+        from app.services.audit_service import audit_service
+
+        strategy_sim = audit_service.strategy_account_simulation()
+        missed_sim = audit_service.missed_opportunity_simulation()
+        trade_audit = audit_service.validate_trades()
+
         return {
             "assumptions": {
                 "capital_usage_pct": trading_margin_percent(),
@@ -57,6 +63,14 @@ class ValidationService:
             "symbols": symbol_stats,
             "compliance": compliance,
             "total_closed_trades": len(closed),
+            "strategy_account_simulation": strategy_sim,
+            "missed_opportunity_simulation": missed_sim,
+            "trade_validation_summary": {
+                "total": trade_audit["total_trades"],
+                "passed": trade_audit["passed"],
+                "failed": trade_audit["failed"],
+                "all_within_1pct": trade_audit["all_within_1pct"],
+            },
         }
 
     def _symbol_stats(self, symbol: str, compliance: dict[str, Any]) -> dict[str, Any]:

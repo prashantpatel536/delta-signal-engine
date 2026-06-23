@@ -231,16 +231,18 @@ class MissedOpportunityService:
         exit_reason: str,
         exit_price: float,
     ) -> dict[str, Any] | None:
-        from app.repositories.account_repository import AccountRepository
+        from app.balance_timeline import BalanceTimeline
         from app.risk_engine import missed_opportunity_metrics
 
-        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        timeline = BalanceTimeline()
+        balance = timeline.balance_at_signal(str(record.get("created_at") or ""))
         metrics = missed_opportunity_metrics(
             record["side"],
             float(record["entry"]),
             float(exit_price),
             balance,
             record["symbol"],
+            stop_loss=float(record.get("stop_loss") or 0) or None,
         )
         updated = self.repository.resolve_missed(
             record["id"],

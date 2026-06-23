@@ -363,6 +363,9 @@ class ValidationReportResponse(BaseModel):
     symbols: dict[str, ValidationSymbolStats]
     compliance: ValidationCompliance
     total_closed_trades: int
+    strategy_account_simulation: dict[str, Any] = Field(default_factory=dict)
+    missed_opportunity_simulation: dict[str, Any] = Field(default_factory=dict)
+    trade_validation_summary: dict[str, Any] = Field(default_factory=dict)
 
 
 PositionStatus = Literal["OPEN", "CLOSED"]
