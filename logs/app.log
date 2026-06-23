@@ -9788,3 +9788,1375 @@
 2026-06-23 13:46:37,726 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
 2026-06-23 13:46:38,419 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
 2026-06-23 13:46:47,743 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:46:48,016 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:46:57,730 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:46:58,042 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:47:07,726 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:47:08,058 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:47:17,737 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:47:18,213 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:47:20,978 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:47:20,988 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:47:21,473 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=503 normalize=503 (dropna=0 dup=0) flat=482 after_tail=500
+2026-06-23 13:47:22,028 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:47:22,028 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:47:22,268 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:22,494 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=391 after_tail=500
+2026-06-23 13:47:22,751 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:22,751 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:23,069 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:23,713 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=229 after_tail=500
+2026-06-23 13:47:24,574 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:24,584 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:24,817 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:25,520 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:47:25,929 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:25,934 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:26,172 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:26,375 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=469 normalize=469 (dropna=0 dup=0) flat=459 after_tail=469
+2026-06-23 13:47:26,672 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:47:26,675 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:47:26,909 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:27,612 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:47:27,880 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:27,894 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:28,135 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:28,361 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:47:28,622 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:28,638 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:28,861 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:29,085 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:47:29,357 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:29,378 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:29,606 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:29,815 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:47:30,085 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:47:30,085 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:47:30,368 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:30,569 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:47:30,851 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:30,853 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:31,089 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:31,442 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:47:31,719 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:31,730 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:31,957 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:32,161 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:47:32,434 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:47:32,434 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:47:32,687 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:47:32,687 | INFO | app.main | Market data refresh complete at 2026-06-23T08:17:32.687535+00:00 (12 updates, 0 errors)
+2026-06-23 13:48:18,738 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:48:18,938 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:48:32,690 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:48:32,693 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:48:32,916 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=505 normalize=505 (dropna=0 dup=0) flat=481 after_tail=500
+2026-06-23 13:48:33,739 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:48:33,748 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:48:34,057 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:34,369 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:48:34,719 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:34,728 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:34,975 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:35,746 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:48:36,319 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:36,322 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:36,541 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:37,048 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:48:37,581 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:37,587 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:37,827 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:38,084 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=470 normalize=470 (dropna=0 dup=0) flat=459 after_tail=470
+2026-06-23 13:48:38,870 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:48:38,884 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:48:39,043 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:39,272 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:48:39,553 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:39,564 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:39,803 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:40,027 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:48:40,307 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:40,314 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:40,532 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:40,843 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:48:41,097 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:41,099 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:41,369 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:41,754 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:48:42,470 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:48:42,470 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:48:42,746 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:43,073 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:48:43,361 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:43,361 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:43,593 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:43,811 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:48:44,083 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:44,083 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:44,307 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:44,923 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:48:45,195 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:48:45,195 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:48:45,418 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:48:45,434 | INFO | app.main | Market data refresh complete at 2026-06-23T08:18:45.418295+00:00 (12 updates, 0 errors)
+2026-06-23 13:49:19,745 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:49:20,099 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:49:45,445 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:49:45,448 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:49:45,696 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=480 after_tail=500
+2026-06-23 13:49:46,557 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:49:46,560 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:49:46,784 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:47,559 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:49:47,830 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:47,849 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:48,115 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:48,472 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:49:49,342 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:49,353 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:49,525 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:49,926 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:49:50,872 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:50,872 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:51,124 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:51,713 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=471 normalize=471 (dropna=0 dup=0) flat=460 after_tail=471
+2026-06-23 13:49:52,248 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:49:52,250 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:49:52,511 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:52,721 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:49:53,005 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:53,011 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:53,246 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:53,485 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:49:54,254 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:54,270 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:54,500 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:54,720 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:49:55,133 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:55,133 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:55,372 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:56,026 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:49:56,315 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:49:56,315 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:49:56,543 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:56,781 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:49:57,602 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:57,612 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:57,851 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:58,054 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:49:58,337 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:58,337 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:58,579 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:58,800 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:49:59,143 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:49:59,143 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:49:59,387 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:49:59,394 | INFO | app.main | Market data refresh complete at 2026-06-23T08:19:59.387829+00:00 (12 updates, 0 errors)
+2026-06-23 13:50:19,727 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:50:19,928 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:50:59,397 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:50:59,397 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:50:59,735 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=480 after_tail=500
+2026-06-23 13:51:00,239 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:51:00,245 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:51:00,421 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:01,161 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:51:01,924 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:51:01,931 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:51:02,161 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:02,349 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:51:02,618 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:02,621 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:02,866 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:03,349 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:51:03,816 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:03,828 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:04,025 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:04,233 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=471 normalize=471 (dropna=0 dup=0) flat=460 after_tail=471
+2026-06-23 13:51:04,589 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 13:51:04,595 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 13:51:04,776 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:05,104 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:51:05,384 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:51:05,392 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:51:05,604 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:05,807 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:51:06,061 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:06,066 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:06,201 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:06,392 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:51:06,680 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:06,684 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:06,881 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:07,367 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:51:08,058 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 13:51:08,068 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 13:51:08,320 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:08,655 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:51:08,935 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:51:08,937 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:51:09,156 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:09,385 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:51:09,699 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:09,710 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:09,944 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:10,146 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:51:10,418 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:51:10,431 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:51:10,685 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:51:10,697 | INFO | app.main | Market data refresh complete at 2026-06-23T08:21:10.685875+00:00 (12 updates, 0 errors)
+2026-06-23 13:51:19,746 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:51:20,032 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:52:10,245 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:52:10,560 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:52:10,704 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:52:10,709 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:52:10,911 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=480 after_tail=500
+2026-06-23 13:52:11,279 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:52:11,288 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:52:11,518 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:11,765 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:52:12,365 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:12,374 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:12,714 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:12,969 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:52:14,277 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:14,277 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:14,525 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:14,730 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:52:14,998 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:15,018 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:15,244 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:15,877 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=471 normalize=471 (dropna=0 dup=0) flat=460 after_tail=471
+2026-06-23 13:52:16,655 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:52:16,655 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:52:16,893 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:17,115 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:52:17,652 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:17,660 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:17,885 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:18,111 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:52:18,642 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:18,658 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:18,885 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:19,095 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:52:19,616 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:19,620 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:19,861 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:20,081 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:52:20,356 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:52:20,358 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:52:20,572 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:20,798 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:52:21,061 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:21,068 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:21,294 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:21,511 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:52:21,778 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:21,783 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:22,011 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:22,361 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:52:22,639 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:52:22,643 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:52:22,663 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:52:23,149 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:52:23,157 | INFO | app.main | Market data refresh complete at 2026-06-23T08:22:23.150414+00:00 (12 updates, 0 errors)
+2026-06-23 13:52:23,218 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:52:33,751 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:52:34,048 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:52:43,745 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:52:44,042 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:52:53,733 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:52:54,013 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:53:03,741 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:53:04,167 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:53:13,733 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:53:14,117 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:53:23,141 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:53:23,155 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:53:23,588 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=480 after_tail=500
+2026-06-23 13:53:23,717 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:53:24,005 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:53:24,175 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:53:24,183 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:53:24,405 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:25,425 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:53:26,372 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:26,384 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:26,666 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:27,623 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:53:28,065 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:28,076 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:28,309 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:29,053 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:53:29,849 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:29,852 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:30,073 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:30,748 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=471 normalize=471 (dropna=0 dup=0) flat=460 after_tail=471
+2026-06-23 13:53:31,246 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:53:31,246 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:53:31,469 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:32,935 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:53:33,739 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:53:34,026 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:53:34,190 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:34,190 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:34,408 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:35,506 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:53:36,542 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:36,542 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:36,790 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:37,111 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:53:37,881 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:37,900 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:38,123 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:38,890 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=461 normalize=461 (dropna=0 dup=0) flat=453 after_tail=461
+2026-06-23 13:53:39,822 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:53:39,822 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:53:40,045 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:40,753 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=470 after_tail=499
+2026-06-23 13:53:41,589 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:41,589 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:41,813 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:42,294 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=423 after_tail=498
+2026-06-23 13:53:43,528 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:43,546 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:43,771 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:44,536 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=498 normalize=498 (dropna=0 dup=0) flat=300 after_tail=498
+2026-06-23 13:53:45,179 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:53:45,195 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:53:45,417 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:53:45,417 | INFO | app.main | Market data refresh complete at 2026-06-23T08:23:45.417279+00:00 (12 updates, 0 errors)
+2026-06-23 13:54:19,723 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:54:20,045 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:54:45,438 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:54:45,438 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:54:45,663 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=489 normalize=489 (dropna=0 dup=0) flat=469 after_tail=489
+2026-06-23 13:54:46,209 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:54:46,209 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:54:46,433 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:47,188 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=390 after_tail=500
+2026-06-23 13:54:48,014 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:48,020 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:48,233 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:48,586 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:54:48,988 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:49,007 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:49,227 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:49,497 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:54:49,908 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:49,916 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:50,141 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:50,349 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=471 normalize=471 (dropna=0 dup=0) flat=460 after_tail=471
+2026-06-23 13:54:50,638 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:54:50,638 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:54:50,864 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:51,087 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 13:54:51,890 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:51,895 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:52,114 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:52,355 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:54:52,724 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:52,740 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:52,947 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:53,204 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:54:53,734 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:53,734 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:53,958 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:54,360 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=500 normalize=500 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 13:54:55,080 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:54:55,080 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:54:55,294 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:55,528 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=471 after_tail=500
+2026-06-23 13:54:56,050 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:56,050 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:56,274 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:56,503 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 13:54:56,916 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:56,916 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:57,139 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:57,363 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 13:54:57,635 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:54:57,635 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:54:57,861 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:54:57,861 | INFO | app.main | Market data refresh complete at 2026-06-23T08:24:57.861172+00:00 (12 updates, 0 errors)
+2026-06-23 13:55:19,741 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:55:20,017 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:55:57,865 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:55:57,894 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:55:58,106 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=493 normalize=493 (dropna=0 dup=0) flat=472 after_tail=493
+2026-06-23 13:55:58,527 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:55:58,534 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:55:58,845 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:55:59,057 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=389 after_tail=500
+2026-06-23 13:55:59,460 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:55:59,467 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:55:59,723 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:00,077 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:56:00,517 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:00,526 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:00,823 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:01,054 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:56:02,021 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:02,027 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:02,217 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:02,501 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=478 normalize=478 (dropna=0 dup=0) flat=466 after_tail=478
+2026-06-23 13:56:03,302 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 13:56:03,306 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 13:56:03,525 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:03,718 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 13:56:03,987 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:56:03,991 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:56:04,195 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:04,396 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:56:04,793 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:04,797 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:04,968 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:05,191 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:56:05,443 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:05,448 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:05,620 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:05,827 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 13:56:06,074 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 13:56:06,078 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 13:56:06,239 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:06,479 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=471 after_tail=500
+2026-06-23 13:56:06,927 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:56:06,956 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:56:07,183 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:07,398 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 13:56:07,671 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:07,683 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:07,908 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:08,099 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 13:56:08,372 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:56:08,384 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:56:08,670 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:56:08,687 | INFO | app.main | Market data refresh complete at 2026-06-23T08:26:08.681426+00:00 (12 updates, 0 errors)
+2026-06-23 13:56:19,726 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:56:20,072 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:57:08,693 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:57:08,693 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:57:08,933 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=493 normalize=493 (dropna=0 dup=0) flat=472 after_tail=493
+2026-06-23 13:57:09,531 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 13:57:09,535 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 13:57:09,751 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:10,123 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=389 after_tail=500
+2026-06-23 13:57:11,086 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:11,102 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:11,309 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:11,533 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:57:11,806 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:11,808 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:12,030 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:12,254 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:57:12,655 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:12,671 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:12,895 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:13,234 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=479 normalize=479 (dropna=0 dup=0) flat=467 after_tail=479
+2026-06-23 13:57:13,789 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:57:13,799 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:57:14,023 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:14,760 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=417 after_tail=500
+2026-06-23 13:57:15,036 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:15,038 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:15,275 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:15,499 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:57:15,780 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:15,780 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:16,005 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:16,230 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:57:16,517 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:16,517 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:16,741 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:16,968 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 13:57:17,237 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:57:17,237 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:57:17,471 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:17,703 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=471 after_tail=500
+2026-06-23 13:57:17,991 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:17,991 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:18,225 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:18,461 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 13:57:19,010 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:19,018 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:19,257 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:19,470 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 13:57:19,855 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:57:19,892 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:57:20,108 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:57:20,430 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:57:20,439 | INFO | app.main | Market data refresh complete at 2026-06-23T08:27:20.432366+00:00 (12 updates, 0 errors)
+2026-06-23 13:57:20,458 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:58:19,879 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:58:20,261 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:58:20,455 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:58:20,462 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:58:20,926 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=496 normalize=496 (dropna=0 dup=0) flat=474 after_tail=496
+2026-06-23 13:58:21,298 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:58:21,302 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:58:21,524 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:21,750 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=388 after_tail=500
+2026-06-23 13:58:22,162 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:22,162 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:22,390 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:22,854 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:58:23,673 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:23,673 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:23,892 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:24,116 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:58:24,440 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:24,447 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:24,665 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:24,865 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=479 normalize=479 (dropna=0 dup=0) flat=467 after_tail=479
+2026-06-23 13:58:25,138 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:58:25,156 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:58:25,378 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:25,587 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=417 after_tail=500
+2026-06-23 13:58:25,876 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:25,876 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:26,099 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:26,324 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:58:26,757 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:26,757 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:26,983 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:27,207 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:58:27,480 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:27,485 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:27,723 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:27,940 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=504 normalize=504 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 13:58:28,321 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:58:28,321 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:58:28,552 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:29,000 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 13:58:29,729 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:29,729 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:30,075 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:30,287 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 13:58:30,584 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:30,588 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:30,855 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:31,048 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 13:58:31,335 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:58:31,340 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:58:31,654 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:58:31,667 | INFO | app.main | Market data refresh complete at 2026-06-23T08:28:31.659981+00:00 (12 updates, 0 errors)
+2026-06-23 13:59:19,725 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 13:59:20,002 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:59:22,723 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 13:59:23,046 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 13:59:31,676 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 13:59:31,692 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 13:59:31,894 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=497 normalize=497 (dropna=0 dup=0) flat=475 after_tail=497
+2026-06-23 13:59:32,387 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:59:32,407 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:59:32,716 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:32,922 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=388 after_tail=500
+2026-06-23 13:59:33,208 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:33,208 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:33,431 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:33,661 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 13:59:33,914 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:33,930 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:34,162 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:34,664 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 13:59:35,373 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:35,382 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:35,602 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:35,973 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=481 normalize=481 (dropna=0 dup=0) flat=468 after_tail=481
+2026-06-23 13:59:36,444 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:59:36,453 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:59:36,684 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:36,886 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=417 after_tail=500
+2026-06-23 13:59:37,153 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:37,158 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:37,372 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:38,171 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 13:59:38,569 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:38,569 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:38,805 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:39,034 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 13:59:39,339 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:39,343 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:39,581 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:39,795 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=505 normalize=505 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 13:59:40,187 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 13:59:40,199 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 13:59:40,422 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:40,634 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 13:59:41,494 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:41,503 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:41,734 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:41,955 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 13:59:42,227 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:42,231 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:42,460 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:42,811 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 13:59:43,104 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 13:59:43,113 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 13:59:43,389 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 13:59:43,399 | INFO | app.main | Market data refresh complete at 2026-06-23T08:29:43.391787+00:00 (12 updates, 0 errors)
+2026-06-23 14:00:03,104 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:03,376 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:13,125 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:13,620 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:19,740 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:00:20,048 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:23,102 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:23,400 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:33,109 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:33,451 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:43,117 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:43,407 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:00:43,415 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:00:43,430 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:43,653 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=498 normalize=498 (dropna=0 dup=0) flat=475 after_tail=498
+2026-06-23 14:00:44,199 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:44,211 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:44,423 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:44,917 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=388 after_tail=500
+2026-06-23 14:00:45,321 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:45,321 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:45,553 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:45,778 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=228 after_tail=500
+2026-06-23 14:00:46,205 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:46,205 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:46,438 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:46,652 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:00:47,165 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:00:47,181 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:00:47,410 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:47,619 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=481 normalize=481 (dropna=0 dup=0) flat=468 after_tail=481
+2026-06-23 14:00:48,165 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:48,165 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:48,395 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:48,609 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=417 after_tail=500
+2026-06-23 14:00:48,921 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:48,936 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:49,171 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:49,519 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 14:00:49,823 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:49,832 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:50,103 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:50,308 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:00:50,779 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:00:50,787 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:00:51,019 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:51,530 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 14:00:52,251 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:52,256 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:52,491 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:52,707 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:00:53,098 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:00:53,379 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:00:53,539 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:53,551 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:53,887 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:54,263 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:00:54,496 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:00:54,519 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:00:54,748 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:54,965 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:00:55,201 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:00:55,209 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:00:55,447 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:00:55,452 | INFO | app.main | Market data refresh complete at 2026-06-23T08:30:55.447033+00:00 (12 updates, 0 errors)
+2026-06-23 14:01:03,141 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:03,478 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:13,096 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:13,354 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:19,718 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:01:19,922 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:23,098 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:23,453 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:33,090 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:33,320 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:43,125 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:43,436 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:53,128 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:01:53,399 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:01:55,448 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:01:55,456 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:01:56,228 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=499 normalize=499 (dropna=0 dup=0) flat=475 after_tail=499
+2026-06-23 14:01:56,776 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:01:56,793 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:01:57,020 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:01:57,362 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=387 after_tail=500
+2026-06-23 14:01:58,189 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:01:58,194 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:01:58,410 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:01:58,643 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:01:59,162 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:01:59,182 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:01:59,415 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:01:59,659 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:01:59,979 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:01:59,995 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:02:00,220 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:00,722 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=483 normalize=483 (dropna=0 dup=0) flat=470 after_tail=483
+2026-06-23 14:02:01,502 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:02:01,520 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:02:01,736 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:01,991 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:02:02,406 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:02:02,417 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:02:02,632 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:02,893 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 14:02:03,106 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:03,470 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:02:03,487 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:02:03,578 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:03,731 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:04,018 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:02:04,298 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:02:04,298 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:02:04,548 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:05,053 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 14:02:05,398 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 14:02:05,409 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 14:02:05,701 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:06,067 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:02:06,692 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:02:06,697 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:02:06,916 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:07,140 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=501 normalize=501 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:02:07,442 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:02:07,444 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:02:07,666 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:08,265 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:02:08,541 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:02:08,544 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:02:08,769 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:02:08,781 | INFO | app.main | Market data refresh complete at 2026-06-23T08:32:08.769959+00:00 (12 updates, 0 errors)
+2026-06-23 14:02:13,104 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:13,373 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:19,745 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:02:20,034 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:23,115 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:23,395 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:33,073 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:33,375 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:43,106 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:43,381 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:02:53,108 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:02:53,408 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:03,112 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:03,401 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:08,796 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:03:08,799 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:03:09,518 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=500 normalize=500 (dropna=0 dup=0) flat=476 after_tail=500
+2026-06-23 14:03:10,358 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:03:10,358 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:03:10,588 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:10,969 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=387 after_tail=500
+2026-06-23 14:03:11,260 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:11,271 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:11,503 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:12,263 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:03:12,655 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:12,669 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:12,889 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:13,110 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:13,397 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:03:13,436 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:13,688 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:13,700 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:13,921 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:14,137 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=483 normalize=483 (dropna=0 dup=0) flat=470 after_tail=483
+2026-06-23 14:03:14,440 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:03:14,456 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:03:14,670 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:14,890 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:03:15,163 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:15,171 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:15,400 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:15,619 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 14:03:16,432 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:16,432 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:16,670 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:17,158 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:03:17,434 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:17,434 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:17,667 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:18,403 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=491 after_tail=500
+2026-06-23 14:03:18,866 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:03:18,871 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:03:19,089 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:19,466 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:03:19,725 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:03:20,077 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:20,077 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:20,141 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:20,316 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:20,563 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:03:20,887 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:20,894 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:21,128 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:21,350 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:03:21,640 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:03:21,658 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:03:21,872 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:03:21,887 | INFO | app.main | Market data refresh complete at 2026-06-23T08:33:21.872249+00:00 (12 updates, 0 errors)
+2026-06-23 14:03:23,120 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:23,439 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:33,106 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:33,388 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:43,107 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:43,380 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:03:53,109 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:03:53,390 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:03,090 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:03,399 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:13,093 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:13,384 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:19,731 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:04:20,002 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:21,908 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:04:21,921 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:04:22,125 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=500 normalize=500 (dropna=0 dup=0) flat=476 after_tail=500
+2026-06-23 14:04:22,651 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:04:22,658 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:04:22,891 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:23,113 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:23,409 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=387 after_tail=500
+2026-06-23 14:04:23,433 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:23,973 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:23,983 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:24,221 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:24,721 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:04:25,548 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:25,557 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:25,781 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:26,232 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:04:26,971 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:26,980 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:27,205 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:27,601 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=483 normalize=483 (dropna=0 dup=0) flat=470 after_tail=483
+2026-06-23 14:04:28,165 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:04:28,165 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:04:28,396 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:28,616 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:04:28,903 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:28,903 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:29,133 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:29,507 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=297 after_tail=500
+2026-06-23 14:04:30,266 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:30,270 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:30,498 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:30,726 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:04:30,978 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:30,987 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:31,218 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:31,427 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:04:31,680 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:04:31,694 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:04:31,916 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:32,570 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:04:32,917 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:32,923 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:33,158 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:33,175 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:33,483 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:04:33,499 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:34,302 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:34,302 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:34,531 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:34,756 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:04:35,018 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:04:35,018 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:04:35,257 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:04:35,272 | INFO | app.main | Market data refresh complete at 2026-06-23T08:34:35.257635+00:00 (12 updates, 0 errors)
+2026-06-23 14:04:43,112 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:43,383 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:04:53,086 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:04:53,441 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:05:03,096 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:05:03,389 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:05:13,090 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:05:13,362 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:05:19,738 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:05:20,108 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:05:23,133 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:05:23,351 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:09:37,154 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:09:37,154 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:09:37,185 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:09:37,185 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:09:37,191 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:09:37,193 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:09:37,195 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:09:37,203 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:09:37,935 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=475 after_tail=500
+2026-06-23 14:09:38,957 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:09:38,975 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:09:39,233 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:39,562 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:09:40,456 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:40,461 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:40,806 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:41,337 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:09:41,671 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:41,679 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:41,997 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:42,863 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:09:43,106 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:09:43,455 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:43,471 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:44,055 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:44,293 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=490 normalize=490 (dropna=0 dup=0) flat=477 after_tail=490
+2026-06-23 14:09:44,771 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:09:44,778 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:09:45,102 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:45,345 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:09:45,714 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:45,721 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:46,005 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:46,250 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:09:47,113 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:47,134 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:47,506 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:47,554 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:09:48,217 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:09:48,319 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:09:48,683 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:48,690 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:49,157 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:49,414 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:09:49,771 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:09:49,781 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:09:50,127 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:50,364 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:09:50,827 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:50,837 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:51,236 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:51,472 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:09:52,707 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:52,707 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:53,021 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:53,250 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:09:53,586 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:09:53,597 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:09:53,817 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:09:53,817 | INFO | app.main | Market data refresh complete at 2026-06-23T08:39:53.817247+00:00 (12 updates, 0 errors)
+2026-06-23 14:10:09,177 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:09,523 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:10:19,762 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:20,128 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:10:29,481 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:29,995 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:10:38,720 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:39,171 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=5 losers=10 consistent=True monitoring=0 gross_profit=693.04 gross_loss=-623.86 net=69.18
+2026-06-23 14:10:42,505 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:10:42,845 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=475 after_tail=500
+2026-06-23 14:10:43,738 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=490 normalize=490 (dropna=0 dup=0) flat=477 after_tail=490
+2026-06-23 14:10:44,085 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=301 normalize=301 (dropna=0 dup=0) flat=277 after_tail=301
+2026-06-23 14:10:44,187 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=4 MISSED_LOSER → MISSED_LOSER pts=-0.28 exit=SL
+2026-06-23 14:10:44,217 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=6 MISSED_LOSER → MISSED_LOSER pts=-166.5 exit=SL
+2026-06-23 14:10:44,257 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=7 MISSED_WINNER → MISSED_LOSER pts=-169.5 exit=SL
+2026-06-23 14:10:44,292 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=8 MISSED_WINNER → MISSED_LOSER pts=-0.32 exit=SL
+2026-06-23 14:10:44,317 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=9 MISSED_WINNER → MISSED_LOSER pts=-6.75 exit=SL
+2026-06-23 14:10:44,355 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=12 MISSED_WINNER → MISSED_WINNER pts=12.9 exit=TP
+2026-06-23 14:10:44,387 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=14 MISSED_LOSER → MISSED_LOSER pts=-7.3 exit=SL
+2026-06-23 14:10:44,418 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=15 MISSED_LOSER → MISSED_LOSER pts=-263.0 exit=SL
+2026-06-23 14:10:44,448 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=19 MISSED_LOSER → MISSED_LOSER pts=-0.59 exit=SL
+2026-06-23 14:10:44,479 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=24 MISSED_LOSER → MISSED_LOSER pts=-0.34 exit=SL
+2026-06-23 14:10:44,510 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=27 MISSED_LOSER → MISSED_LOSER pts=-178.5 exit=SL
+2026-06-23 14:10:44,535 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=28 MISSED_LOSER → MISSED_LOSER pts=-1.05 exit=SL
+2026-06-23 14:10:44,569 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=29 MISSED_LOSER → MISSED_LOSER pts=-5.5 exit=SL
+2026-06-23 14:10:44,601 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=30 MISSED_WINNER → MISSED_WINNER pts=327.0 exit=TP
+2026-06-23 14:10:44,634 | INFO | app.services.missed_opportunity_recalc_service | Missed recalc id=31 MISSED_LOSER → MISSED_LOSER pts=-0.8 exit=SL
+2026-06-23 14:10:44,848 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:45,361 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:10:48,734 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:10:49,094 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:10:53,826 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:10:53,831 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:10:54,609 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=475 after_tail=500
+2026-06-23 14:10:55,013 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:10:55,024 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:10:55,306 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:10:56,090 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:10:56,529 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:10:56,533 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:10:56,817 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:10:57,059 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:10:57,549 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:10:57,554 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:10:57,786 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:10:58,258 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:10:58,778 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:10:58,787 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:10:59,024 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:10:59,606 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=490 normalize=490 (dropna=0 dup=0) flat=477 after_tail=490
+2026-06-23 14:10:59,738 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:00,064 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:11:00,350 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:11:00,350 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:11:00,554 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:00,793 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:11:01,122 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:11:01,130 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:11:01,337 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:01,585 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:11:02,032 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:11:02,036 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:11:02,305 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:02,668 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:11:02,968 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:11:02,984 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:11:03,195 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:03,409 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:11:03,722 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 14:11:03,727 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 14:11:04,026 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:04,252 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:11:04,581 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:11:04,592 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:11:04,952 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:05,182 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:11:05,543 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:11:05,545 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:11:05,896 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:06,115 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:11:06,433 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:11:06,441 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:11:06,678 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:11:06,678 | INFO | app.main | Market data refresh complete at 2026-06-23T08:41:06.678487+00:00 (12 updates, 0 errors)
+2026-06-23 14:11:09,744 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:10,246 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:11:19,742 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:20,460 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:11:29,735 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:30,205 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:11:39,742 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:40,246 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:11:49,717 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:11:50,018 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:12:06,682 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:12:06,688 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:12:06,904 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=475 after_tail=500
+2026-06-23 14:12:07,258 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 14:12:07,263 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 14:12:07,569 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:07,770 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:12:08,173 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:08,188 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:08,670 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:08,876 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:12:09,131 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:09,131 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:09,364 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:10,129 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:12:10,472 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:10,485 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:10,938 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:11,296 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=490 normalize=490 (dropna=0 dup=0) flat=477 after_tail=490
+2026-06-23 14:12:11,650 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:12:11,665 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:12:12,044 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:12,272 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=507 normalize=507 (dropna=0 dup=0) flat=418 after_tail=500
+2026-06-23 14:12:12,749 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:12,753 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:13,115 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:13,360 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:12:13,700 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:13,710 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:14,236 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:14,499 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:12:14,859 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:14,871 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:15,415 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:15,662 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:12:17,067 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:12:17,071 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:12:17,368 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:17,629 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:12:18,426 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:18,435 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:18,981 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:19,222 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:12:19,592 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:19,598 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:20,140 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:20,179 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:12:20,567 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:12:20,973 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:12:21,100 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:12:21,118 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:12:21,642 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:12:21,673 | INFO | app.main | Market data refresh complete at 2026-06-23T08:42:21.650646+00:00 (12 updates, 0 errors)
+2026-06-23 14:13:13,997 | INFO | app.main | Delta Signal Engine shut down
+2026-06-23 14:13:18,303 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:13:18,303 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:13:18,332 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:13:18,332 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:13:18,334 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:13:18,336 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:13:18,337 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:13:18,337 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:13:18,889 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=491 normalize=491 (dropna=0 dup=0) flat=466 after_tail=491
+2026-06-23 14:13:19,355 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:13:19,374 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:13:19,888 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:20,298 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:13:20,687 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:13:21,446 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:21,456 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:21,900 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:22,247 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:13:22,735 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:22,752 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:23,126 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:23,351 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:13:23,684 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:23,702 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:23,964 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:24,184 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=495 normalize=495 (dropna=0 dup=0) flat=482 after_tail=495
+2026-06-23 14:13:24,519 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:13:24,527 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:13:24,779 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:25,052 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 14:13:25,382 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:25,392 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:25,629 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:25,862 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:13:26,216 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:26,225 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:26,570 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:26,815 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:13:27,159 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:27,165 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:27,630 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:27,875 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:13:28,224 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:13:28,230 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:13:28,600 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:28,839 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:13:29,312 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:29,322 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:29,658 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:29,895 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:13:30,272 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:30,277 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:30,525 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:30,904 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:13:31,710 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:13:31,714 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:13:31,986 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:13:31,990 | INFO | app.main | Market data refresh complete at 2026-06-23T08:43:31.986165+00:00 (12 updates, 0 errors)
+2026-06-23 14:13:53,230 | INFO | app.main | Delta Signal Engine shut down
+2026-06-23 14:13:57,899 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:13:57,901 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:13:57,916 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:13:57,918 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:13:57,919 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:13:57,920 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:13:57,922 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:13:57,926 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:13:58,098 | INFO | app.main | Delta Signal Engine shut down
+2026-06-23 14:13:58,478 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=491 normalize=491 (dropna=0 dup=0) flat=466 after_tail=491
+2026-06-23 14:14:04,078 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:04,078 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:04,290 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:14:04,293 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:14:04,294 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:14:04,296 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:14:04,296 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:14:04,302 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:14:04,692 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=491 normalize=491 (dropna=0 dup=0) flat=466 after_tail=491
+2026-06-23 14:14:05,424 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=508
+2026-06-23 14:14:05,435 | INFO | app.indicators | Indicator calculation complete: 508 candles, SMA84 valid=425, HH50 valid=458, LL50 valid=458
+2026-06-23 14:14:06,173 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:06,476 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:14:07,187 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:07,196 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:07,427 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:08,159 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:14:08,992 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:09,001 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:09,189 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:09,634 | INFO | app.main | Delta Signal Engine shut down
+2026-06-23 14:14:09,686 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:14:13,744 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:13,746 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:13,765 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:14:13,765 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:14:13,768 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:14:13,769 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:14:13,770 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:14:13,770 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:14:13,960 | INFO | app.main | Delta Signal Engine shut down
+2026-06-23 14:14:14,164 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=491 normalize=491 (dropna=0 dup=0) flat=466 after_tail=491
+2026-06-23 14:14:18,665 | INFO | app.logging_config | Logging initialized: C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:18,671 | INFO | app.main | Delta Signal Engine starting up — log file C:\Users\LENOVO\delta-signal-engine\logs\app.log
+2026-06-23 14:14:18,687 | INFO | app.services.runtime_settings | Signal timeframe loaded: 5m (from .env)
+2026-06-23 14:14:18,690 | INFO | app.main | Email alerts enabled → prashantyt2704@gmail.com
+2026-06-23 14:14:18,692 | INFO | app.main | Telegram alerts enabled → chat_id 853891465
+2026-06-23 14:14:18,694 | INFO | app.main | Pushover alerts enabled
+2026-06-23 14:14:18,694 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:14:18,699 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:14:19,181 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=491 normalize=491 (dropna=0 dup=0) flat=466 after_tail=491
+2026-06-23 14:14:19,854 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:14:20,066 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:14:20,345 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:20,400 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:14:20,600 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=386 after_tail=500
+2026-06-23 14:14:21,327 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:21,327 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:21,552 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:22,081 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=510 normalize=510 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:14:22,745 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:22,752 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:23,227 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:23,490 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:14:24,004 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:24,015 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:24,561 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:24,837 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=495 normalize=495 (dropna=0 dup=0) flat=482 after_tail=495
+2026-06-23 14:14:25,213 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:14:25,223 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:14:25,740 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:26,309 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 14:14:26,706 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:26,717 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:27,152 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:27,414 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:14:27,971 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:27,977 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:28,234 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:28,468 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:14:28,796 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:28,805 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:29,101 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:29,332 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:14:29,707 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:14:29,718 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:14:30,115 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:30,486 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:14:30,850 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:30,859 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:31,170 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:31,413 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:14:32,228 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:32,229 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:32,419 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:32,813 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:14:33,583 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:14:33,596 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:14:33,852 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:14:33,859 | INFO | app.main | Market data refresh complete at 2026-06-23T08:44:33.852081+00:00 (12 updates, 0 errors)
+2026-06-23 14:15:07,441 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=100 sent=100 (trade candles for signals/indicators)
+2026-06-23 14:15:08,025 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:15:19,729 | INFO | app.api | Chart response ETHUSDT 5m: stored=510 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:15:20,220 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:15:33,856 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:15:33,861 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:15:34,220 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=494 normalize=494 (dropna=0 dup=0) flat=469 after_tail=494
+2026-06-23 14:15:34,541 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:34,548 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:34,770 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:35,003 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=505 normalize=505 (dropna=0 dup=0) flat=385 after_tail=500
+2026-06-23 14:15:35,320 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:35,326 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:35,529 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:35,899 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:15:36,332 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:36,339 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:36,642 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:36,873 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:15:37,229 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:15:37,238 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:15:37,502 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:38,275 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=495 normalize=495 (dropna=0 dup=0) flat=482 after_tail=495
+2026-06-23 14:15:38,874 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:38,874 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:39,131 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:39,678 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 14:15:40,523 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:40,540 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:40,874 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:41,106 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:15:41,969 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:41,973 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:42,329 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:42,547 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:15:42,883 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:15:42,892 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:15:43,144 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:43,388 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:15:43,700 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:43,716 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:43,935 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:44,324 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=503 normalize=503 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:15:44,632 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:44,652 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:44,886 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:45,115 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:15:45,446 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:15:45,446 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:15:45,700 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:45,928 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:15:46,243 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:15:46,258 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:15:46,573 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:15:46,573 | INFO | app.main | Market data refresh complete at 2026-06-23T08:45:46.573830+00:00 (12 updates, 0 errors)
+2026-06-23 14:16:19,729 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:16:20,289 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:16:46,587 | INFO | app.main | Starting market data refresh cycle
+2026-06-23 14:16:46,587 | INFO | app.main | Signal engine using timeframe: 5m candles only
+2026-06-23 14:16:46,787 | INFO | app.market_data | Candle pipeline BTCUSDT 1m: raw_api=495 normalize=495 (dropna=0 dup=0) flat=470 after_tail=495
+2026-06-23 14:16:47,298 | INFO | app.market_data | OHLC resolve BTCUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:47,309 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:47,499 | INFO | app.main | Display candles BTCUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:48,258 | INFO | app.market_data | Candle pipeline BTCUSDT 5m: raw_api=506 normalize=506 (dropna=0 dup=0) flat=385 after_tail=500
+2026-06-23 14:16:48,759 | INFO | app.market_data | OHLC resolve BTCUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:48,763 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:48,977 | INFO | app.main | Display candles BTCUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:49,298 | INFO | app.market_data | Candle pipeline BTCUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=227 after_tail=500
+2026-06-23 14:16:49,674 | INFO | app.market_data | OHLC resolve BTCUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:49,678 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:49,880 | INFO | app.main | Display candles BTCUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:50,077 | INFO | app.market_data | Candle pipeline BTCUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=15 after_tail=500
+2026-06-23 14:16:50,475 | INFO | app.market_data | OHLC resolve BTCUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:16:50,480 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:16:50,673 | INFO | app.main | Display candles BTCUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:50,890 | INFO | app.market_data | Candle pipeline ETHUSDT 1m: raw_api=495 normalize=495 (dropna=0 dup=0) flat=482 after_tail=495
+2026-06-23 14:16:51,137 | INFO | app.market_data | OHLC resolve ETHUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:51,140 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:51,339 | INFO | app.main | Display candles ETHUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:51,540 | INFO | app.market_data | Candle pipeline ETHUSDT 5m: raw_api=508 normalize=508 (dropna=0 dup=0) flat=419 after_tail=500
+2026-06-23 14:16:51,918 | INFO | app.market_data | OHLC resolve ETHUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:51,923 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:52,122 | INFO | app.main | Display candles ETHUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:52,319 | INFO | app.market_data | Candle pipeline ETHUSDT 15m: raw_api=509 normalize=509 (dropna=0 dup=0) flat=296 after_tail=500
+2026-06-23 14:16:52,596 | INFO | app.market_data | OHLC resolve ETHUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:52,601 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:52,861 | INFO | app.main | Display candles ETHUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:53,111 | INFO | app.market_data | Candle pipeline ETHUSDT 1h: raw_api=510 normalize=510 (dropna=0 dup=0) flat=38 after_tail=500
+2026-06-23 14:16:53,877 | INFO | app.market_data | OHLC resolve ETHUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:16:53,883 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:16:54,107 | INFO | app.main | Display candles ETHUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:54,321 | INFO | app.market_data | Candle pipeline SOLUSDT 1m: raw_api=427 normalize=427 (dropna=0 dup=0) flat=418 after_tail=427
+2026-06-23 14:16:54,603 | INFO | app.market_data | OHLC resolve SOLUSDT 1m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:54,613 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:54,835 | INFO | app.main | Display candles SOLUSDT 1m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:55,042 | INFO | app.market_data | Candle pipeline SOLUSDT 5m: raw_api=503 normalize=503 (dropna=0 dup=0) flat=470 after_tail=500
+2026-06-23 14:16:55,304 | INFO | app.market_data | OHLC resolve SOLUSDT 5m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:55,309 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:55,535 | INFO | app.main | Display candles SOLUSDT 5m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:55,750 | INFO | app.market_data | Candle pipeline SOLUSDT 15m: raw_api=502 normalize=502 (dropna=0 dup=0) flat=424 after_tail=500
+2026-06-23 14:16:56,183 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:16:56,225 | INFO | app.market_data | OHLC resolve SOLUSDT 15m: source=mark_primary flat_before=0 flat_after=0 mark_bars=509
+2026-06-23 14:16:56,403 | INFO | app.indicators | Indicator calculation complete: 509 candles, SMA84 valid=426, HH50 valid=459, LL50 valid=459
+2026-06-23 14:16:57,294 | INFO | app.main | Display candles SOLUSDT 15m: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:57,366 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:16:57,524 | INFO | app.market_data | Candle pipeline SOLUSDT 1h: raw_api=499 normalize=499 (dropna=0 dup=0) flat=300 after_tail=499
+2026-06-23 14:16:57,978 | INFO | app.market_data | OHLC resolve SOLUSDT 1h: source=mark_primary flat_before=0 flat_after=0 mark_bars=510
+2026-06-23 14:16:57,994 | INFO | app.indicators | Indicator calculation complete: 510 candles, SMA84 valid=427, HH50 valid=460, LL50 valid=460
+2026-06-23 14:16:58,426 | INFO | app.main | Display candles SOLUSDT 1h: flat_before=0 enriched=0 flat_after=0
+2026-06-23 14:16:58,442 | INFO | app.main | Market data refresh complete at 2026-06-23T08:46:58.426537+00:00 (12 updates, 0 errors)
+2026-06-23 14:16:59,418 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:16:59,930 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:17:09,733 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)
+2026-06-23 14:17:10,146 | INFO | app.services.missed_opportunity_service | Missed opportunity totals: total=15 winners=2 losers=13 consistent=True monitoring=0 gross_profit=339.90 gross_loss=-800.43 net=-460.53
+2026-06-23 14:17:19,723 | INFO | app.api | Chart response ETHUSDT 5m: stored=509 limit=200 sent=200 (trade candles for signals/indicators)

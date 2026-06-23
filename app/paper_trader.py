@@ -157,6 +157,32 @@ def check_exit_reason(
     return None
 
 
+def check_candle_exit(
+    side: str,
+    *,
+    high: float,
+    low: float,
+    stop_loss: float,
+    take_profit: float,
+) -> tuple[ExitReason | None, float | None]:
+    """Return TP/SL if a candle's range touched a level (SL checked before TP)."""
+    high = float(high)
+    low = float(low)
+    sl = float(stop_loss)
+    tp = float(take_profit)
+    if side == "BUY":
+        if low <= sl:
+            return "SL", sl
+        if high >= tp:
+            return "TP", tp
+    else:
+        if high >= sl:
+            return "SL", sl
+        if low <= tp:
+            return "TP", tp
+    return None, None
+
+
 def exit_status_label(exit_reason: str | None) -> str | None:
     if exit_reason == "TP":
         return "TP HIT"

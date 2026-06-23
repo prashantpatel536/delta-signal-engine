@@ -1,6 +1,7 @@
 const tokenEl = document.getElementById("status-token");
 const chatEl = document.getElementById("status-chat");
 const tgReadyEl = document.getElementById("status-ready");
+const telegramHintEl = document.getElementById("telegram-hint");
 const emailReadyEl = document.getElementById("email-status-ready");
 const smtpServerEl = document.getElementById("email-smtp-server");
 const smtpUserEl = document.getElementById("email-smtp-user");
@@ -40,6 +41,10 @@ async function loadStatus() {
     if (tgReadyEl) {
       tgReadyEl.textContent = tgStatus.configured ? "Yes" : "No";
       tgReadyEl.className = tgStatus.configured ? "up" : "down";
+    }
+    if (telegramHintEl) {
+      telegramHintEl.textContent = tgStatus.config_hint || tgStatus.last_error || "—";
+      telegramHintEl.className = tgStatus.config_hint || tgStatus.last_error ? "down" : "";
     }
     if (testTelegramBtn) testTelegramBtn.disabled = !tgStatus.configured;
 

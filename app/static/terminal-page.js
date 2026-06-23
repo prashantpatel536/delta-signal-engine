@@ -387,6 +387,10 @@ function initTerminal() {
 
     refreshTerminal();
 
+    document.getElementById("recalc-missed-btn")?.addEventListener("click", () => {
+      Terminal.recalculateMissedOpportunities(() => refreshTerminal());
+    });
+
     setInterval(refreshTerminal, 10000);
 
   });

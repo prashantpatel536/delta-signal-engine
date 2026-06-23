@@ -61,6 +61,9 @@ class Settings:
     telegram_chat_id: str | None = field(
         default_factory=lambda: os.getenv("TELEGRAM_CHAT_ID")
     )
+    telegram_proxy: str | None = field(
+        default_factory=lambda: os.getenv("TELEGRAM_PROXY")
+    )
     smtp_server: str | None = field(default_factory=lambda: os.getenv("SMTP_SERVER"))
     smtp_port: int | None = field(
         default_factory=lambda: int(os.getenv("SMTP_PORT", "587") or "587")

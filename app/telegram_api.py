@@ -24,5 +24,5 @@ def send_telegram_test() -> TelegramTestResponse:
         )
     result = telegram_service.send_test()
     if not result["ok"]:
-        raise HTTPException(status_code=502, detail="Telegram test message failed — check server logs")
+        raise HTTPException(status_code=502, detail=result["message"])
     return TelegramTestResponse(**result)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import requests
@@ -12,7 +13,9 @@ from app.repositories.telegram_notification_repository import TelegramNotificati
 
 logger = logging.getLogger(__name__)
 
-TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
+TELEGRAM_API_BASE = "https://api.telegram.org"
+TELEGRAM_SEND_MESSAGE = TELEGRAM_API_BASE + "/bot{token}/sendMessage"
+TELEGRAM_GET_ME = TELEGRAM_API_BASE + "/bot{token}/getMe"
 _UNSET = object()
 
 
@@ -31,19 +34,44 @@ def _side_label(side: str) -> str:
     return "LONG" if side == "BUY" else "SHORT"
 
 
+def _parse_telegram_error(exc: requests.RequestException | str, response_text: str = "") -> str:
+    text = f"{exc} {response_text}".lower()
+    if "connecttimeout" in text or "timed out" in text or "failed to establish" in text:
+        return (
+            "Cannot reach api.telegram.org — Telegram is likely blocked on this network. "
+            "Use Pushover/Email, run the app on a network that can reach Telegram, "
+            "or set TELEGRAM_PROXY in .env"
+        )
+    if "chat not found" in text or "chat_id" in text and "invalid" in text:
+        return (
+            "Invalid chat ID — open your bot in Telegram, send /start, then copy your chat ID "
+            "from @userinfobot into TELEGRAM_CHAT_ID"
+        )
+    if "bot was blocked by the user" in text:
+        return "Bot blocked — open Telegram, find your bot, and tap Start"
+    if "unauthorized" in text or "401" in text:
+        return "Invalid bot token — check TELEGRAM_BOT_TOKEN from @BotFather"
+    if response_text:
+        return response_text[:240]
+    return "Telegram API request failed — check server logs"
+
+
 class TelegramService:
     def __init__(
         self,
         *,
         bot_token: str | None | object = _UNSET,
         chat_id: str | None | object = _UNSET,
+        proxy: str | None | object = _UNSET,
         repository: TelegramNotificationRepository | None = None,
         session: requests.Session | None = None,
     ) -> None:
         self._bot_token_override = bot_token
         self._chat_id_override = chat_id
+        self._proxy_override = proxy
         self.repository = repository or TelegramNotificationRepository()
         self._session = session or requests.Session()
+        self._last_error: str | None = None
 
     @staticmethod
     def _clean(value: str | None) -> str | None:
@@ -63,23 +91,68 @@ class TelegramService:
             return self._clean(self._chat_id_override)  # type: ignore[arg-type]
         return self._clean(settings.telegram_chat_id)
 
+    @property
+    def proxy(self) -> str | None:
+        if self._proxy_override is not _UNSET:
+            return self._clean(self._proxy_override)  # type: ignore[arg-type]
+        return self._clean(settings.telegram_proxy)
+
     def is_configured(self) -> bool:
         return bool(self.bot_token and self.chat_id)
 
     def status(self) -> dict[str, Any]:
+        hint: str | None = None
+        if self.is_configured() and self._last_error:
+            hint = self._last_error
+        elif self.is_configured() and self.proxy:
+            hint = f"Using proxy {self.proxy}"
         return {
             "configured": self.is_configured(),
             "chat_id_set": bool(self.chat_id),
             "bot_token_set": bool(self.bot_token),
+            "proxy_set": bool(self.proxy),
+            "last_error": self._last_error,
+            "config_hint": hint,
         }
 
     def send_test(self) -> dict[str, Any]:
+        verify = self.verify_bot()
+        if not verify["ok"]:
+            return {"ok": False, "message": verify["message"]}
+
         text = (
             "✅ Delta Signal Engine\n\n"
             "Telegram test notification — your bot is connected."
         )
-        ok = self._deliver(text)
-        return {"ok": ok, "message": "Test notification sent" if ok else "Send failed — check logs"}
+        ok, error = self._deliver(text)
+        message = "Test notification sent" if ok else (error or "Send failed — check logs")
+        return {"ok": ok, "message": message}
+
+    def verify_bot(self) -> dict[str, Any]:
+        if not self.bot_token:
+            return {"ok": False, "message": "Missing TELEGRAM_BOT_TOKEN"}
+        url = TELEGRAM_GET_ME.format(token=self.bot_token)
+        try:
+            response = self._session.get(url, timeout=15, proxies=self._proxies())
+            if not response.ok:
+                message = _parse_telegram_error("", response.text[:300])
+                self._last_error = message
+                return {"ok": False, "message": message}
+            body = response.json()
+            if not body.get("ok"):
+                message = _parse_telegram_error("", str(body))
+                self._last_error = message
+                return {"ok": False, "message": message}
+            username = body.get("result", {}).get("username")
+            self._last_error = None
+            return {
+                "ok": True,
+                "message": f"Bot verified (@{username})" if username else "Bot verified",
+            }
+        except requests.RequestException as exc:
+            message = _parse_telegram_error(exc)
+            self._last_error = message
+            return {"ok": False, "message": message}
 
     def notify_signal_generated(self, signal: dict[str, Any]) -> bool:
         signal_id = int(signal["id"])
@@ -187,46 +260,76 @@ class TelegramService:
             ]
         )
 
+    def _proxies(self) -> dict[str, str] | None:
+        if not self.proxy:
+            return None
+        return {"http": self.proxy, "https": self.proxy}
+
     def _send_claimed(self, dedupe_key: str, text: str) -> bool:
-        ok = self._deliver(text)
+        ok, _error = self._deliver(text)
         preview = text.split("\n", 1)[0][:120]
         if ok:
             self.repository.mark_success(dedupe_key, message_preview=preview)
         else:
-            self.repository.mark_failure(dedupe_key, "Telegram API request failed")
+            self.repository.mark_failure(dedupe_key, self._last_error or "Telegram API request failed")
         return ok
 
-    def _deliver(self, text: str) -> bool:
+    def _deliver(self, text: str) -> tuple[bool, str | None]:
         if not self.is_configured():
-            logger.warning("Telegram not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID")
-            return False
-        url = TELEGRAM_API.format(token=self.bot_token)
-        try:
-            response = self._session.post(
-                url,
-                json={
-                    "chat_id": self.chat_id,
-                    "text": text,
-                    "disable_web_page_preview": True,
-                },
-                timeout=15,
-            )
-            if not response.ok:
-                logger.error(
-                    "Telegram send failed: HTTP %s %s",
-                    response.status_code,
-                    response.text[:300],
+            message = "Telegram not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID"
+            logger.warning(message)
+            self._last_error = message
+            return False, message
+
+        url = TELEGRAM_SEND_MESSAGE.format(token=self.bot_token)
+        payload = {
+            "chat_id": self.chat_id,
+            "text": text,
+            "disable_web_page_preview": True,
+        }
+
+        for attempt in (1, 2):
+            try:
+                response = self._session.post(
+                    url,
+                    json=payload,
+                    timeout=15,
+                    proxies=self._proxies(),
                 )
-                return False
-            body = response.json()
-            if not body.get("ok"):
-                logger.error("Telegram API error: %s", body)
-                return False
-            logger.info("Telegram notification sent (%s chars)", len(text))
-            return True
-        except requests.RequestException as exc:
-            logger.error("Telegram send error: %s", exc)
-            return False
+                if not response.ok:
+                    message = _parse_telegram_error("", response.text[:300])
+                    logger.error(
+                        "Telegram send failed (attempt %s): HTTP %s %s",
+                        attempt,
+                        response.status_code,
+                        response.text[:300],
+                    )
+                    if attempt == 1:
+                        time.sleep(1.0)
+                        continue
+                    self._last_error = message
+                    return False, message
+                body = response.json()
+                if not body.get("ok"):
+                    message = _parse_telegram_error("", str(body))
+                    logger.error("Telegram API error (attempt %s): %s", attempt, body)
+                    if attempt == 1:
+                        time.sleep(1.0)
+                        continue
+                    self._last_error = message
+                    return False, message
+                logger.info("Telegram notification sent (%s chars)", len(text))
+                self._last_error = None
+                return True, None
+            except requests.RequestException as exc:
+                message = _parse_telegram_error(exc)
+                logger.error("Telegram send error (attempt %s): %s", attempt, exc)
+                if attempt == 1:
+                    time.sleep(1.0)
+                    continue
+                self._last_error = message
+                return False, message
+        return False, self._last_error
 
 
 telegram_service = TelegramService()

@@ -164,6 +164,68 @@ window.Terminal = {
     }
   },
 
+  async recalculateMissedOpportunities(onComplete) {
+    const btn = document.getElementById("recalc-missed-btn");
+    const statusEl = document.getElementById("recalc-missed-status");
+    if (!btn || !statusEl) return;
+
+    btn.disabled = true;
+    statusEl.hidden = false;
+    statusEl.className = "missed-recalc-status";
+    statusEl.textContent = "Starting recalculation…";
+
+    try {
+      const response = await fetch("/admin/recalculate-missed-opportunities", {
+        method: "POST",
+      });
+      if (!response.ok || !response.body) {
+        throw new Error(`Recalculation failed (${response.status})`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalPayload = null;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line);
+          if (event.type === "progress") {
+            statusEl.textContent = `Recalculating ${event.current} / ${event.total}…`;
+          } else if (event.type === "complete") {
+            finalPayload = event;
+          } else if (event.type === "error") {
+            throw new Error(event.message || "Recalculation failed");
+          }
+        }
+      }
+
+      if (!finalPayload) {
+        throw new Error("Recalculation finished without a result");
+      }
+
+      const { recalculated, changed, summary } = finalPayload;
+      statusEl.className = "missed-recalc-status ok";
+      statusEl.textContent = `Done — ${recalculated} recalculated (${changed} updated)`;
+      if (summary) {
+        this.renderMissedOpportunities(summary);
+      }
+      onComplete?.(finalPayload);
+    } catch (error) {
+      statusEl.className = "missed-recalc-status error";
+      statusEl.textContent = `Error: ${error.message}`;
+    } finally {
+      btn.disabled = false;
+    }
+  },
+
   renderSymbolTabs(activeShort, onSelect) {
     const el = document.getElementById("symbol-tabs");
     if (!el) return;

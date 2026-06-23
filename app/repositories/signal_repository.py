@@ -399,6 +399,93 @@ class SignalRepository:
                 return None
         return self.get_by_id(signal_id)
 
+    def list_missed_recalc_candidates(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                   OR (
+                        status IN ('REJECTED', 'EXPIRED')
+                        AND monitoring_started_at IS NOT NULL
+                   )
+                ORDER BY id ASC
+                """
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
+    def list_signal_recalc_index(self) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, symbol, timeframe, side, entry, created_at
+                FROM signals
+                ORDER BY id ASC
+                """
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def apply_recalculated_missed(
+        self,
+        signal_id: int,
+        outcome: Any,
+    ) -> dict[str, Any] | None:
+        now = utc_now_iso()
+        with get_connection() as conn:
+            if outcome.resolved:
+                conn.execute(
+                    """
+                    UPDATE signals
+                    SET status = ?,
+                        points_captured = ?,
+                        missed_exit_reason = ?,
+                        missed_exit_price = ?,
+                        max_favorable_excursion = ?,
+                        max_adverse_excursion = ?,
+                        missed_monitoring = 0,
+                        missed_resolved_at = COALESCE(?, ?),
+                        updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        outcome.status,
+                        outcome.points_captured,
+                        outcome.exit_reason,
+                        outcome.exit_price,
+                        outcome.max_favorable_excursion,
+                        outcome.max_adverse_excursion,
+                        outcome.missed_resolved_at,
+                        now,
+                        now,
+                        signal_id,
+                    ),
+                )
+            else:
+                conn.execute(
+                    """
+                    UPDATE signals
+                    SET status = ?,
+                        points_captured = NULL,
+                        missed_exit_reason = NULL,
+                        missed_exit_price = NULL,
+                        max_favorable_excursion = ?,
+                        max_adverse_excursion = ?,
+                        missed_monitoring = 0,
+                        missed_resolved_at = NULL,
+                        updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        outcome.status,
+                        outcome.max_favorable_excursion,
+                        outcome.max_adverse_excursion,
+                        now,
+                        signal_id,
+                    ),
+                )
+            conn.commit()
+        return self.get_by_id(signal_id)
+
     def get_missed_summary(self) -> dict[str, float | int | bool]:
         with get_connection() as conn:
             row = conn.execute(

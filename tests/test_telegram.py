@@ -18,11 +18,17 @@ client = TestClient(app)
 
 @pytest.fixture()
 def mock_telegram_post(monkeypatch):
-    mock_response = MagicMock()
-    mock_response.ok = True
-    mock_response.json.return_value = {"ok": True}
+    verify_response = MagicMock()
+    verify_response.ok = True
+    verify_response.json.return_value = {"ok": True, "result": {"username": "testbot"}}
+
+    send_response = MagicMock()
+    send_response.ok = True
+    send_response.json.return_value = {"ok": True}
+
     session = MagicMock()
-    session.post.return_value = mock_response
+    session.get.return_value = verify_response
+    session.post.return_value = send_response
     service = TelegramService(
         bot_token="test-token",
         chat_id="12345",
@@ -71,7 +77,20 @@ def test_telegram_test_success(temp_db, mock_telegram_post):
     resp = client.post("/telegram/test")
     assert resp.status_code == 200
     assert resp.json()["ok"] is True
+    mock_telegram_post.get.assert_called_once()
     mock_telegram_post.post.assert_called_once()
+
+
+def test_telegram_timeout_message():
+    import requests
+
+    service = TelegramService(bot_token="tok", chat_id="1")
+    session = MagicMock()
+    session.get.side_effect = requests.exceptions.ConnectTimeout("timed out")
+    service._session = session
+    result = service.send_test()
+    assert result["ok"] is False
+    assert "api.telegram.org" in result["message"]
 
 
 def test_signal_generated_sends_once(temp_db, mock_telegram_post):

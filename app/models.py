@@ -251,6 +251,14 @@ class MissedOpportunityDebugResponse(BaseModel):
     signals: list[MissedOpportunityAuditItem]
 
 
+class RecalculateMissedResponse(BaseModel):
+    ok: bool
+    recalculated: int
+    changed: int
+    unchanged: int
+    summary: MissedOpportunitySummary
+
+
 class MissedOpportunityAnalytics(BaseModel):
     period: str
     since: str
@@ -429,6 +437,9 @@ class TelegramStatusResponse(BaseModel):
     configured: bool
     chat_id_set: bool
     bot_token_set: bool
+    proxy_set: bool = False
+    last_error: str | None = None
+    config_hint: str | None = None
 
 
 class TelegramTestResponse(BaseModel):

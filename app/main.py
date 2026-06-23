@@ -24,6 +24,7 @@ from app.logging_config import setup_logging
 from app.market_data import delta_client, store
 from app.models import utc_now_iso
 from app.paper_api import router as paper_router
+from app.admin_api import router as admin_router
 from app.pushover_api import router as pushover_router
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
@@ -289,6 +290,7 @@ app.include_router(paper_router)
 app.include_router(settings_router)
 app.include_router(telegram_router)
 app.include_router(pushover_router)
+app.include_router(admin_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
