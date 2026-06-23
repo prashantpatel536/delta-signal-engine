@@ -1,7 +1,7 @@
 """Pydantic models for API responses."""
 
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -123,6 +123,34 @@ class SignalsResponse(BaseModel):
     count: int
 
 
+class RiskSettingsResponse(BaseModel):
+    leverage: float
+    margin_percent: float
+    default_leverage: float
+    default_margin_percent: float
+
+
+class RiskMatrixRow(BaseModel):
+    symbol: str
+    current_price: float
+    balance: float
+    margin_percent: float
+    leverage: float
+    risk_10pct_distance: float = 0.0
+    risk_20pct_distance: float = 0.0
+    risk_30pct_distance: float = 0.0
+    reward_25pct_distance: float = 0.0
+    reward_50pct_distance: float = 0.0
+    reward_100pct_distance: float = 0.0
+
+
+class RiskMatrixResponse(BaseModel):
+    balance: float
+    leverage: float
+    margin_percent: float
+    rows: list[RiskMatrixRow] = Field(default_factory=list)
+
+
 class StoredSignal(BaseModel):
     id: int
     symbol: str
@@ -144,17 +172,32 @@ class StoredSignal(BaseModel):
     missed_resolved_at: str | None = None
     missed_exit_reason: str | None = None
     missed_exit_price: float | None = None
+    missed_pnl_usd: float | None = None
+    missed_roe_pct: float | None = None
+    missed_account_impact_pct: float | None = None
+    risk_profile: dict[str, Any] | None = None
 
     @classmethod
     def from_record(cls, record: dict) -> "StoredSignal":
+        import json
+
         row = dict(record)
         row.setdefault("signal_timeframe", row.get("timeframe", ""))
         row["missed_monitoring"] = bool(row.get("missed_monitoring"))
+        raw_risk = row.get("risk_profile")
+        if isinstance(raw_risk, str) and raw_risk.strip():
+            try:
+                row["risk_profile"] = json.loads(raw_risk)
+            except json.JSONDecodeError:
+                row["risk_profile"] = None
         for field in (
             "max_favorable_excursion",
             "max_adverse_excursion",
             "points_captured",
             "missed_exit_price",
+            "missed_pnl_usd",
+            "missed_roe_pct",
+            "missed_account_impact_pct",
         ):
             if row.get(field) is not None:
                 row[field] = float(row[field])
@@ -167,8 +210,8 @@ class StoredSignalsResponse(BaseModel):
 
 
 class ApproveTradeRequest(BaseModel):
-    leverage: float = Field(ge=1)
-    margin_percent: float = Field(ge=1, le=100)
+    leverage: float | None = Field(default=None, ge=1)
+    margin_percent: float | None = Field(default=None, ge=1, le=100)
     stop_loss: float | None = None
     take_profit: float | None = None
 
@@ -199,6 +242,7 @@ class MissedOpportunitySymbolNet(BaseModel):
     missed_winners: int = 0
     missed_losers: int = 0
     net_missed_profit: float = 0.0
+    net_missed_pnl_usd: float = 0.0
 
 
 class SignalStatistics(BaseModel):
@@ -213,6 +257,10 @@ class SignalStatistics(BaseModel):
     gross_missed_profit: float = 0.0
     gross_missed_loss: float = 0.0
     net_missed_profit: float = 0.0
+    gross_missed_pnl_usd: float = 0.0
+    gross_missed_loss_usd: float = 0.0
+    net_missed_pnl_usd: float = 0.0
+    net_missed_roe_pct: float = 0.0
     monitoring: int = 0
     by_symbol: list[MissedOpportunitySymbolNet] = Field(default_factory=list)
 
@@ -224,6 +272,10 @@ class MissedOpportunitySummary(BaseModel):
     gross_missed_profit: float
     gross_missed_loss: float
     net_missed_profit: float
+    gross_missed_pnl_usd: float = 0.0
+    gross_missed_loss_usd: float = 0.0
+    net_missed_pnl_usd: float = 0.0
+    net_missed_roe_pct: float = 0.0
     monitoring: int
     totals_valid: bool = True
     by_symbol: list[MissedOpportunitySymbolNet] = Field(default_factory=list)
@@ -270,6 +322,9 @@ class MissedOpportunityAnalytics(BaseModel):
     gross_missed_profit: float
     gross_missed_loss: float
     net_missed_profit: float
+    gross_missed_pnl_usd: float = 0.0
+    gross_missed_loss_usd: float = 0.0
+    net_missed_pnl_usd: float = 0.0
     totals_valid: bool = True
 
 
@@ -371,6 +426,9 @@ class Position(BaseModel):
     exit_price: float | None = None
     exit_reason: Literal["TP", "SL", "MANUAL"] | None = None
     pnl: float | None = None
+    price_points: float | None = None
+    account_impact_pct: float | None = None
+    roe: float | None = None
 
 
 class UpdatePositionLevelsRequest(BaseModel):
@@ -410,7 +468,6 @@ class ClosedTrade(Position):
     duration_seconds: float
     duration: str
     exit_status: str | None = None
-    roe: float | None = None
 
 
 class ClosedTradesResponse(BaseModel):
@@ -437,6 +494,7 @@ class TelegramStatusResponse(BaseModel):
     configured: bool
     chat_id_set: bool
     bot_token_set: bool
+    bot_token_valid: bool = False
     proxy_set: bool = False
     last_error: str | None = None
     config_hint: str | None = None

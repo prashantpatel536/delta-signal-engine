@@ -54,6 +54,9 @@ class RecalcOutcome:
     max_favorable_excursion: float
     max_adverse_excursion: float
     missed_resolved_at: str | None
+    missed_pnl_usd: float | None = None
+    missed_roe_pct: float | None = None
+    missed_account_impact_pct: float | None = None
 
 
 @dataclass(frozen=True)

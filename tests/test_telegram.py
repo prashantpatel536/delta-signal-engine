@@ -30,7 +30,7 @@ def mock_telegram_post(monkeypatch):
     session.get.return_value = verify_response
     session.post.return_value = send_response
     service = TelegramService(
-        bot_token="test-token",
+        bot_token="123456789:AAHabcdefghijklmnopqrstuvwxyz12",
         chat_id="12345",
         session=session,
     )
@@ -84,13 +84,30 @@ def test_telegram_test_success(temp_db, mock_telegram_post):
 def test_telegram_timeout_message():
     import requests
 
-    service = TelegramService(bot_token="tok", chat_id="1")
+    service = TelegramService(bot_token="123456789:AAHabcdefghijklmnopqrstuvwxyz12", chat_id="1")
     session = MagicMock()
     session.get.side_effect = requests.exceptions.ConnectTimeout("timed out")
     service._session = session
     result = service.send_test()
     assert result["ok"] is False
     assert "api.telegram.org" in result["message"]
+
+
+def test_telegram_invalid_token_404_message():
+    service = TelegramService(
+        bot_token="123456789:AAHabcdefghijklmnopqrstuvwxyz12",
+        chat_id="1",
+    )
+    session = MagicMock()
+    bad = MagicMock()
+    bad.ok = False
+    bad.status_code = 404
+    bad.text = '{"ok":false,"error_code":404,"description":"Not Found"}'
+    session.get.return_value = bad
+    service._session = session
+    result = service.verify_bot()
+    assert result["ok"] is False
+    assert "Invalid bot token" in result["message"]
 
 
 def test_signal_generated_sends_once(temp_db, mock_telegram_post):

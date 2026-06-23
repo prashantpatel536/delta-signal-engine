@@ -15,7 +15,9 @@ from app.missed_recalc import (
     parse_utc,
 )
 from app.models import utc_now_iso
+from app.repositories.account_repository import AccountRepository
 from app.repositories.signal_repository import SignalRepository
+from app.risk_engine import missed_opportunity_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +54,7 @@ class MissedOpportunityRecalcService:
                 all_signals=signal_index,
                 candles=candles,
             )
+            outcome = self._with_dollar_metrics(record, outcome)
             before = self._snapshot(record)
             updated = self.repository.apply_recalculated_missed(signal_id, outcome)
             after = self._snapshot(updated) if updated else before
@@ -148,6 +151,31 @@ class MissedOpportunityRecalcService:
         return [bar for bar in candles if start_ts <= int(bar["time"]) <= end_ts]
 
     @staticmethod
+    def _with_dollar_metrics(record: dict[str, Any], outcome: RecalcOutcome) -> RecalcOutcome:
+        if not outcome.resolved or outcome.exit_price is None:
+            return outcome
+        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        metrics = missed_opportunity_metrics(
+            record["side"],
+            float(record["entry"]),
+            float(outcome.exit_price),
+            balance,
+        )
+        return RecalcOutcome(
+            resolved=outcome.resolved,
+            status=outcome.status,
+            points_captured=outcome.points_captured,
+            exit_reason=outcome.exit_reason,
+            exit_price=outcome.exit_price,
+            max_favorable_excursion=outcome.max_favorable_excursion,
+            max_adverse_excursion=outcome.max_adverse_excursion,
+            missed_resolved_at=outcome.missed_resolved_at,
+            missed_pnl_usd=metrics["pnl_usd"],
+            missed_roe_pct=metrics["roe_pct"],
+            missed_account_impact_pct=metrics["account_impact_pct"],
+        )
+
+    @staticmethod
     def _snapshot(record: dict[str, Any] | None) -> dict[str, Any]:
         if not record:
             return {}
@@ -156,6 +184,9 @@ class MissedOpportunityRecalcService:
             "points_captured": record.get("points_captured"),
             "missed_exit_reason": record.get("missed_exit_reason"),
             "missed_exit_price": record.get("missed_exit_price"),
+            "missed_pnl_usd": record.get("missed_pnl_usd"),
+            "missed_roe_pct": record.get("missed_roe_pct"),
+            "missed_account_impact_pct": record.get("missed_account_impact_pct"),
             "max_favorable_excursion": record.get("max_favorable_excursion"),
             "max_adverse_excursion": record.get("max_adverse_excursion"),
         }
@@ -167,6 +198,9 @@ class MissedOpportunityRecalcService:
             "points_captured",
             "missed_exit_reason",
             "missed_exit_price",
+            "missed_pnl_usd",
+            "missed_roe_pct",
+            "missed_account_impact_pct",
             "max_favorable_excursion",
             "max_adverse_excursion",
         )

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 import time
 from typing import Any
 
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 TELEGRAM_API_BASE = "https://api.telegram.org"
 TELEGRAM_SEND_MESSAGE = TELEGRAM_API_BASE + "/bot{token}/sendMessage"
 TELEGRAM_GET_ME = TELEGRAM_API_BASE + "/bot{token}/getMe"
+BOT_TOKEN_RE = re.compile(r"^\d+:[A-Za-z0-9_-]{30,}$")
 _UNSET = object()
 
 
@@ -34,7 +37,35 @@ def _side_label(side: str) -> str:
     return "LONG" if side == "BUY" else "SHORT"
 
 
+def _bot_token_format_ok(token: str | None) -> bool:
+    return bool(token and BOT_TOKEN_RE.match(token))
+
+
 def _parse_telegram_error(exc: requests.RequestException | str, response_text: str = "") -> str:
+    if response_text:
+        try:
+            body = json.loads(response_text)
+            code = body.get("error_code")
+            description = str(body.get("description") or "").lower()
+            if code == 404 or description == "not found":
+                return (
+                    "Invalid bot token — open @BotFather, select your bot, tap "
+                    "API Token, copy the full token into TELEGRAM_BOT_TOKEN, and restart"
+                )
+            if code == 401 or "unauthorized" in description:
+                return "Invalid bot token — regenerate it with @BotFather and update .env"
+            if "chat not found" in description:
+                return (
+                    "Invalid chat ID — open your bot in Telegram, send /start, then copy "
+                    "your chat ID from @userinfobot into TELEGRAM_CHAT_ID"
+                )
+            if "bot was blocked by the user" in description:
+                return "Bot blocked — open Telegram, find your bot, and tap Start"
+            if description:
+                return str(body.get("description"))
+        except (json.JSONDecodeError, TypeError, AttributeError):
+            pass
+
     text = f"{exc} {response_text}".lower()
     if "connecttimeout" in text or "timed out" in text or "failed to establish" in text:
         return (
@@ -42,7 +73,7 @@ def _parse_telegram_error(exc: requests.RequestException | str, response_text: s
             "Use Pushover/Email, run the app on a network that can reach Telegram, "
             "or set TELEGRAM_PROXY in .env"
         )
-    if "chat not found" in text or "chat_id" in text and "invalid" in text:
+    if "chat not found" in text:
         return (
             "Invalid chat ID — open your bot in Telegram, send /start, then copy your chat ID "
             "from @userinfobot into TELEGRAM_CHAT_ID"
@@ -51,6 +82,11 @@ def _parse_telegram_error(exc: requests.RequestException | str, response_text: s
         return "Bot blocked — open Telegram, find your bot, and tap Start"
     if "unauthorized" in text or "401" in text:
         return "Invalid bot token — check TELEGRAM_BOT_TOKEN from @BotFather"
+    if "not found" in text and "error_code" in text:
+        return (
+            "Invalid bot token — open @BotFather, regenerate the API token, "
+            "update TELEGRAM_BOT_TOKEN in .env, and restart"
+        )
     if response_text:
         return response_text[:240]
     return "Telegram API request failed — check server logs"
@@ -98,11 +134,17 @@ class TelegramService:
         return self._clean(settings.telegram_proxy)
 
     def is_configured(self) -> bool:
-        return bool(self.bot_token and self.chat_id)
+        return bool(_bot_token_format_ok(self.bot_token) and self.chat_id)
 
     def status(self) -> dict[str, Any]:
+        token_ok = _bot_token_format_ok(self.bot_token)
         hint: str | None = None
-        if self.is_configured() and self._last_error:
+        if self.bot_token and not token_ok:
+            hint = (
+                "TELEGRAM_BOT_TOKEN format looks wrong — copy the full token from @BotFather "
+                "(looks like 123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)"
+            )
+        elif self.is_configured() and self._last_error:
             hint = self._last_error
         elif self.is_configured() and self.proxy:
             hint = f"Using proxy {self.proxy}"
@@ -110,6 +152,7 @@ class TelegramService:
             "configured": self.is_configured(),
             "chat_id_set": bool(self.chat_id),
             "bot_token_set": bool(self.bot_token),
+            "bot_token_valid": token_ok,
             "proxy_set": bool(self.proxy),
             "last_error": self._last_error,
             "config_hint": hint,

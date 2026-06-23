@@ -25,6 +25,7 @@
       <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
       <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
       <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <a class="nav-item" data-nav="risk" href="/risk"><span class="nav-icon">◈</span> Risk Matrix</a>
       <a class="nav-item" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
     </nav>
     <div class="sidebar-status">
@@ -122,10 +123,18 @@
               <span class="missed-stat-label">Missed Losers</span>
               <span class="missed-stat-value down" id="missed-losers">0</span>
             </div>
+            <div class="missed-stat missed-stat-wide">
+              <span class="missed-stat-label">Total Missed Profit</span>
+              <span class="missed-stat-value" id="missed-net-usd">$0</span>
+            </div>
+            <div class="missed-stat missed-stat-wide">
+              <span class="missed-stat-label">Total Missed ROE</span>
+              <span class="missed-stat-value" id="missed-net-roe">0%</span>
+            </div>
           <div class="missed-by-symbol-list" id="missed-by-symbol"></div>
           <div class="missed-recalc-actions">
             <button type="button" id="recalc-missed-btn" class="btn-secondary btn-sm">
-              Recalculate History
+              Recalculate All History
             </button>
             <p id="recalc-missed-status" class="missed-recalc-status" hidden></p>
           </div>

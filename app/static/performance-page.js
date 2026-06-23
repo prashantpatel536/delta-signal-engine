@@ -147,7 +147,10 @@ function renderMissedAnalytics(data) {
   setText("mo-total", total);
   setText("mo-gross-profit", formatPts(data.gross_missed_profit, true));
   setText("mo-gross-loss", formatPts(data.gross_missed_loss, true));
+  setText("mo-gross-profit-usd", formatUsd(data.gross_missed_pnl_usd));
+  setText("mo-gross-loss-usd", formatUsd(data.gross_missed_loss_usd));
   const netEl = document.getElementById("mo-net");
+  const netUsdEl = document.getElementById("mo-net-usd");
   if (netEl) {
     const net = Number(data.net_missed_profit ?? 0);
     netEl.textContent = formatPts(net, true);
@@ -155,6 +158,20 @@ function renderMissedAnalytics(data) {
     if (net > 0) netEl.classList.add("up");
     if (net < 0) netEl.classList.add("down");
   }
+  if (netUsdEl) {
+    const netUsd = Number(data.net_missed_pnl_usd ?? 0);
+    netUsdEl.textContent = formatUsd(netUsd);
+    netUsdEl.className = "stat-value";
+    if (netUsd > 0) netUsdEl.classList.add("up");
+    if (netUsd < 0) netUsdEl.classList.add("down");
+  }
+}
+
+function formatUsd(value) {
+  const n = Number(value ?? 0);
+  if (Number.isNaN(n)) return "—";
+  const sign = n >= 0 ? "+" : "-";
+  return `${sign}$${Math.abs(n).toFixed(2)}`;
 }
 
 async function loadMissedAnalytics(period = missedPeriod) {

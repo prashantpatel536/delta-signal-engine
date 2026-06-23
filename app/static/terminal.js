@@ -130,35 +130,60 @@ window.Terminal = {
     return `${sign}${formatted} pts`;
   },
 
+  formatMissedUsd(value) {
+    const n = Number(value ?? 0);
+    if (Number.isNaN(n)) return "$0";
+    const sign = n >= 0 ? "+" : "-";
+    return `${sign}$${Math.abs(n).toFixed(2)}`;
+  },
+
   renderMissedOpportunities(summary) {
     const totalEl = document.getElementById("missed-opportunities-total");
     const winnersEl = document.getElementById("missed-winners");
     const losersEl = document.getElementById("missed-losers");
     const bySymbolEl = document.getElementById("missed-by-symbol");
+    const netUsdEl = document.getElementById("missed-net-usd");
+    const netRoeEl = document.getElementById("missed-net-roe");
     if (!winnersEl || !summary) return;
 
     const winners = Number(summary.missed_winners ?? 0);
     const losers = Number(summary.missed_losers ?? 0);
     const total = Number(summary.missed_opportunities ?? winners + losers);
     const net = Number(summary.net_missed_profit ?? 0);
+    const netUsd = Number(summary.net_missed_pnl_usd ?? 0);
+    const netRoe = Number(summary.net_missed_roe_pct ?? 0);
     const bySymbol = summary.by_symbol || [];
 
     if (totalEl) totalEl.textContent = total;
     winnersEl.textContent = winners;
     losersEl.textContent = losers;
+    if (netUsdEl) {
+      netUsdEl.textContent = this.formatMissedUsd(netUsd);
+      netUsdEl.className = `missed-stat-value ${netUsd >= 0 ? "up" : "down"}`;
+    }
+    if (netRoeEl) {
+      netRoeEl.textContent = `${netRoe >= 0 ? "+" : ""}${netRoe.toFixed(2)}%`;
+      netRoeEl.className = `missed-stat-value ${netRoe >= 0 ? "up" : "down"}`;
+    }
 
     if (bySymbolEl) {
       const rows = bySymbol.map(
         (row) => `
         <div class="missed-symbol-row">
           <span class="missed-symbol-label">${row.label} Net Missed</span>
-          <span class="missed-symbol-value ${Number(row.net_missed_profit) >= 0 ? "up" : "down"}">${this.formatMissedPts(row.net_missed_profit)}</span>
+          <span class="missed-symbol-dual">
+            <span class="missed-symbol-value ${Number(row.net_missed_profit) >= 0 ? "up" : "down"}">${this.formatMissedPts(row.net_missed_profit)}</span>
+            <span class="missed-symbol-value muted">${this.formatMissedUsd(row.net_missed_pnl_usd)}</span>
+          </span>
         </div>`
       );
       rows.push(`
         <div class="missed-symbol-row missed-symbol-total">
           <span class="missed-symbol-label">Total Net Missed</span>
-          <span class="missed-symbol-value ${net >= 0 ? "up" : "down"}">${this.formatMissedPts(net)}</span>
+          <span class="missed-symbol-dual">
+            <span class="missed-symbol-value ${net >= 0 ? "up" : "down"}">${this.formatMissedPts(net)}</span>
+            <span class="missed-symbol-value ${netUsd >= 0 ? "up" : "down"}">${this.formatMissedUsd(netUsd)}</span>
+          </span>
         </div>`);
       bySymbolEl.innerHTML = rows.join("");
     }
@@ -175,7 +200,7 @@ window.Terminal = {
     statusEl.textContent = "Starting recalculation…";
 
     try {
-      const response = await fetch("/admin/recalculate-missed-opportunities", {
+      const response = await fetch("/admin/recalculate-all", {
         method: "POST",
       });
       if (!response.ok || !response.body) {
@@ -198,7 +223,9 @@ window.Terminal = {
           if (!line.trim()) continue;
           const event = JSON.parse(line);
           if (event.type === "progress") {
-            statusEl.textContent = `Recalculating ${event.current} / ${event.total}…`;
+            statusEl.textContent = `Recalculating missed ${event.current} / ${event.total}…`;
+          } else if (event.type === "phase" && event.phase === "trades") {
+            statusEl.textContent = "Recalculating closed trades…";
           } else if (event.type === "complete") {
             finalPayload = event;
           } else if (event.type === "error") {
@@ -211,9 +238,12 @@ window.Terminal = {
         throw new Error("Recalculation finished without a result");
       }
 
-      const { recalculated, changed, summary } = finalPayload;
+      const { summary, trades, missed } = finalPayload;
       statusEl.className = "missed-recalc-status ok";
-      statusEl.textContent = `Done — ${recalculated} recalculated (${changed} updated)`;
+      const missedChanged = missed?.changed ?? finalPayload.changed ?? 0;
+      const missedTotal = missed?.recalculated ?? finalPayload.recalculated ?? 0;
+      const tradeTotal = trades?.recalculated ?? 0;
+      statusEl.textContent = `Done — missed ${missedChanged}/${missedTotal}, trades ${tradeTotal}`;
       if (summary) {
         this.renderMissedOpportunities(summary);
       }
@@ -310,20 +340,29 @@ window.Terminal = {
     const direction = this.directionFromSide(signal.side);
     const age = this.formatSignalAge(signal.created_at);
     const sourceTf = signal.signal_timeframe || signal.timeframe || signalTimeframe || "—";
+    const rp = signal.risk_profile || {};
+    const liqStatus = rp.liq_status || "—";
+    const liqClass = liqStatus === "SAFE" ? "liq-safe" : liqStatus === "CAUTION" ? "liq-caution" : "liq-danger";
 
     el.innerHTML = `
       <div class="panel-head"><h2>Signal Review</h2><span class="badge pending">PENDING</span></div>
       <div class="review-side ${sideClass}">${signal.side === "BUY" ? "▲ BUY" : "▼ SELL"} · ${signal.symbol}</div>
+      <div class="liq-banner ${liqClass}">Liq Buffer: ${liqStatus}${rp.liq_buffer != null ? ` (${Number(rp.liq_buffer).toFixed(2)}×)` : ""}</div>
       <dl class="sq-grid review-grid">
         <div><dt>Symbol</dt><dd>${signal.symbol}</dd></div>
-        <div><dt>Side</dt><dd>${signal.side}</dd></div>
         <div><dt>Direction</dt><dd class="review-direction ${sideClass}">${direction}</dd></div>
-        <div><dt>Signal Source TF</dt><dd>${sourceTf}</dd></div>
         <div><dt>Entry</dt><dd>${DSE.formatPrice(signal.entry)}</dd></div>
-        <div><dt>SL</dt><dd>${DSE.formatPrice(signal.stop_loss)}</dd></div>
-        <div><dt>TP</dt><dd>${DSE.formatPrice(signal.take_profit)}</dd></div>
-        <div><dt>RR</dt><dd>${Number(signal.risk_reward).toFixed(1)}</dd></div>
-        <div><dt>Signal Time</dt><dd>${DSE.formatIsoTime(signal.created_at)}</dd></div>
+        <div><dt>Structure SL</dt><dd>${DSE.formatPrice(rp.structure_stop_loss ?? signal.stop_loss)}</dd></div>
+        <div><dt>Applied System SL</dt><dd>${DSE.formatPrice(rp.applied_stop_loss ?? signal.stop_loss)}</dd></div>
+        <div><dt>Applied TP</dt><dd>${DSE.formatPrice(rp.applied_take_profit ?? signal.take_profit)}</dd></div>
+        <div><dt>Risk Points</dt><dd>${rp.risk_points != null ? Number(rp.risk_points).toFixed(2) : "—"}</dd></div>
+        <div><dt>Risk %</dt><dd>${rp.risk_pct != null ? `${Number(rp.risk_pct).toFixed(0)}% acct` : "—"}</dd></div>
+        <div><dt>Reward Points</dt><dd>${rp.reward_points != null ? Number(rp.reward_points).toFixed(2) : "—"}</dd></div>
+        <div><dt>Reward %</dt><dd>${rp.reward_pct != null ? `${Number(rp.reward_pct).toFixed(0)}% acct` : "—"}</dd></div>
+        <div><dt>RR Ratio</dt><dd>${rp.risk_reward != null ? Number(rp.risk_reward).toFixed(1) : Number(signal.risk_reward).toFixed(1)}</dd></div>
+        <div><dt>Liquidation</dt><dd>${rp.liquidation_price != null ? DSE.formatPrice(rp.liquidation_price) : "—"}</dd></div>
+        <div><dt>Dist To Liq</dt><dd>${rp.distance_to_liquidation != null ? Number(rp.distance_to_liquidation).toFixed(2) : "—"}</dd></div>
+        <div><dt>Signal TF</dt><dd>${sourceTf}</dd></div>
         <div><dt>Signal Age</dt><dd>${age}</dd></div>
       </dl>
       <div class="review-actions">
@@ -475,8 +514,8 @@ window.Terminal = {
   _lastAccount: null,
 
   _orderState: {
-    leverage: 10,
-    marginPercent: 25,
+    leverage: 25,
+    marginPercent: 50,
     symbol: null,
     signalKey: null,
   },

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Matrix — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="risk">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">RISK ENGINE</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="trades" href="/history/trades"><span class="nav-icon">⇄</span> Trades</a>
+      <a class="nav-item" data-nav="history" href="/history"><span class="nav-icon">☰</span> History</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <a class="nav-item active" data-nav="risk" href="/risk"><span class="nav-icon">◈</span> Risk Matrix</a>
+      <a class="nav-item" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok" id="risk-live-dot"></span> <span id="risk-live-label">Live</span></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Dynamic Risk Matrix</h1>
+        <p class="page-sub">50% capital · 25x leverage · account-impact distances from live price</p>
+      </div>
+      <button type="button" id="risk-refresh" class="btn-secondary">Refresh</button>
+    </header>
+
+    <main class="page-content">
+      <section class="risk-assumptions-bar" id="risk-assumptions">
+        <span>Balance: <strong id="risk-balance">—</strong></span>
+        <span>Margin: <strong id="risk-margin-pct">—</strong></span>
+        <span>Leverage: <strong id="risk-leverage">—</strong></span>
+        <span class="muted" id="risk-updated">—</span>
+      </section>
+
+      <div class="table-wrap">
+        <table class="data-table risk-matrix-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Current Price</th>
+              <th>10% Risk Dist</th>
+              <th>20% Risk Dist</th>
+              <th>30% Risk Dist</th>
+              <th>25% Reward Dist</th>
+              <th>50% Reward Dist</th>
+              <th>100% Reward Dist</th>
+            </tr>
+          </thead>
+          <tbody id="risk-matrix-body">
+            <tr><td colspan="8" class="empty">Loading matrix…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="sizing-hint risk-matrix-hint">
+        Distances are price points from current price that produce the listed account gain/loss
+        with 50% margin allocation and 25× leverage.
+      </p>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/risk-page.js"></script>
+</body>
+</html>

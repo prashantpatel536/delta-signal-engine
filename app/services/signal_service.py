@@ -72,6 +72,17 @@ class SignalService:
             return None
 
         plan = build_trade_plan(side, entry, hh50, ll50)  # type: ignore[arg-type]
+        from app.repositories.account_repository import AccountRepository
+        from app.risk_engine import build_signal_risk_profile
+
+        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        profile = build_signal_risk_profile(
+            side=plan.side,
+            entry=plan.entry,
+            structure_stop_loss=plan.stop_loss,
+            structure_take_profit=plan.take_profit,
+            balance=balance,
+        )
         record = self.repository.create(
             symbol=symbol,
             timeframe=timeframe,
@@ -82,6 +93,7 @@ class SignalService:
             risk_reward=plan.risk_reward,
             status="PENDING",
             created_at=created_at,
+            risk_profile=profile.to_json(),
         )
         logger.info("Persisted pending signal id=%s %s %s %s", record["id"], symbol, timeframe, side)
         try:

@@ -45,3 +45,18 @@ class AccountRepository:
             conn.commit()
             row = conn.execute("SELECT * FROM paper_account WHERE id = 1").fetchone()
         return self._row_to_dict(row)
+
+    def set_balances(self, balance: float, realized_pnl: float) -> dict[str, Any]:
+        with get_connection() as conn:
+            conn.execute(
+                """
+                UPDATE paper_account
+                SET balance = ?,
+                    realized_pnl = ?
+                WHERE id = 1
+                """,
+                (balance, realized_pnl),
+            )
+            conn.commit()
+            row = conn.execute("SELECT * FROM paper_account WHERE id = 1").fetchone()
+        return self._row_to_dict(row)

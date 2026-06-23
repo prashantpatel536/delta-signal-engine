@@ -1334,6 +1334,60 @@ select, button {
   gap: 0.5rem;
 }
 
+.missed-symbol-dual {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.missed-symbol-dual .muted {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.liq-banner {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.liq-safe {
+  color: var(--buy);
+  background: rgba(14, 203, 129, 0.12);
+  border: 1px solid rgba(14, 203, 129, 0.35);
+}
+
+.liq-caution {
+  color: #f0b429;
+  background: rgba(240, 180, 41, 0.12);
+  border: 1px solid rgba(240, 180, 41, 0.35);
+}
+
+.liq-danger {
+  color: var(--sell);
+  background: rgba(246, 70, 93, 0.1);
+  border: 1px solid rgba(246, 70, 93, 0.35);
+}
+
+.risk-assumptions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.risk-matrix-hint {
+  margin-top: 1rem;
+}
+
 .missed-recalc-status {
   font-size: 0.78rem;
   color: var(--muted);

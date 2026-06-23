@@ -218,6 +218,10 @@ class PaperTradingService:
 
     ) -> dict[str, Any]:
 
+        from app.risk_engine import enforce_trade_params
+
+        leverage, margin_percent = enforce_trade_params(leverage, margin_percent)
+
         margin_used, position_value, quantity, available = self._resolve_trade_size(
 
             entry=entry,
@@ -281,6 +285,10 @@ class PaperTradingService:
         prices: dict[str, float] | None = None,
 
     ) -> dict[str, Any]:
+
+        from app.risk_engine import enforce_trade_params
+
+        leverage, margin_percent = enforce_trade_params(leverage, margin_percent)
 
         if leverage < 1:
 
@@ -738,6 +746,19 @@ class PaperTradingService:
 
             margin = float(position.get("margin_used") or 0.0)
 
+            price_points = position.get("price_points")
+            if price_points is None and position.get("exit_price") is not None:
+                from app.paper_trader import realized_points
+
+                price_points = realized_points(
+                    position["side"],
+                    float(position["entry"]),
+                    float(position["exit_price"]),
+                )
+
+            account_impact = position.get("account_impact_pct")
+            roe = calculate_roe(pnl, margin) if margin > 0 else None
+
             trades.append(
 
                 {
@@ -752,7 +773,11 @@ class PaperTradingService:
 
                     "exit_status": exit_status_label(position.get("exit_reason")),
 
-                    "roe": calculate_roe(pnl, margin) if margin > 0 else None,
+                    "price_points": price_points,
+
+                    "account_impact_pct": account_impact,
+
+                    "roe": roe,
 
                 }
 
@@ -854,9 +879,15 @@ class PaperTradingService:
 
             return None
 
+        from app.paper_trader import realized_points
+        from app.risk_engine import account_impact_pct
+
         qty = float(position.get("quantity") or 1.0)
 
+        balance_before = float(self.account_repository.get_account()["balance"])
         pnl = calculate_pnl(position["side"], position["entry"], exit_price, qty)
+        price_points = realized_points(position["side"], position["entry"], exit_price)
+        impact = account_impact_pct(pnl, balance_before)
 
         updated = self.repository.close(
 
@@ -867,6 +898,10 @@ class PaperTradingService:
             exit_reason=exit_reason,
 
             pnl=pnl,
+
+            price_points=price_points,
+
+            account_impact_pct=impact,
 
         )
 

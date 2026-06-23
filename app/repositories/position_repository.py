@@ -168,6 +168,8 @@ class PositionRepository:
         exit_reason: str,
         pnl: float,
         closed_at: str | None = None,
+        price_points: float | None = None,
+        account_impact_pct: float | None = None,
     ) -> dict[str, Any] | None:
         now = closed_at or utc_now_iso()
         with get_connection() as conn:
@@ -178,10 +180,53 @@ class PositionRepository:
                     closed_at = ?,
                     exit_price = ?,
                     exit_reason = ?,
-                    pnl = ?
+                    pnl = ?,
+                    price_points = ?,
+                    account_impact_pct = ?
                 WHERE id = ? AND status = 'OPEN'
                 """,
-                (now, exit_price, exit_reason, pnl, position_id),
+                (now, exit_price, exit_reason, pnl, price_points, account_impact_pct, position_id),
+            )
+            conn.commit()
+            if cursor.rowcount == 0:
+                return None
+        return self.get_by_id(position_id)
+
+    def update_closed_metrics(
+        self,
+        position_id: int,
+        *,
+        pnl: float,
+        quantity: float,
+        leverage: float,
+        margin_used: float,
+        position_value: float,
+        price_points: float,
+        account_impact_pct: float,
+    ) -> dict[str, Any] | None:
+        with get_connection() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE positions
+                SET pnl = ?,
+                    quantity = ?,
+                    leverage = ?,
+                    margin_used = ?,
+                    position_value = ?,
+                    price_points = ?,
+                    account_impact_pct = ?
+                WHERE id = ? AND status = 'CLOSED'
+                """,
+                (
+                    pnl,
+                    quantity,
+                    leverage,
+                    margin_used,
+                    position_value,
+                    price_points,
+                    account_impact_pct,
+                    position_id,
+                ),
             )
             conn.commit()
             if cursor.rowcount == 0:

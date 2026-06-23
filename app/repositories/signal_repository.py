@@ -40,6 +40,7 @@ class SignalRepository:
         risk_reward: float,
         status: str = "PENDING",
         created_at: str | None = None,
+        risk_profile: str | None = None,
     ) -> dict[str, Any]:
         now = created_at or utc_now_iso()
         with get_connection() as conn:
@@ -47,8 +48,8 @@ class SignalRepository:
                 """
                 INSERT INTO signals (
                     symbol, timeframe, side, entry, stop_loss, take_profit,
-                    risk_reward, status, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    risk_reward, status, created_at, updated_at, risk_profile
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     symbol,
@@ -61,6 +62,7 @@ class SignalRepository:
                     status,
                     now,
                     now,
+                    risk_profile,
                 ),
             )
             conn.commit()
@@ -366,6 +368,9 @@ class SignalRepository:
         *,
         exit_reason: str,
         exit_price: float,
+        missed_pnl_usd: float | None = None,
+        missed_roe_pct: float | None = None,
+        missed_account_impact_pct: float | None = None,
     ) -> dict[str, Any] | None:
         if status not in {"MISSED_WINNER", "MISSED_LOSER"}:
             raise ValueError(f"Invalid missed status: {status}")
@@ -378,6 +383,9 @@ class SignalRepository:
                     points_captured = ?,
                     missed_exit_reason = ?,
                     missed_exit_price = ?,
+                    missed_pnl_usd = ?,
+                    missed_roe_pct = ?,
+                    missed_account_impact_pct = ?,
                     missed_monitoring = 0,
                     missed_resolved_at = ?,
                     updated_at = ?
@@ -389,6 +397,9 @@ class SignalRepository:
                     points_captured,
                     exit_reason,
                     exit_price,
+                    missed_pnl_usd,
+                    missed_roe_pct,
+                    missed_account_impact_pct,
                     now,
                     now,
                     signal_id,
@@ -440,6 +451,9 @@ class SignalRepository:
                         points_captured = ?,
                         missed_exit_reason = ?,
                         missed_exit_price = ?,
+                        missed_pnl_usd = ?,
+                        missed_roe_pct = ?,
+                        missed_account_impact_pct = ?,
                         max_favorable_excursion = ?,
                         max_adverse_excursion = ?,
                         missed_monitoring = 0,
@@ -452,6 +466,9 @@ class SignalRepository:
                         outcome.points_captured,
                         outcome.exit_reason,
                         outcome.exit_price,
+                        outcome.missed_pnl_usd,
+                        outcome.missed_roe_pct,
+                        outcome.missed_account_impact_pct,
                         outcome.max_favorable_excursion,
                         outcome.max_adverse_excursion,
                         outcome.missed_resolved_at,
@@ -468,6 +485,9 @@ class SignalRepository:
                         points_captured = NULL,
                         missed_exit_reason = NULL,
                         missed_exit_price = NULL,
+                        missed_pnl_usd = NULL,
+                        missed_roe_pct = NULL,
+                        missed_account_impact_pct = NULL,
                         max_favorable_excursion = ?,
                         max_adverse_excursion = ?,
                         missed_monitoring = 0,
@@ -499,6 +519,12 @@ class SignalRepository:
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_loss,
                     SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit,
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_pnl_usd,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_loss_usd,
+                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS net_missed_pnl_usd,
                     SUM(CASE WHEN missed_monitoring = 1 THEN 1 ELSE 0 END) AS monitoring,
                     SUM(CASE WHEN status IN ('REJECTED', 'EXPIRED', 'PENDING')
                         AND missed_resolved_at IS NOT NULL THEN 1 ELSE 0 END)
@@ -509,6 +535,15 @@ class SignalRepository:
         winners = int(row["missed_winners"] or 0)
         losers = int(row["missed_losers"] or 0)
         total = winners + losers
+        net_missed_pnl_usd = round(float(row["net_missed_pnl_usd"] or 0), 2)
+        from app.repositories.account_repository import AccountRepository
+        from app.risk_engine import trading_margin_percent
+
+        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        margin_base = balance * (trading_margin_percent() / 100.0)
+        net_missed_roe_pct = (
+            round(net_missed_pnl_usd / margin_base * 100.0, 2) if margin_base > 0 else 0.0
+        )
         return {
             "missed_opportunities": total,
             "missed_winners": winners,
@@ -516,6 +551,10 @@ class SignalRepository:
             "gross_missed_profit": round(float(row["gross_missed_profit"] or 0), 2),
             "gross_missed_loss": round(float(row["gross_missed_loss"] or 0), 2),
             "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
+            "gross_missed_pnl_usd": round(float(row["gross_missed_pnl_usd"] or 0), 2),
+            "gross_missed_loss_usd": round(float(row["gross_missed_loss_usd"] or 0), 2),
+            "net_missed_pnl_usd": net_missed_pnl_usd,
+            "net_missed_roe_pct": net_missed_roe_pct,
             "monitoring": int(row["monitoring"] or 0),
             "totals_valid": total == winners + losers,
             "unresolved_status_with_resolution": int(
@@ -532,7 +571,8 @@ class SignalRepository:
                     symbol,
                     SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
                     SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
-                    SUM(COALESCE(points_captured, 0)) AS net_missed_profit
+                    SUM(COALESCE(points_captured, 0)) AS net_missed_profit,
+                    SUM(COALESCE(missed_pnl_usd, 0)) AS net_missed_pnl_usd
                 FROM signals
                 WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER')
                 GROUP BY symbol
@@ -544,6 +584,7 @@ class SignalRepository:
                 "missed_winners": int(row["missed_winners"] or 0),
                 "missed_losers": int(row["missed_losers"] or 0),
                 "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
+                "net_missed_pnl_usd": round(float(row["net_missed_pnl_usd"] or 0), 2),
             }
             for row in rows
         }
@@ -558,6 +599,7 @@ class SignalRepository:
                     "missed_winners": 0,
                     "missed_losers": 0,
                     "net_missed_profit": 0.0,
+                    "net_missed_pnl_usd": 0.0,
                 },
             )
             ordered.append(
@@ -567,6 +609,7 @@ class SignalRepository:
                     "missed_winners": row["missed_winners"],
                     "missed_losers": row["missed_losers"],
                     "net_missed_profit": row["net_missed_profit"],
+                    "net_missed_pnl_usd": row.get("net_missed_pnl_usd", 0.0),
                 }
             )
         return ordered
@@ -644,10 +687,30 @@ class SignalRepository:
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_loss,
                     SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
                         AND datetime(missed_resolved_at) >= datetime(?)
-                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit
+                        THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit,
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_pnl_usd,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_loss_usd,
+                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        AND datetime(missed_resolved_at) >= datetime(?)
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS net_missed_pnl_usd
                 FROM signals
                 """,
-                (since_iso, since_iso, since_iso, since_iso, since_iso, since_iso, since_iso),
+                (
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                    since_iso,
+                ),
             ).fetchone()
         winners = int(row["missed_winners"] or 0)
         losers = int(row["missed_losers"] or 0)
@@ -660,5 +723,8 @@ class SignalRepository:
             "gross_missed_profit": round(float(row["gross_missed_profit"] or 0), 2),
             "gross_missed_loss": round(float(row["gross_missed_loss"] or 0), 2),
             "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
+            "gross_missed_pnl_usd": round(float(row["gross_missed_pnl_usd"] or 0), 2),
+            "gross_missed_loss_usd": round(float(row["gross_missed_loss_usd"] or 0), 2),
+            "net_missed_pnl_usd": round(float(row["net_missed_pnl_usd"] or 0), 2),
             "totals_valid": winners + losers == winners + losers,
         }

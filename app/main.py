@@ -26,6 +26,7 @@ from app.models import utc_now_iso
 from app.paper_api import router as paper_router
 from app.admin_api import router as admin_router
 from app.pushover_api import router as pushover_router
+from app.risk_api import router as risk_router
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
 from app.paper_trader import exit_status_label
@@ -291,6 +292,7 @@ app.include_router(settings_router)
 app.include_router(telegram_router)
 app.include_router(pushover_router)
 app.include_router(admin_router)
+app.include_router(risk_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -349,6 +351,11 @@ def debug_signals_page() -> FileResponse:
 @app.get("/settings", include_in_schema=False)
 def settings_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "settings.html")
+
+
+@app.get("/risk", include_in_schema=False)
+def risk_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "risk.html")
 
 
 @app.get("/health/page", include_in_schema=False)

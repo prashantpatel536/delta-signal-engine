@@ -102,6 +102,10 @@ SIGNAL_MIGRATIONS = [
     "ALTER TABLE signals ADD COLUMN missed_resolved_at TEXT",
     "ALTER TABLE signals ADD COLUMN missed_exit_reason TEXT",
     "ALTER TABLE signals ADD COLUMN missed_exit_price REAL",
+    "ALTER TABLE signals ADD COLUMN risk_profile TEXT",
+    "ALTER TABLE signals ADD COLUMN missed_pnl_usd REAL",
+    "ALTER TABLE signals ADD COLUMN missed_roe_pct REAL",
+    "ALTER TABLE signals ADD COLUMN missed_account_impact_pct REAL",
 ]
 
 MIGRATIONS = [
@@ -112,6 +116,8 @@ MIGRATIONS = [
     "ALTER TABLE positions ADD COLUMN original_stop_loss REAL",
     "ALTER TABLE positions ADD COLUMN original_take_profit REAL",
     "ALTER TABLE positions ADD COLUMN risk_reward REAL NOT NULL DEFAULT 0.0",
+    "ALTER TABLE positions ADD COLUMN price_points REAL",
+    "ALTER TABLE positions ADD COLUMN account_impact_pct REAL",
 ]
 
 

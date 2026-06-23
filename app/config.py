@@ -15,6 +15,8 @@ LIVE_PRICE_REFRESH_SECONDS = 10
 PENDING_SIGNAL_EXPIRY_MINUTES = 15
 MISSED_OPPORTUNITY_MONITOR_HOURS = int(os.getenv("MISSED_OPPORTUNITY_MONITOR_HOURS", "24") or "24")
 DEFAULT_SIGNAL_TIMEFRAME = "5m"
+DEFAULT_LEVERAGE = 25
+DEFAULT_MARGIN_PERCENT = 50
 TIMEFRAMES = ("1m", "5m", "15m", "1h")
 MARK_CANDLE_PREFIX = "MARK:"
 DATABASE_PATH = PROJECT_ROOT / "data" / "signals.db"
@@ -82,6 +84,14 @@ class Settings:
     )
     missed_opportunity_monitor_hours: int = field(
         default_factory=lambda: MISSED_OPPORTUNITY_MONITOR_HOURS
+    )
+    default_leverage: float = field(
+        default_factory=lambda: float(os.getenv("DEFAULT_LEVERAGE", str(DEFAULT_LEVERAGE)))
+    )
+    default_margin_percent: float = field(
+        default_factory=lambda: float(
+            os.getenv("DEFAULT_MARGIN_PERCENT", str(DEFAULT_MARGIN_PERCENT))
+        )
     )
 
 

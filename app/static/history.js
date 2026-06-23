@@ -23,6 +23,20 @@ function formatPoints(value) {
   return `${sign}${n.toFixed(2)}`;
 }
 
+function formatUsd(value) {
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  const n = Number(value);
+  const sign = n > 0 ? "+" : "";
+  return `${sign}$${Math.abs(n).toFixed(2)}`;
+}
+
+function formatPct(value) {
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  const n = Number(value);
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}%`;
+}
+
 async function loadHistory() {
   const status = statusFilter.value;
   const url = status ? `/signal-history?status=${encodeURIComponent(status)}` : "/signal-history";
@@ -30,7 +44,7 @@ async function loadHistory() {
   try {
     const payload = await fetchJson(url);
     if (!payload.signals.length) {
-      historyBody.innerHTML = `<tr><td colspan="14" class="empty">No signals found.</td></tr>`;
+      historyBody.innerHTML = `<tr><td colspan="17" class="empty">No signals found.</td></tr>`;
       return;
     }
 
@@ -54,6 +68,9 @@ async function loadHistory() {
           <td>${s.missed_exit_reason || "—"}</td>
           <td>${s.missed_exit_price != null ? formatPrice(s.missed_exit_price) : "—"}</td>
           <td>${formatPoints(s.points_captured)}</td>
+          <td>${formatUsd(s.missed_pnl_usd)}</td>
+          <td>${formatPct(s.missed_roe_pct)}</td>
+          <td>${formatPct(s.missed_account_impact_pct)}</td>
         </tr>`;
       })
       .join("");
