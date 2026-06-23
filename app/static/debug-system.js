@@ -25,7 +25,11 @@ async function loadDiagnostics() {
     statCard("Realized PnL", `$${Number(data.paper_account?.realized_pnl || 0).toFixed(2)}`),
   ].join("");
 
-  document.getElementById("sync-note").textContent = data.sync_note || "";
+  document.getElementById("sync-note").innerHTML = [
+    `<strong>Production:</strong> VPS only — edit locally, deploy to VPS, verify there.`,
+    data.sync_note || "",
+    `<br><strong>This host:</strong> ${data.hostname || "unknown"} — metrics here are for <em>this</em> machine only.`,
+  ].join(" ");
 
   document.getElementById("table-counts").textContent = JSON.stringify(
     {

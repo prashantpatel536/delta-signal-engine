@@ -1,103 +1,95 @@
-# Database Sync Diagnosis — Localhost vs VPS
+# Database policy — VPS is canonical
 
-## Root cause
+## Rule
 
-**Localhost and VPS use completely separate SQLite databases.**
+**Only the VPS database is production truth.** The VPS engine runs 24/7 at:
 
-| Factor | Localhost | VPS |
-|--------|-----------|-----|
-| Default DB path | `{project}/data/signals.db` | `{project}/data/signals.db` |
-| Git tracking | **No** — `data/*.db` is in `.gitignore` | **No** |
-| Shared on deploy | **No** — `git pull` only updates code | **No** |
-| Signal engine | Writes signals/trades locally | Writes signals/trades locally |
+```
+/root/delta-signal-engine/data/signals.db
+```
 
-Each environment accumulates its own:
-- Signals (different counts, IDs, statuses)
-- Paper trades and PnL (`paper_account.balance`)
-- Missed opportunity resolutions
-- Approved / missed winner / missed loser totals
+Localhost must **not** be treated as a second production instance.
 
-This is **not a calculation bug** — it is **two independent databases**.
+## Why localhost differed
 
-## How to verify
+| Localhost (old) | VPS (production) |
+|-----------------|------------------|
+| 31 signals | 42 signals |
+| 10 trades | 6 trades |
+| Balance $786.55 | Balance $1,092.69 |
+| Latest signal 2026-06-19 | Latest signal 2026-06-22 |
 
-### 1. Check this host
+Same git commit (`bf5daa6`), different SQLite files.
+
+## Local workflow (audits & debugging)
+
+### 1. Stop local engine (do not write to a separate DB)
+
+Do not run `uvicorn` on Windows while VPS is live unless you use a **dev-only** database:
+
+```env
+# Optional: separate dev DB so you never fork production data
+DATABASE_PATH=data/signals.dev.db
+```
+
+### 2. Pull VPS database before any audit
+
+**Windows (PowerShell):**
+
+```powershell
+cd C:\Users\LENOVO\delta-signal-engine
+.\scripts\sync_production_database.ps1
+```
+
+**Linux / macOS:**
 
 ```bash
+./scripts/sync_production_database.sh
+```
+
+Requires SSH to VPS (`ssh root@vmi3381775`). Set in `.env` if needed:
+
+```env
+VPS_HOST=vmi3381775
+VPS_USER=root
+VPS_DATABASE_PATH=/root/delta-signal-engine/data/signals.db
+```
+
+### 3. Verify parity
+
+```powershell
 curl http://localhost:8000/api/debug/system
 ```
 
-Or open: **http://localhost:8000/debug/system**
+Expected after sync (match your VPS):
 
-### 2. Check VPS
+| Field | VPS value |
+|-------|-----------|
+| signal_count | 42 |
+| trade_count | 6 |
+| approved_count | 6 |
+| balance | 1092.69 |
+| latest_signal_time | 2026-06-22T16:35:00+00:00 |
+
+Or open **http://localhost:8000/debug/system** and paste VPS JSON — Compare should show `"identical": true`.
+
+## Production (VPS only)
+
+- Keep **one** writer: VPS uvicorn/systemd service
+- Deploy code with `git pull` on VPS — **never** copy `signals.db` from local to VPS
+- Backups: copy VPS `data/signals.db` periodically on the server
 
 ```bash
-curl http://YOUR_VPS_IP:8000/api/debug/system
+# On VPS
+cp /root/delta-signal-engine/data/signals.db \
+   /root/delta-signal-engine/data/signals.db.backup-$(date -u +%Y%m%d)
 ```
 
-### 3. Compare
+## Summary
 
-On the diagnostic page (`/debug/system`), paste VPS `/api/debug/system/full` JSON and click **Compare**.
-
-Or via API:
-
-```bash
-curl -X POST http://localhost:8000/api/debug/system/compare \
-  -H "Content-Type: application/json" \
-  -d @vps_full.json
-```
-
-## Expected differences (current localhost snapshot)
-
-When databases are separate, these fields **will differ**:
-
-- `database_path` (different absolute paths)
-- `database_size`
-- `signal_count`, `trade_count`, `approved_count`
-- `latest_signal_time`, `latest_trade_time`
-- `table_row_counts.signals`, `table_row_counts.positions`
-- `paper_account.balance`, `paper_account.realized_pnl`
-
-`git_commit` may also differ if VPS has not pulled latest code.
-
-## Fix options (choose one)
-
-### Option A — VPS is source of truth (recommended for production)
-
-1. Stop localhost engine (avoid dual writes).
-2. Copy VPS database to local for inspection only:
-   ```bash
-   scp user@vps:/path/to/delta-signal-engine/data/signals.db ./data/signals.db
-   ```
-3. Run localhost against copied file (read-only testing).
-
-### Option B — Shared database path
-
-Set the same `DATABASE_PATH` on both hosts pointing to a **shared volume** (NFS, mounted block storage). Only one writer should run at a time.
-
-```env
-DATABASE_PATH=/mnt/shared/delta/signals.db
-```
-
-### Option C — Single production instance
-
-Run the engine **only on VPS**. Use localhost for code development with a fresh/test DB, never expecting parity.
-
-## Localhost reference (at time of audit)
-
-Run `GET /api/debug/system` locally to get current values. Example structure:
-
-```json
-{
-  "git_commit": "...",
-  "database_path": "C:\\Users\\LENOVO\\delta-signal-engine\\data\\signals.db",
-  "database_size": 77824,
-  "signal_count": 31,
-  "trade_count": 10,
-  "approved_count": 10,
-  "latest_signal_time": "...",
-  "latest_trade_time": "..."
-}
-```
-
-Until VPS JSON is pasted into the compare tool, **parity cannot be confirmed** — but separate `data/signals.db` files on each host is sufficient explanation for all metric divergence.
+| Action | Where |
+|--------|--------|
+| Live trading / signals | VPS only |
+| Audits | Pull VPS DB → local, then audit |
+| Code changes | Git → deploy to VPS |
+| Never | Run two engines on two DBs expecting same numbers |

@@ -22,8 +22,24 @@ TRACKED_TABLES = (
     "telegram_notifications",
 )
 
+PRODUCTION_SYNC_META = PROJECT_ROOT / "data" / "production_sync.json"
+VPS_CANONICAL_NOTE = (
+    "Production: VPS only (24/7). Edit code locally, deploy to VPS, verify metrics on VPS. "
+    "Localhost stats are not comparable unless using a separate dev database."
+)
+
 
 class SystemDebugService:
+    def _production_sync_meta(self) -> dict[str, Any] | None:
+        if not PRODUCTION_SYNC_META.exists():
+            return None
+        try:
+            import json
+
+            return json.loads(PRODUCTION_SYNC_META.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+
     def _database_size_bytes(self, db_path: Path) -> int:
         if not db_path.exists():
             return 0
@@ -176,11 +192,9 @@ class SystemDebugService:
             },
             "latest_signals": self._latest_signal_ids(20),
             "latest_trades": self._latest_trade_ids(20),
-            "sync_note": (
-                "Each deployment uses its own SQLite file (default: data/signals.db). "
-                "data/*.db is gitignored and is NOT copied during git pull. "
-                "Localhost and VPS diverge unless they share the same DATABASE_PATH file."
-            ),
+            "production_source": "vps",
+            "production_sync": self._production_sync_meta(),
+            "sync_note": VPS_CANONICAL_NOTE,
         }
 
     @staticmethod
