@@ -19,7 +19,19 @@ DEFAULT_LEVERAGE = 25
 DEFAULT_MARGIN_PERCENT = 50
 TIMEFRAMES = ("1m", "5m", "15m", "1h")
 MARK_CANDLE_PREFIX = "MARK:"
-DATABASE_PATH = PROJECT_ROOT / "data" / "signals.db"
+
+
+def _resolve_database_path() -> Path:
+    raw = os.getenv("DATABASE_PATH", "").strip()
+    if raw:
+        path = Path(raw)
+        if not path.is_absolute():
+            path = PROJECT_ROOT / path
+        return path
+    return PROJECT_ROOT / "data" / "signals.db"
+
+
+DATABASE_PATH = _resolve_database_path()
 
 # Short symbol (API path) -> Delta Exchange product symbol
 SYMBOL_MAP: dict[str, str] = {

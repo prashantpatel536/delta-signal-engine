@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Diagnostics — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="debug-system">
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">DIAGNOSTICS</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" href="/health/page"><span class="nav-icon">♥</span> Health</a>
+      <a class="nav-item active" href="/debug/system"><span class="nav-icon">🛠</span> System</a>
+      <a class="nav-item" href="/debug/signals"><span class="nav-icon">🔬</span> Signals</a>
+    </nav>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">System Diagnostics</h1>
+        <p class="page-sub">Database parity check — localhost vs VPS</p>
+      </div>
+      <button id="refresh-btn" type="button" class="btn-primary">Refresh</button>
+    </header>
+
+    <main class="page-content">
+      <div id="sync-banner" class="health-overall" hidden></div>
+
+      <section class="panel">
+        <h2 class="panel-title">System Info</h2>
+        <div class="stats-grid" id="system-info-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Database Info</h2>
+        <div class="stats-grid" id="database-info-grid"></div>
+        <p id="sync-note" class="page-sub"></p>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Table Row Counts</h2>
+        <pre id="table-counts" class="health-raw"></pre>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Latest 20 Signal IDs</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Symbol</th><th>Side</th><th>Status</th><th>Created</th></tr>
+            </thead>
+            <tbody id="latest-signals"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Latest 20 Trade IDs</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Signal</th><th>Symbol</th><th>Side</th><th>Status</th><th>PnL</th><th>Opened</th></tr>
+            </thead>
+            <tbody id="latest-trades"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Compare With Remote (VPS)</h2>
+        <p class="page-sub">Paste JSON from remote <code>/api/debug/system/full</code> and click Compare.</p>
+        <textarea id="remote-json" class="health-raw" rows="8" placeholder='Paste remote /api/debug/system/full JSON here…'></textarea>
+        <button id="compare-btn" type="button" class="btn-secondary" style="margin-top:0.75rem">Compare</button>
+        <pre id="compare-result" class="health-raw" hidden></pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/debug-system.js"></script>
+</body>
+</html>

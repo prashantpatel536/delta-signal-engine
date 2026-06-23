@@ -593,7 +593,11 @@ class SignalRepository:
                     SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
                     SUM(COALESCE(points_captured, 0)) AS net_missed_profit,
                     SUM(COALESCE(missed_pnl_usd, 0)) AS net_missed_pnl_usd,
-                    SUM(COALESCE(missed_roe_pct, 0)) AS net_missed_roe_pct
+                    SUM(COALESCE(missed_roe_pct, 0)) AS net_missed_roe_pct,
+                    SUM(CASE WHEN status = 'MISSED_WINNER'
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_profit_usd,
+                    SUM(CASE WHEN status = 'MISSED_LOSER'
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_loss_usd
                 FROM signals
                 WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER'){since_clause}
                 GROUP BY symbol
@@ -608,6 +612,8 @@ class SignalRepository:
                 "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
                 "net_missed_pnl_usd": round(float(row["net_missed_pnl_usd"] or 0), 2),
                 "net_missed_roe_pct": round(float(row["net_missed_roe_pct"] or 0), 2),
+                "gross_missed_profit_usd": round(float(row["gross_missed_profit_usd"] or 0), 2),
+                "gross_missed_loss_usd": round(float(row["gross_missed_loss_usd"] or 0), 2),
             }
             for row in rows
         }
@@ -624,6 +630,8 @@ class SignalRepository:
                     "net_missed_profit": 0.0,
                     "net_missed_pnl_usd": 0.0,
                     "net_missed_roe_pct": 0.0,
+                    "gross_missed_profit_usd": 0.0,
+                    "gross_missed_loss_usd": 0.0,
                 },
             )
             ordered.append(
@@ -635,6 +643,8 @@ class SignalRepository:
                     "net_missed_profit": row["net_missed_profit"],
                     "net_missed_pnl_usd": row.get("net_missed_pnl_usd", 0.0),
                     "net_missed_roe_pct": row.get("net_missed_roe_pct", 0.0),
+                    "gross_missed_profit_usd": row.get("gross_missed_profit_usd", 0.0),
+                    "gross_missed_loss_usd": row.get("gross_missed_loss_usd", 0.0),
                 }
             )
         return ordered

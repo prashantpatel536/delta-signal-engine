@@ -27,6 +27,7 @@ from app.paper_api import router as paper_router
 from app.admin_api import router as admin_router
 from app.pushover_api import router as pushover_router
 from app.risk_api import router as risk_router
+from app.debug_api import router as debug_router
 from app.validation_api import router as validation_router
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
@@ -295,6 +296,7 @@ app.include_router(pushover_router)
 app.include_router(admin_router)
 app.include_router(risk_router)
 app.include_router(validation_router)
+app.include_router(debug_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -358,6 +360,11 @@ def settings_page() -> FileResponse:
 @app.get("/risk", include_in_schema=False)
 def risk_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "risk.html")
+
+
+@app.get("/debug/system", include_in_schema=False)
+def debug_system_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "debug-system.html")
 
 
 @app.get("/validation", include_in_schema=False)

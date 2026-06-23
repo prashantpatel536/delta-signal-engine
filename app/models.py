@@ -570,5 +570,47 @@ class SignalTimeframeUpdate(BaseModel):
     signal_timeframe: str
 
 
+class SystemDebugResponse(BaseModel):
+    git_commit: str
+    database_path: str
+    database_size: int
+    signal_count: int
+    trade_count: int
+    approved_count: int
+    latest_signal_time: str | None = None
+    latest_trade_time: str | None = None
+
+
+class SystemDebugFullResponse(SystemDebugResponse):
+    build_timestamp: str
+    signal_engine_version: str
+    hostname: str
+    platform: str
+    python_version: str
+    project_root: str
+    database_exists: bool
+    database_path_env: str
+    database_size_human: str
+    table_row_counts: dict[str, int]
+    signal_status_counts: dict[str, int]
+    position_status_counts: dict[str, int]
+    paper_account: dict[str, float]
+    database_info: dict[str, int]
+    latest_signals: list[dict[str, Any]] = Field(default_factory=list)
+    latest_trades: list[dict[str, Any]] = Field(default_factory=list)
+    sync_note: str
+
+
+class SystemDebugCompareResponse(BaseModel):
+    identical: bool
+    local: dict[str, Any]
+    remote: dict[str, Any]
+    field_differences: dict[str, dict[str, Any]]
+    table_differences: list[dict[str, Any]]
+    signal_status_differences: list[dict[str, Any]]
+    explanation: list[str]
+    root_cause: str | None = None
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
