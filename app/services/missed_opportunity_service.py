@@ -240,6 +240,7 @@ class MissedOpportunityService:
             float(record["entry"]),
             float(exit_price),
             balance,
+            record["symbol"],
         )
         updated = self.repository.resolve_missed(
             record["id"],

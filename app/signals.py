@@ -160,7 +160,13 @@ def build_signal_quality(
 ) -> dict[str, Any]:
     from app.trade_planner import build_trade_plan
 
-    plan = build_trade_plan(signal["signal"], float(signal["price"]), hh50, ll50)
+    plan = build_trade_plan(
+        signal["signal"],
+        float(signal["price"]),
+        hh50,
+        ll50,
+        symbol=signal.get("symbol", "ETHUSDT"),
+    )
     return {
         "timeframe": timeframe,
         "side": plan.side,

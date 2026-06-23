@@ -172,6 +172,17 @@ def build_performance_payload(
         win_rate=win_rate,
     )
 
+    from app.paper_trader import calculate_roe
+
+    roes = [
+        calculate_roe(float(t.get("pnl") or 0), float(t.get("margin_used") or 0))
+        for t in closed_trades
+        if float(t.get("margin_used") or 0) > 0
+    ]
+    average_roe = round(sum(roes) / len(roes), 2) if roes else 0.0
+    best_roe = round(max(roes), 2) if roes else 0.0
+    worst_roe = round(min(roes), 2) if roes else 0.0
+
     return {
         "starting_balance": round(starting_balance, 2),
         "current_balance": round(current_balance, 2),
@@ -194,4 +205,7 @@ def build_performance_payload(
         "edge_label": edge["label"],
         "edge_summary": edge["summary"],
         "daily_equity_curve": daily_equity_curve,
+        "average_roe": average_roe,
+        "best_roe": best_roe,
+        "worst_roe": worst_roe,
     }

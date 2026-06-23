@@ -141,6 +141,7 @@ class SignalRepository:
         status: str | None = None,
         symbol: str | None = None,
         timeframe: str | None = None,
+        since_iso: str | None = None,
     ) -> list[dict[str, Any]]:
         conditions: list[str] = []
         params: list[Any] = []
@@ -153,6 +154,9 @@ class SignalRepository:
         if timeframe:
             conditions.append("timeframe = ?")
             params.append(timeframe)
+        if since_iso:
+            conditions.append("datetime(created_at) >= datetime(?)")
+            params.append(since_iso)
         query = "SELECT * FROM signals"
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -563,20 +567,27 @@ class SignalRepository:
             "by_symbol": self.get_missed_net_by_symbol(),
         }
 
-    def get_missed_net_by_symbol(self) -> list[dict[str, Any]]:
+    def get_missed_net_by_symbol(self, since_iso: str | None = None) -> list[dict[str, Any]]:
+        since_clause = ""
+        params: list[Any] = []
+        if since_iso:
+            since_clause = " AND datetime(created_at) >= datetime(?)"
+            params.append(since_iso)
         with get_connection() as conn:
             rows = conn.execute(
-                """
+                f"""
                 SELECT
                     symbol,
                     SUM(CASE WHEN status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
                     SUM(CASE WHEN status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
                     SUM(COALESCE(points_captured, 0)) AS net_missed_profit,
-                    SUM(COALESCE(missed_pnl_usd, 0)) AS net_missed_pnl_usd
+                    SUM(COALESCE(missed_pnl_usd, 0)) AS net_missed_pnl_usd,
+                    SUM(COALESCE(missed_roe_pct, 0)) AS net_missed_roe_pct
                 FROM signals
-                WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                WHERE status IN ('MISSED_WINNER', 'MISSED_LOSER'){since_clause}
                 GROUP BY symbol
-                """
+                """,
+                tuple(params),
             ).fetchall()
         lookup = {
             row["symbol"]: {
@@ -585,6 +596,7 @@ class SignalRepository:
                 "missed_losers": int(row["missed_losers"] or 0),
                 "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
                 "net_missed_pnl_usd": round(float(row["net_missed_pnl_usd"] or 0), 2),
+                "net_missed_roe_pct": round(float(row["net_missed_roe_pct"] or 0), 2),
             }
             for row in rows
         }
@@ -600,6 +612,7 @@ class SignalRepository:
                     "missed_losers": 0,
                     "net_missed_profit": 0.0,
                     "net_missed_pnl_usd": 0.0,
+                    "net_missed_roe_pct": 0.0,
                 },
             )
             ordered.append(
@@ -610,6 +623,7 @@ class SignalRepository:
                     "missed_losers": row["missed_losers"],
                     "net_missed_profit": row["net_missed_profit"],
                     "net_missed_pnl_usd": row.get("net_missed_pnl_usd", 0.0),
+                    "net_missed_roe_pct": row.get("net_missed_roe_pct", 0.0),
                 }
             )
         return ordered
@@ -663,7 +677,8 @@ class SignalRepository:
             ),
         }
 
-    def get_missed_analytics(self, since_iso: str) -> dict[str, float | int | bool]:
+    def get_period_stats(self, since_iso: str) -> dict[str, float | int | bool]:
+        """Counts aligned with History page when filtered by created_at >= since."""
         with get_connection() as conn:
             row = conn.execute(
                 """
@@ -673,47 +688,46 @@ class SignalRepository:
                     SUM(CASE WHEN datetime(created_at) >= datetime(?)
                         AND status IN ('APPROVED', 'TP_HIT', 'SL_HIT') THEN 1 ELSE 0 END)
                         AS signals_approved,
-                    SUM(CASE WHEN status = 'MISSED_WINNER'
-                        AND datetime(missed_resolved_at) >= datetime(?) THEN 1 ELSE 0 END)
-                        AS missed_winners,
-                    SUM(CASE WHEN status = 'MISSED_LOSER'
-                        AND datetime(missed_resolved_at) >= datetime(?) THEN 1 ELSE 0 END)
-                        AS missed_losers,
-                    SUM(CASE WHEN status = 'MISSED_WINNER'
-                        AND datetime(missed_resolved_at) >= datetime(?)
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_WINNER' THEN 1 ELSE 0 END) AS missed_winners,
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_LOSER' THEN 1 ELSE 0 END) AS missed_losers,
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_WINNER'
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_profit,
-                    SUM(CASE WHEN status = 'MISSED_LOSER'
-                        AND datetime(missed_resolved_at) >= datetime(?)
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_LOSER'
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS gross_missed_loss,
-                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
-                        AND datetime(missed_resolved_at) >= datetime(?)
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status IN ('MISSED_WINNER', 'MISSED_LOSER')
                         THEN COALESCE(points_captured, 0) ELSE 0 END) AS net_missed_profit,
-                    SUM(CASE WHEN status = 'MISSED_WINNER'
-                        AND datetime(missed_resolved_at) >= datetime(?)
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_WINNER'
                         THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_pnl_usd,
-                    SUM(CASE WHEN status = 'MISSED_LOSER'
-                        AND datetime(missed_resolved_at) >= datetime(?)
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status = 'MISSED_LOSER'
                         THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS gross_missed_loss_usd,
-                    SUM(CASE WHEN status IN ('MISSED_WINNER', 'MISSED_LOSER')
-                        AND datetime(missed_resolved_at) >= datetime(?)
-                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS net_missed_pnl_usd
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        THEN COALESCE(missed_pnl_usd, 0) ELSE 0 END) AS net_missed_pnl_usd,
+                    SUM(CASE WHEN datetime(created_at) >= datetime(?)
+                        AND status IN ('MISSED_WINNER', 'MISSED_LOSER')
+                        THEN COALESCE(missed_roe_pct, 0) ELSE 0 END) AS sum_missed_roe_pct
                 FROM signals
                 """,
-                (
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                    since_iso,
-                ),
+                tuple([since_iso] * 11),
             ).fetchone()
         winners = int(row["missed_winners"] or 0)
         losers = int(row["missed_losers"] or 0)
+        net_missed_pnl_usd = round(float(row["net_missed_pnl_usd"] or 0), 2)
+        from app.repositories.account_repository import AccountRepository
+        from app.risk_engine import trading_margin_percent
+
+        balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        margin_base = balance * (trading_margin_percent() / 100.0)
+        net_missed_roe_pct = (
+            round(net_missed_pnl_usd / margin_base * 100.0, 2) if margin_base > 0 else 0.0
+        )
         return {
             "signals_generated": int(row["signals_generated"] or 0),
             "signals_approved": int(row["signals_approved"] or 0),
@@ -725,6 +739,11 @@ class SignalRepository:
             "net_missed_profit": round(float(row["net_missed_profit"] or 0), 2),
             "gross_missed_pnl_usd": round(float(row["gross_missed_pnl_usd"] or 0), 2),
             "gross_missed_loss_usd": round(float(row["gross_missed_loss_usd"] or 0), 2),
-            "net_missed_pnl_usd": round(float(row["net_missed_pnl_usd"] or 0), 2),
-            "totals_valid": winners + losers == winners + losers,
+            "net_missed_pnl_usd": net_missed_pnl_usd,
+            "net_missed_roe_pct": net_missed_roe_pct,
+            "totals_valid": True,
+            "by_symbol": self.get_missed_net_by_symbol(since_iso=since_iso),
         }
+
+    def get_missed_analytics(self, since_iso: str) -> dict[str, float | int | bool]:
+        return self.get_period_stats(since_iso)

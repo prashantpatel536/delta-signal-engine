@@ -1,6 +1,7 @@
 const { fetchJson, formatPrice, formatTime } = window.DSE;
 
 const statusFilter = document.getElementById("status-filter");
+const periodFilter = document.getElementById("period-filter");
 const refreshBtn = document.getElementById("refresh-btn");
 const historyBody = document.getElementById("history-body");
 
@@ -39,7 +40,11 @@ function formatPct(value) {
 
 async function loadHistory() {
   const status = statusFilter.value;
-  const url = status ? `/signal-history?status=${encodeURIComponent(status)}` : "/signal-history";
+  const period = periodFilter?.value || "all";
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (period && period !== "all") params.set("period", period);
+  const url = params.toString() ? `/signal-history?${params}` : "/signal-history";
 
   try {
     const payload = await fetchJson(url);
@@ -81,4 +86,6 @@ async function loadHistory() {
 
 statusFilter.addEventListener("change", loadHistory);
 refreshBtn.addEventListener("click", loadHistory);
+statusFilter.addEventListener("change", loadHistory);
+periodFilter?.addEventListener("change", loadHistory);
 loadHistory();

@@ -243,6 +243,7 @@ class MissedOpportunitySymbolNet(BaseModel):
     missed_losers: int = 0
     net_missed_profit: float = 0.0
     net_missed_pnl_usd: float = 0.0
+    net_missed_roe_pct: float = 0.0
 
 
 class SignalStatistics(BaseModel):
@@ -325,7 +326,43 @@ class MissedOpportunityAnalytics(BaseModel):
     gross_missed_pnl_usd: float = 0.0
     gross_missed_loss_usd: float = 0.0
     net_missed_pnl_usd: float = 0.0
+    net_missed_roe_pct: float = 0.0
     totals_valid: bool = True
+    by_symbol: list[MissedOpportunitySymbolNet] = Field(default_factory=list)
+
+
+class ValidationSymbolStats(BaseModel):
+    label: str
+    symbol: str
+    signal_count: int
+    average_sl_points: float
+    average_tp_points: float
+    average_expected_roe: float
+    average_loss_pct: float
+    average_profit_pct: float
+    average_trade_roe: float
+    closed_trades: int
+
+
+class ValidationCompliance(BaseModel):
+    capital_usage_pct: float
+    leverage: float
+    min_target_roe_pct: float
+    min_risk_reward: float
+    opposite_signal_exits: int
+    liq_beyond_sl_pass: int
+    liq_beyond_sl_fail: int
+    min_roe_pass: int
+    min_roe_fail: int
+    min_rr_pass: int
+    min_rr_fail: int
+
+
+class ValidationReportResponse(BaseModel):
+    assumptions: dict[str, float]
+    symbols: dict[str, ValidationSymbolStats]
+    compliance: ValidationCompliance
+    total_closed_trades: int
 
 
 PositionStatus = Literal["OPEN", "CLOSED"]
@@ -371,6 +408,9 @@ class PerformanceAnalytics(BaseModel):
     edge_label: str
     edge_summary: str
     daily_equity_curve: list[EquityCurvePoint]
+    average_roe: float = 0.0
+    best_roe: float = 0.0
+    worst_roe: float = 0.0
 
 
 class PaperAccount(BaseModel):

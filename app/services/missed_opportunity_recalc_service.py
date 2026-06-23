@@ -160,6 +160,7 @@ class MissedOpportunityRecalcService:
             float(record["entry"]),
             float(outcome.exit_price),
             balance,
+            record["symbol"],
         )
         return RecalcOutcome(
             resolved=outcome.resolved,

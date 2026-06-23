@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Literal
 
+from app.contract_specs import contracts_from_notional, sizing_from_contracts
+
 Side = Literal["BUY", "SELL"]
-ExitReason = Literal["TP", "SL", "MANUAL"]
+ExitReason = Literal["TP", "SL", "MANUAL", "Opposite Signal"]
 
 
 def position_value(entry: float, quantity: float) -> float:
@@ -22,17 +24,28 @@ def calculate_from_margin_allocation(
     margin_percent: float,
     leverage: float,
     entry_price: float,
-) -> tuple[float, float, float]:
-    """Delta model: margin % of available → position value → quantity."""
+    symbol: str = "BTCUSDT",
+) -> tuple[float, float, float, int]:
+    """
+    Delta contract model: margin % of available → target notional → whole contracts.
+
+    Returns (margin_used, position_value, base_quantity, contracts).
+    """
     pct = max(0.0, min(float(margin_percent), 100.0))
     avail = max(float(available_margin), 0.0)
     lev = max(float(leverage), 1.0)
     entry = float(entry_price)
 
     margin_used = round(avail * pct / 100.0, 2)
-    position_value = round(margin_used * lev, 2)
-    quantity = round(position_value / entry, 6) if entry > 0 else 0.0
-    return margin_used, position_value, quantity
+    target_notional = round(margin_used * lev, 2)
+    contract_count = contracts_from_notional(target_notional, entry, symbol)
+    sized = sizing_from_contracts(contract_count, entry, symbol, lev)
+    return (
+        sized["margin_used"],
+        sized["position_value"],
+        sized["quantity"],
+        int(sized["contracts"]),
+    )
 
 
 def calculate_pnl(side: str, entry: float, exit_price: float, quantity: float = 1.0) -> float:
@@ -190,6 +203,8 @@ def exit_status_label(exit_reason: str | None) -> str | None:
         return "SL HIT"
     if exit_reason == "MANUAL":
         return "CLOSED"
+    if exit_reason == "Opposite Signal":
+        return "OPPOSITE SIGNAL"
     return None
 
 

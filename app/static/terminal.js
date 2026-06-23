@@ -321,17 +321,10 @@ window.Terminal = {
 
     this._activePendingSignal = null;
 
-    if (openPosition) {
+    if (!signal) {
       el.innerHTML = `
-        <div class="panel-head"><h2>Signal Review</h2></div>
-        <div class="empty">Close open position before reviewing new signals</div>`;
-      return;
-    }
-
-    if (!signal || signal.status !== "PENDING") {
-      el.innerHTML = `
-        <div class="panel-head"><h2>Signal Review</h2></div>
-        <div class="empty">No pending signal on ${signalTimeframe || "—"} — waiting for engine</div>`;
+        <div class="panel-head"><h2>Risk Matrix Signal</h2></div>
+        <div class="empty">Waiting for next signal on ${signalTimeframe || "—"}</div>`;
       return;
     }
 
@@ -343,32 +336,31 @@ window.Terminal = {
     const rp = signal.risk_profile || {};
     const liqStatus = rp.liq_status || "—";
     const liqClass = liqStatus === "SAFE" ? "liq-safe" : liqStatus === "CAUTION" ? "liq-caution" : "liq-danger";
+    const statusBadge = signal.status === "APPROVED" ? "approved" : signal.status === "EXPIRED" ? "expired" : "pending";
 
     el.innerHTML = `
-      <div class="panel-head"><h2>Signal Review</h2><span class="badge pending">PENDING</span></div>
+      <div class="panel-head"><h2>Risk Matrix Signal</h2><span class="badge ${statusBadge}">${signal.status}</span></div>
       <div class="review-side ${sideClass}">${signal.side === "BUY" ? "▲ BUY" : "▼ SELL"} · ${signal.symbol}</div>
-      <div class="liq-banner ${liqClass}">Liq Buffer: ${liqStatus}${rp.liq_buffer != null ? ` (${Number(rp.liq_buffer).toFixed(2)}×)` : ""}</div>
+      <div class="liq-banner ${liqClass}">Liq: ${liqStatus}${rp.liq_buffer != null ? ` (${Number(rp.liq_buffer).toFixed(2)}×)` : ""} · Auto-evaluated</div>
       <dl class="sq-grid review-grid">
-        <div><dt>Symbol</dt><dd>${signal.symbol}</dd></div>
-        <div><dt>Direction</dt><dd class="review-direction ${sideClass}">${direction}</dd></div>
         <div><dt>Entry</dt><dd>${DSE.formatPrice(signal.entry)}</dd></div>
-        <div><dt>Structure SL</dt><dd>${DSE.formatPrice(rp.structure_stop_loss ?? signal.stop_loss)}</dd></div>
-        <div><dt>Applied System SL</dt><dd>${DSE.formatPrice(rp.applied_stop_loss ?? signal.stop_loss)}</dd></div>
-        <div><dt>Applied TP</dt><dd>${DSE.formatPrice(rp.applied_take_profit ?? signal.take_profit)}</dd></div>
-        <div><dt>Risk Points</dt><dd>${rp.risk_points != null ? Number(rp.risk_points).toFixed(2) : "—"}</dd></div>
-        <div><dt>Risk %</dt><dd>${rp.risk_pct != null ? `${Number(rp.risk_pct).toFixed(0)}% acct` : "—"}</dd></div>
-        <div><dt>Reward Points</dt><dd>${rp.reward_points != null ? Number(rp.reward_points).toFixed(2) : "—"}</dd></div>
-        <div><dt>Reward %</dt><dd>${rp.reward_pct != null ? `${Number(rp.reward_pct).toFixed(0)}% acct` : "—"}</dd></div>
-        <div><dt>RR Ratio</dt><dd>${rp.risk_reward != null ? Number(rp.risk_reward).toFixed(1) : Number(signal.risk_reward).toFixed(1)}</dd></div>
+        <div><dt>Stop Loss</dt><dd>${DSE.formatPrice(rp.stop_loss ?? signal.stop_loss)}</dd></div>
+        <div><dt>Take Profit</dt><dd>${DSE.formatPrice(rp.take_profit ?? signal.take_profit)}</dd></div>
         <div><dt>Liquidation</dt><dd>${rp.liquidation_price != null ? DSE.formatPrice(rp.liquidation_price) : "—"}</dd></div>
-        <div><dt>Dist To Liq</dt><dd>${rp.distance_to_liquidation != null ? Number(rp.distance_to_liquidation).toFixed(2) : "—"}</dd></div>
+        <div><dt>SL Distance</dt><dd>${rp.sl_distance_points != null ? Number(rp.sl_distance_points).toFixed(2) : "—"} pts</dd></div>
+        <div><dt>TP Distance</dt><dd>${rp.tp_distance_points != null ? Number(rp.tp_distance_points).toFixed(2) : "—"} pts</dd></div>
+        <div><dt>Margin Used</dt><dd>${rp.margin_used != null ? `$${Number(rp.margin_used).toFixed(2)}` : "—"}</dd></div>
+        <div><dt>Position Value</dt><dd>${rp.position_value != null ? `$${Number(rp.position_value).toFixed(2)}` : "—"}</dd></div>
+        <div><dt>Contracts</dt><dd>${rp.contracts != null ? Number(rp.contracts) : "—"} × ${rp.contract_size ?? "—"}</dd></div>
+        <div><dt>Expected Loss</dt><dd>${rp.expected_loss_usd != null ? `$${Number(rp.expected_loss_usd).toFixed(2)} (${Number(rp.expected_loss_pct || 0).toFixed(1)}%)` : "—"}</dd></div>
+        <div><dt>Expected Profit</dt><dd>${rp.expected_profit_usd != null ? `$${Number(rp.expected_profit_usd).toFixed(2)} (${Number(rp.expected_profit_pct || 0).toFixed(1)}%)` : "—"}</dd></div>
+        <div><dt>Expected ROE</dt><dd>${rp.expected_roe != null ? `${Number(rp.expected_roe).toFixed(1)}%` : "—"}</dd></div>
+        <div><dt>RR Ratio</dt><dd>${rp.risk_reward != null ? Number(rp.risk_reward).toFixed(1) : Number(signal.risk_reward).toFixed(1)}</dd></div>
+        <div><dt>Leverage</dt><dd>${rp.leverage ?? 25}x / ${rp.margin_percent ?? 50}%</dd></div>
         <div><dt>Signal TF</dt><dd>${sourceTf}</dd></div>
-        <div><dt>Signal Age</dt><dd>${age}</dd></div>
+        <div><dt>Age</dt><dd>${age}</dd></div>
       </dl>
-      <div class="review-actions">
-        <button type="button" class="btn-approve" id="btn-signal-approve" data-id="${signal.id}">APPROVE</button>
-        <button type="button" class="btn-reject" id="btn-signal-reject" data-id="${signal.id}">REJECT</button>
-      </div>`;
+      <p class="sizing-hint">Signals auto-execute via risk matrix — no manual approval.</p>`;
   },
 
   renderPositionSizing(signal, account, hasOpenPosition) {

@@ -87,6 +87,7 @@ def get_signal_history(
     symbol: str | None = Query(default=None, description="Filter by symbol e.g. ETH or ETHUSDT"),
     timeframe: str | None = Query(default=None, description="Filter by signal timeframe"),
     signal_timeframe: str | None = Query(default=None, description="Signal timeframe (alias)"),
+    period: str | None = Query(default=None, pattern="^(today|7d|30d|all)$"),
 ) -> StoredSignalsResponse:
     if status is not None and status.upper() not in {
         "PENDING",
@@ -104,10 +105,14 @@ def get_signal_history(
         raise HTTPException(status_code=400, detail=f"Invalid signal timeframe '{tf}'")
     filter_status = status.upper() if status else None
     delta_symbol = resolve_delta_symbol(symbol) if symbol else None
+    since_iso = None
+    if period and period != "all":
+        since_iso = missed_opportunity_service.period_start(period)
     records = signal_service.get_signal_history(
         filter_status,
         symbol=delta_symbol,
         timeframe=tf,
+        since_iso=since_iso,
     )
     signals = [_to_stored(item) for item in records]
     return StoredSignalsResponse(signals=signals, count=len(signals))

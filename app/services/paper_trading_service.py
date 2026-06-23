@@ -166,6 +166,8 @@ class PaperTradingService:
 
         *,
 
+        symbol: str,
+
         entry: float,
 
         margin_percent: float,
@@ -174,13 +176,13 @@ class PaperTradingService:
 
         prices: dict[str, float] | None = None,
 
-    ) -> tuple[float, float, float, float]:
+    ) -> tuple[float, float, float, float, int]:
 
         account = self.get_account_summary(prices)
 
         available = account["available_margin"]
 
-        margin_used, position_value, quantity = calculate_from_margin_allocation(
+        margin_used, position_value, quantity, contracts = calculate_from_margin_allocation(
 
             available,
 
@@ -190,9 +192,11 @@ class PaperTradingService:
 
             entry,
 
+            symbol,
+
         )
 
-        return margin_used, position_value, quantity, available
+        return margin_used, position_value, quantity, available, contracts
 
 
 
@@ -201,6 +205,8 @@ class PaperTradingService:
         self,
 
         *,
+
+        symbol: str,
 
         entry: float,
 
@@ -222,7 +228,9 @@ class PaperTradingService:
 
         leverage, margin_percent = enforce_trade_params(leverage, margin_percent)
 
-        margin_used, position_value, quantity, available = self._resolve_trade_size(
+        margin_used, position_value, quantity, available, contracts = self._resolve_trade_size(
+
+            symbol=symbol,
 
             entry=entry,
 
@@ -245,6 +253,8 @@ class PaperTradingService:
             "position_value": position_value,
 
             "quantity": quantity,
+
+            "contracts": contracts,
 
             "available_margin": available,
 
@@ -301,6 +311,8 @@ class PaperTradingService:
 
 
         preview = self.preview_trade(
+
+            symbol=symbol,
 
             entry=entry,
 
@@ -403,6 +415,38 @@ class PaperTradingService:
         )
 
         return position
+
+
+
+    def close_on_opposite_signal(
+        self,
+        *,
+        symbol: str,
+        timeframe: str,
+        new_side: str,
+        exit_price: float,
+    ) -> dict[str, Any] | None:
+        """Close open position when an opposite signal fires (same symbol)."""
+        opposite = "SELL" if new_side == "BUY" else "BUY"
+        for position in self.repository.list_open():
+            if position["symbol"] != symbol:
+                continue
+            if position["side"] != opposite:
+                continue
+            updated = self._close_position(
+                position["id"],
+                float(exit_price),
+                "Opposite Signal",
+            )
+            if updated:
+                logger.info(
+                    "Closed position id=%s via opposite signal %s @ %.4f",
+                    updated["id"],
+                    new_side,
+                    exit_price,
+                )
+            return updated
+        return None
 
 
 

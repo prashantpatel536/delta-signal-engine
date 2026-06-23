@@ -165,6 +165,22 @@ function renderMissedAnalytics(data) {
     if (netUsd > 0) netUsdEl.classList.add("up");
     if (netUsd < 0) netUsdEl.classList.add("down");
   }
+  setText("mo-net-roe-total", data.net_missed_roe_pct != null ? `${Number(data.net_missed_roe_pct).toFixed(2)}%` : "—");
+  const symEl = document.getElementById("mo-by-symbol");
+  if (symEl && data.by_symbol) {
+    symEl.innerHTML = data.by_symbol
+      .map(
+        (row) => `
+        <div class="missed-symbol-row">
+          <span class="missed-symbol-label">${row.label} Missed</span>
+          <span class="missed-symbol-dual">
+            <span class="missed-symbol-value">${Number(row.net_missed_roe_pct || 0).toFixed(2)}% ROE</span>
+            <span class="missed-symbol-value">${formatUsd(row.net_missed_pnl_usd)}</span>
+          </span>
+        </div>`
+      )
+      .join("");
+  }
 }
 
 function formatUsd(value) {
@@ -211,6 +227,9 @@ function renderPerformance(data) {
   );
   setText("pa-duration", data.average_trade_duration || "—");
   setText("pa-open", data.open_positions);
+  setText("pa-avg-roe", data.average_roe != null ? `${data.average_roe}%` : "—");
+  setText("pa-best-roe", data.best_roe != null ? `${data.best_roe}%` : "—");
+  setText("pa-worst-roe", data.worst_roe != null ? `${data.worst_roe}%` : "—");
 
   ["pa-net"].forEach((id) => {
     const el = document.getElementById(id);

@@ -36,14 +36,14 @@ def test_open_paper_trade_margin_allocation(temp_db):
     resp = _open_eth_trade(margin_percent=25, leverage=10)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["margin_used"] == 250.0
-    assert body["leverage"] == 10
-    assert body["position_value"] == 2500.0
-    assert body["quantity"] == 25.0
+    assert body["margin_used"] == 500.0
+    assert body["leverage"] == 25
+    assert body["position_value"] == 12500.0
+    assert body["quantity"] == 125.0
 
     account = client.get("/paper/account").json()
-    assert account["used_margin"] == 250.0
-    assert account["available_margin"] == 750.0
+    assert account["used_margin"] == 500.0
+    assert account["available_margin"] == 500.0
 
 
 def test_preview_margin_allocation(temp_db):
@@ -61,27 +61,27 @@ def test_preview_margin_allocation(temp_db):
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["margin_used"] == 250.0
+    assert body["margin_used"] == 500.0
     assert body["position_value"] == 12500.0
-    assert body["quantity"] == 7.142857
+    assert body["quantity"] == 714.0
 
 
 def test_insufficient_margin_when_no_available(temp_db):
-    _open_eth_trade(margin_percent=100, leverage=10)
+    _open_eth_trade(margin_percent=50, leverage=25)
     resp = client.post(
         "/paper/open",
         json={
-            "symbol": "BTCUSDT",
+            "symbol": "ETHUSDT",
             "side": "BUY",
             "entry": 100.0,
-            "margin_percent": 10,
-            "leverage": 5,
+            "margin_percent": 50,
+            "leverage": 25,
             "stop_loss": 95.0,
             "take_profit": 110.0,
         },
     )
     assert resp.status_code == 409
-    assert "Insufficient margin" in resp.json()["detail"]
+    assert "Open position already exists" in resp.json()["detail"]
 
 
 def test_monitor_closes_on_tp_with_quantity(temp_db):
@@ -89,11 +89,11 @@ def test_monitor_closes_on_tp_with_quantity(temp_db):
     closed = paper_service.monitor_positions({"ETHUSDT": 120.0})
     assert len(closed) == 1
     assert closed[0]["exit_reason"] == "TP"
-    assert closed[0]["pnl"] == 250.0  # (110-100)*25
+    assert closed[0]["pnl"] == 1250.0  # (110-100)*125 ETH contracts qty
 
     account = client.get("/paper/account").json()
-    assert account["balance"] == 1250.0
-    assert account["realized_pnl"] == 250.0
+    assert account["balance"] == 2250.0
+    assert account["realized_pnl"] == 1250.0
 
 
 def test_monitor_closes_on_sl(temp_db):
@@ -112,7 +112,7 @@ def test_monitor_closes_on_sl(temp_db):
     closed = paper_service.monitor_positions({"BTCUSDT": 120.0})
     assert len(closed) == 1
     assert closed[0]["exit_reason"] == "SL"
-    assert closed[0]["pnl"] == -50.0  # (100-110)*5
+    assert closed[0]["pnl"] == -1250.0
 
 
 def test_manual_close_and_statistics(temp_db, monkeypatch):
@@ -126,26 +126,26 @@ def test_manual_close_and_statistics(temp_db, monkeypatch):
     close_resp = client.post(f"/position/{position_id}/close")
     assert close_resp.status_code == 200
     assert close_resp.json()["exit_reason"] == "MANUAL"
-    assert close_resp.json()["pnl"] == 125.0  # (105-100)*25
+    assert close_resp.json()["pnl"] == 625.0  # (105-100)*125
 
     stats = client.get("/paper-statistics")
     assert stats.status_code == 200
     assert stats.json()["total_trades"] == 1
-    assert stats.json()["net_pnl"] == 125.0
+    assert stats.json()["net_pnl"] == 625.0
 
     perf = client.get("/paper/performance")
     assert perf.status_code == 200
     body = perf.json()
     assert body["total_trades"] == 1
     assert body["winning_trades"] == 1
-    assert body["largest_win"] == 125.0
+    assert body["largest_win"] == 625.0
     assert body["starting_balance"] == 1000.0
-    assert body["current_balance"] == 1125.0
-    assert body["net_pnl"] == 125.0
+    assert body["current_balance"] == 1625.0
+    assert body["net_pnl"] == 625.0
     assert len(body["daily_equity_curve"]) >= 1
 
 
-def test_approve_does_not_auto_open_position(temp_db):
+def test_auto_execute_opens_position(temp_db):
     from app.approval_api import signal_service
 
     signal = signal_service.persist_detected_signal(
@@ -157,11 +157,11 @@ def test_approve_does_not_auto_open_position(temp_db):
         ll50=95.0,
         created_at="2026-06-16T12:00:00+00:00",
     )
-    response = client.post(f"/signal/{signal['id']}/approve")
-    assert response.status_code == 200
+    assert signal is not None
+    assert signal["status"] == "APPROVED"
 
     open_resp = client.get("/open-positions")
-    assert open_resp.json()["count"] == 0
+    assert open_resp.json()["count"] == 1
 
 
 def test_trades_page():

@@ -37,6 +37,7 @@ class TradeRecalcService:
             sizing = standard_sizing(
                 balance,
                 entry,
+                position["symbol"],
                 margin_percent=margin_pct,
                 leverage=lev,
             )

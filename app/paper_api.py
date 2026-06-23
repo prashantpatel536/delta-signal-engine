@@ -42,6 +42,7 @@ def get_paper_account() -> PaperAccount:
 @router.post("/paper/preview", response_model=PaperTradePreview)
 def preview_paper_trade(body: OpenPaperTradeRequest) -> PaperTradePreview:
     preview = paper_service.preview_trade(
+        symbol=body.symbol,
         entry=body.entry,
         margin_percent=body.margin_percent,
         leverage=body.leverage,

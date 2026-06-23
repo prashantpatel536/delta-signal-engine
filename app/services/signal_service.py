@@ -44,24 +44,13 @@ class SignalService:
         hh50: float,
         ll50: float,
         created_at: str,
+        prices: dict[str, float] | None = None,
     ) -> dict[str, Any] | None:
         """
-        Save a newly detected signal with trade plan.
+        Save a newly detected signal, evaluate via risk matrix, and auto-execute.
 
-        Skips insert when a pending signal already exists for the same
-        symbol/timeframe/side, or when this candle signal was already stored.
+        Skips insert when duplicate timestamp exists for symbol/timeframe/side.
         """
-        self.expire_stale_pending()
-
-        if self.repository.has_pending(symbol, timeframe, side):
-            logger.debug(
-                "Skip persist: pending %s already exists for %s %s",
-                side,
-                symbol,
-                timeframe,
-            )
-            return None
-
         if self.repository.exists_at_timestamp(symbol, timeframe, side, created_at):
             logger.debug(
                 "Skip persist: duplicate timestamp for %s %s %s",
@@ -71,18 +60,39 @@ class SignalService:
             )
             return None
 
-        plan = build_trade_plan(side, entry, hh50, ll50)  # type: ignore[arg-type]
         from app.repositories.account_repository import AccountRepository
         from app.risk_engine import build_signal_risk_profile
 
         balance = float(AccountRepository().get_account().get("balance") or 1000.0)
+        plan = build_trade_plan(
+            side,  # type: ignore[arg-type]
+            entry,
+            hh50,
+            ll50,
+            symbol=symbol,
+            balance=balance,
+        )
         profile = build_signal_risk_profile(
             side=plan.side,
             entry=plan.entry,
-            structure_stop_loss=plan.stop_loss,
-            structure_take_profit=plan.take_profit,
+            stop_loss=plan.stop_loss,
+            take_profit=plan.take_profit,
+            structure_stop_loss=plan.structure_stop_loss or plan.stop_loss,
             balance=balance,
+            symbol=symbol,
         )
+
+        # Close opposite open paper position before new entry
+        try:
+            self.paper_service.close_on_opposite_signal(
+                symbol=symbol,
+                timeframe=timeframe,
+                new_side=plan.side,
+                exit_price=plan.entry,
+            )
+        except Exception:
+            logger.exception("Opposite-signal position close failed — continuing")
+
         record = self.repository.create(
             symbol=symbol,
             timeframe=timeframe,
@@ -95,11 +105,20 @@ class SignalService:
             created_at=created_at,
             risk_profile=profile.to_json(),
         )
-        logger.info("Persisted pending signal id=%s %s %s %s", record["id"], symbol, timeframe, side)
+        logger.info(
+            "Signal id=%s %s %s %s — risk matrix evaluated (liq=%s)",
+            record["id"],
+            symbol,
+            timeframe,
+            side,
+            profile.liq_status,
+        )
+
         try:
             self.alerts.notify_signal_generated(record)
         except Exception:
             logger.exception("Alert signal notification failed — continuing")
+
         try:
             closed = self.missed_service.on_opposite_signal(record)
             for missed in closed:
@@ -111,7 +130,46 @@ class SignalService:
                 )
         except Exception:
             logger.exception("Missed opposite-signal resolution failed — continuing")
-        return record
+
+        return self._auto_execute(record, profile, prices=prices)
+
+    def _auto_execute(
+        self,
+        record: dict[str, Any],
+        profile: Any,
+        *,
+        prices: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
+        """Open paper trade using risk-matrix sizing; missed-monitor on failure."""
+        signal_id = int(record["id"])
+        try:
+            if not profile.liq_safe:
+                raise ValueError(
+                    f"Liquidation safety check failed (status={profile.liq_status})"
+                )
+            position = self.paper_service.open_paper_trade(
+                symbol=record["symbol"],
+                side=record["side"],
+                entry=float(record["entry"]),
+                margin_percent=float(profile.margin_percent),
+                leverage=float(profile.leverage),
+                stop_loss=float(record["stop_loss"]),
+                take_profit=float(record["take_profit"]),
+                signal_id=signal_id,
+                prices=prices,
+            )
+            updated = self.repository.update_status(signal_id, "APPROVED")
+            try:
+                self.alerts.notify_trade_approved(updated or record, position)
+            except Exception:
+                logger.exception("Alert trade approved notification failed — continuing")
+            logger.info("Auto-executed signal id=%s position id=%s", signal_id, position["id"])
+            return updated or record
+        except (InsufficientMarginError, ValueError) as exc:
+            logger.warning("Auto-execute skipped for signal id=%s: %s", signal_id, exc)
+            self.repository.update_status(signal_id, "EXPIRED")
+            self.missed_service.start_monitoring(signal_id)
+            return self.repository.get_by_id(signal_id) or record
 
     def persist_from_runtime_signal(
         self,
@@ -246,12 +304,14 @@ class SignalService:
         *,
         symbol: str | None = None,
         timeframe: str | None = None,
+        since_iso: str | None = None,
     ) -> list[dict[str, Any]]:
         self.expire_stale_pending()
         return self.repository.list_filtered(
             status=status,
             symbol=symbol,
             timeframe=timeframe,
+            since_iso=since_iso,
         )
 
     def get_signal(self, signal_id: int) -> dict[str, Any] | None:

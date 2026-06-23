@@ -22,10 +22,11 @@ def test_margin_calculations():
         required_margin,
     )
 
-    margin, pos_val, qty = calculate_from_margin_allocation(1000, 25, 50, 1750)
-    assert margin == 250.0
+    margin, pos_val, qty, contracts = calculate_from_margin_allocation(1000, 50, 25, 100_000, "BTCUSDT")
+    assert margin == 500.0
+    assert contracts == 125
+    assert qty == 0.125
     assert pos_val == 12500.0
-    assert qty == 7.142857
 
     pv = position_value(1751.45, 0.5)
     assert pv == 875.73

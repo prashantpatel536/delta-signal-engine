@@ -15,17 +15,32 @@ client = TestClient(app)
 
 
 def _create_pending(**kwargs):
+    from app.repositories.signal_repository import SignalRepository
+
     defaults = {
         "symbol": "ETHUSDT",
         "timeframe": "5m",
         "side": "BUY",
         "entry": 100.0,
-        "hh50": 110.0,
-        "ll50": 95.0,
+        "stop_loss": 85.0,
+        "take_profit": 130.0,
+        "risk_reward": 2.0,
+        "status": "PENDING",
         "created_at": utc_now_iso(),
     }
     defaults.update(kwargs)
-    return signal_service.persist_detected_signal(**defaults)
+    repo = SignalRepository()
+    return repo.create(
+        symbol=defaults["symbol"],
+        timeframe=defaults["timeframe"],
+        side=defaults["side"],
+        entry=float(defaults["entry"]),
+        stop_loss=float(defaults.get("stop_loss", 85.0)),
+        take_profit=float(defaults.get("take_profit", 130.0)),
+        risk_reward=float(defaults.get("risk_reward", 2.0)),
+        status=defaults.get("status", "PENDING"),
+        created_at=defaults["created_at"],
+    )
 
 
 def test_excursion_points_buy():
@@ -248,10 +263,11 @@ def test_debug_missed_opportunities_endpoint(temp_db):
 
 
 def test_opposite_signal_closes_missed_buy_winner(temp_db):
-    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    buy = _create_pending(entry=100.0, stop_loss=95.0, take_profit=110.0)
     signal_service.reject_signal(buy["id"])
 
-    _create_pending(side="SELL", entry=103.0, hh50=110.0, ll50=90.0)
+    sell = _create_pending(side="SELL", entry=103.0, stop_loss=110.0, take_profit=90.0)
+    MissedOpportunityService().on_opposite_signal(sell)
 
     updated = signal_service.get_signal(buy["id"])
     assert updated["status"] == "MISSED_WINNER"
@@ -262,10 +278,11 @@ def test_opposite_signal_closes_missed_buy_winner(temp_db):
 
 
 def test_opposite_signal_closes_missed_buy_loser(temp_db):
-    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    buy = _create_pending(entry=100.0, stop_loss=95.0, take_profit=110.0)
     signal_service.reject_signal(buy["id"])
 
-    _create_pending(side="SELL", entry=97.0, hh50=110.0, ll50=90.0)
+    sell = _create_pending(side="SELL", entry=97.0, stop_loss=110.0, take_profit=90.0)
+    MissedOpportunityService().on_opposite_signal(sell)
 
     updated = signal_service.get_signal(buy["id"])
     assert updated["status"] == "MISSED_LOSER"
@@ -278,12 +295,13 @@ def test_opposite_signal_closes_missed_sell(temp_db):
     sell = _create_pending(
         side="SELL",
         entry=200.0,
-        hh50=210.0,
-        ll50=180.0,
+        stop_loss=210.0,
+        take_profit=180.0,
     )
     signal_service.reject_signal(sell["id"])
 
-    _create_pending(side="BUY", entry=195.0, hh50=220.0, ll50=190.0)
+    buy = _create_pending(side="BUY", entry=195.0, stop_loss=190.0, take_profit=220.0)
+    MissedOpportunityService().on_opposite_signal(buy)
 
     updated = signal_service.get_signal(sell["id"])
     assert updated["status"] == "MISSED_WINNER"
@@ -293,13 +311,14 @@ def test_opposite_signal_closes_missed_sell(temp_db):
 
 
 def test_tp_hits_before_opposite_signal(temp_db):
-    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    buy = _create_pending(entry=100.0, stop_loss=95.0, take_profit=110.0)
     signal_service.reject_signal(buy["id"])
 
     service = MissedOpportunityService()
     service.monitor_signals({"ETHUSDT": 110.0})
 
-    _create_pending(side="SELL", entry=105.0, hh50=115.0, ll50=90.0)
+    sell = _create_pending(side="SELL", entry=105.0, stop_loss=110.0, take_profit=90.0)
+    service.on_opposite_signal(sell)
 
     updated = signal_service.get_signal(buy["id"])
     assert updated["status"] == "MISSED_WINNER"
