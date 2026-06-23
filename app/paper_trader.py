@@ -127,6 +127,15 @@ def risk_points(side: str, entry: float, stop_loss: float) -> float:
     return round(max(sl - entry, 0.0), 4)
 
 
+def realized_points(side: str, entry: float, exit_price: float) -> float:
+    """Signed P/L in price points for a closed hypothetical trade."""
+    entry = float(entry)
+    exit_price = float(exit_price)
+    if side == "BUY":
+        return round(exit_price - entry, 4)
+    return round(entry - exit_price, 4)
+
+
 def check_exit_reason(
     side: str,
     price: float,

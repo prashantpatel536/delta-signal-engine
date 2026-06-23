@@ -142,13 +142,20 @@ class StoredSignal(BaseModel):
     missed_monitoring: bool = False
     monitoring_started_at: str | None = None
     missed_resolved_at: str | None = None
+    missed_exit_reason: str | None = None
+    missed_exit_price: float | None = None
 
     @classmethod
     def from_record(cls, record: dict) -> "StoredSignal":
         row = dict(record)
         row.setdefault("signal_timeframe", row.get("timeframe", ""))
         row["missed_monitoring"] = bool(row.get("missed_monitoring"))
-        for field in ("max_favorable_excursion", "max_adverse_excursion", "points_captured"):
+        for field in (
+            "max_favorable_excursion",
+            "max_adverse_excursion",
+            "points_captured",
+            "missed_exit_price",
+        ):
             if row.get(field) is not None:
                 row[field] = float(row[field])
         return cls(**row)
@@ -227,6 +234,8 @@ class MissedOpportunityAuditItem(BaseModel):
     symbol: str
     outcome: str
     points_missed: float | None = None
+    exit_reason: str | None = None
+    exit_price: float | None = None
 
 
 class MissedOpportunityDebugResponse(BaseModel):

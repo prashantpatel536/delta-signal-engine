@@ -100,6 +100,8 @@ SIGNAL_MIGRATIONS = [
     "ALTER TABLE signals ADD COLUMN missed_monitoring INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE signals ADD COLUMN monitoring_started_at TEXT",
     "ALTER TABLE signals ADD COLUMN missed_resolved_at TEXT",
+    "ALTER TABLE signals ADD COLUMN missed_exit_reason TEXT",
+    "ALTER TABLE signals ADD COLUMN missed_exit_price REAL",
 ]
 
 MIGRATIONS = [

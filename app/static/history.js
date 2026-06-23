@@ -30,7 +30,7 @@ async function loadHistory() {
   try {
     const payload = await fetchJson(url);
     if (!payload.signals.length) {
-      historyBody.innerHTML = `<tr><td colspan="11" class="empty">No signals found.</td></tr>`;
+      historyBody.innerHTML = `<tr><td colspan="14" class="empty">No signals found.</td></tr>`;
       return;
     }
 
@@ -51,12 +51,14 @@ async function loadHistory() {
           <td><span class="status-tag ${outcomeClass}">${outcome}</span></td>
           <td>${s.max_favorable_excursion ? formatPoints(s.max_favorable_excursion) : "—"}</td>
           <td>${s.max_adverse_excursion ? formatPoints(s.max_adverse_excursion) : "—"}</td>
+          <td>${s.missed_exit_reason || "—"}</td>
+          <td>${s.missed_exit_price != null ? formatPrice(s.missed_exit_price) : "—"}</td>
           <td>${formatPoints(s.points_captured)}</td>
         </tr>`;
       })
       .join("");
   } catch (error) {
-    historyBody.innerHTML = `<tr><td colspan="11" class="empty">Error: ${error.message}</td></tr>`;
+    historyBody.innerHTML = `<tr><td colspan="14" class="empty">Error: ${error.message}</td></tr>`;
   }
 }
 

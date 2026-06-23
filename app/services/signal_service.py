@@ -88,6 +88,17 @@ class SignalService:
             self.alerts.notify_signal_generated(record)
         except Exception:
             logger.exception("Alert signal notification failed — continuing")
+        try:
+            closed = self.missed_service.on_opposite_signal(record)
+            for missed in closed:
+                logger.info(
+                    "Missed trade closed by opposite signal: id=%s status=%s pts=%s",
+                    missed["id"],
+                    missed["status"],
+                    missed.get("points_captured"),
+                )
+        except Exception:
+            logger.exception("Missed opposite-signal resolution failed — continuing")
         return record
 
     def persist_from_runtime_signal(

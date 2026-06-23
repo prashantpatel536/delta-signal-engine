@@ -178,10 +178,12 @@ async def refresh_market_data() -> None:
             resolved = missed_opportunity_service.monitor_signals(prices)
             for record in resolved:
                 logger.info(
-                    "Missed opportunity resolved: id=%s status=%s pts=%s",
+                    "Missed opportunity resolved: id=%s status=%s pts=%s exit=%s @ %s",
                     record["id"],
                     record["status"],
                     record.get("points_captured"),
+                    record.get("missed_exit_reason"),
+                    record.get("missed_exit_price"),
                 )
     except Exception:
         logger.exception("Missed opportunity monitor failed")

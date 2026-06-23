@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from app.approval_api import signal_service
 from app.database import get_connection
 from app.main import app
-from app.paper_trader import excursion_points, reward_points, risk_points
+from app.paper_trader import excursion_points, realized_points, reward_points, risk_points
 from app.services.missed_opportunity_service import MissedOpportunityService
 from tests.conftest import utc_now_iso
 
@@ -42,6 +42,13 @@ def test_reward_and_risk_points_buy():
     assert risk_points("BUY", 100.0, 95.0) == 5.0
 
 
+def test_realized_points():
+    assert realized_points("BUY", 100.0, 103.0) == 3.0
+    assert realized_points("BUY", 100.0, 97.0) == -3.0
+    assert realized_points("SELL", 200.0, 195.0) == 5.0
+    assert realized_points("SELL", 200.0, 205.0) == -5.0
+
+
 def test_reject_starts_monitoring(temp_db):
     record = _create_pending()
     signal_service.reject_signal(record["id"])
@@ -62,6 +69,8 @@ def test_missed_winner_on_tp_hit(temp_db):
     assert resolved[0]["status"] == "MISSED_WINNER"
     assert resolved[0]["points_captured"] == 10.0
     assert resolved[0]["max_favorable_excursion"] == 10.0
+    assert resolved[0]["missed_exit_reason"] == "TP"
+    assert resolved[0]["missed_exit_price"] == 110.0
 
 
 def test_missed_loser_on_sl_hit(temp_db):
@@ -75,6 +84,8 @@ def test_missed_loser_on_sl_hit(temp_db):
     assert resolved[0]["status"] == "MISSED_LOSER"
     assert resolved[0]["points_captured"] == -5.0
     assert resolved[0]["max_adverse_excursion"] == 6.0
+    assert resolved[0]["missed_exit_reason"] == "SL"
+    assert resolved[0]["missed_exit_price"] == 95.0
 
 
 def test_sell_missed_winner(temp_db):
@@ -233,3 +244,64 @@ def test_debug_missed_opportunities_endpoint(temp_db):
     assert body["signals"][0]["signal_id"] == record["id"]
     assert body["signals"][0]["outcome"] == "MISSED_WINNER"
     assert body["signals"][0]["points_missed"] == 10.0
+    assert body["signals"][0]["exit_reason"] == "TP"
+
+
+def test_opposite_signal_closes_missed_buy_winner(temp_db):
+    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    signal_service.reject_signal(buy["id"])
+
+    _create_pending(side="SELL", entry=103.0, hh50=110.0, ll50=90.0)
+
+    updated = signal_service.get_signal(buy["id"])
+    assert updated["status"] == "MISSED_WINNER"
+    assert updated["points_captured"] == 3.0
+    assert updated["missed_exit_reason"] == "Opposite Signal"
+    assert updated["missed_exit_price"] == 103.0
+    assert updated["missed_monitoring"] is False
+
+
+def test_opposite_signal_closes_missed_buy_loser(temp_db):
+    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    signal_service.reject_signal(buy["id"])
+
+    _create_pending(side="SELL", entry=97.0, hh50=110.0, ll50=90.0)
+
+    updated = signal_service.get_signal(buy["id"])
+    assert updated["status"] == "MISSED_LOSER"
+    assert updated["points_captured"] == -3.0
+    assert updated["missed_exit_reason"] == "Opposite Signal"
+    assert updated["missed_exit_price"] == 97.0
+
+
+def test_opposite_signal_closes_missed_sell(temp_db):
+    sell = _create_pending(
+        side="SELL",
+        entry=200.0,
+        hh50=210.0,
+        ll50=180.0,
+    )
+    signal_service.reject_signal(sell["id"])
+
+    _create_pending(side="BUY", entry=195.0, hh50=220.0, ll50=190.0)
+
+    updated = signal_service.get_signal(sell["id"])
+    assert updated["status"] == "MISSED_WINNER"
+    assert updated["points_captured"] == 5.0
+    assert updated["missed_exit_reason"] == "Opposite Signal"
+    assert updated["missed_exit_price"] == 195.0
+
+
+def test_tp_hits_before_opposite_signal(temp_db):
+    buy = _create_pending(entry=100.0, hh50=110.0, ll50=95.0)
+    signal_service.reject_signal(buy["id"])
+
+    service = MissedOpportunityService()
+    service.monitor_signals({"ETHUSDT": 110.0})
+
+    _create_pending(side="SELL", entry=105.0, hh50=115.0, ll50=90.0)
+
+    updated = signal_service.get_signal(buy["id"])
+    assert updated["status"] == "MISSED_WINNER"
+    assert updated["missed_exit_reason"] == "TP"
+    assert updated["points_captured"] == 10.0

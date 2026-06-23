@@ -10,12 +10,17 @@ from app.config import settings
 from app.paper_trader import (
     check_exit_reason,
     excursion_points,
+    realized_points,
     reward_points,
     risk_points,
 )
 from app.repositories.signal_repository import SignalRepository
 
 logger = logging.getLogger(__name__)
+
+MISSED_EXIT_TP = "TP"
+MISSED_EXIT_SL = "SL"
+MISSED_EXIT_OPPOSITE = "Opposite Signal"
 
 
 class MissedOpportunityService:
@@ -40,6 +45,27 @@ class MissedOpportunityService:
             if self.start_monitoring(record["id"]):
                 queued += 1
         return queued
+
+    def on_opposite_signal(self, new_signal: dict[str, Any]) -> list[dict[str, Any]]:
+        """Close monitored missed trades when a reverse signal is generated."""
+        opposite_side = "SELL" if new_signal["side"] == "BUY" else "BUY"
+        candidates = self.repository.list_missed_monitoring_for(
+            symbol=new_signal["symbol"],
+            timeframe=new_signal["timeframe"],
+            side=opposite_side,
+        )
+        if not candidates:
+            return []
+
+        exit_price = float(new_signal["entry"])
+        resolved: list[dict[str, Any]] = []
+        for record in candidates:
+            if int(record["id"]) >= int(new_signal["id"]):
+                continue
+            updated = self._resolve_opposite(record, exit_price, new_signal["id"])
+            if updated:
+                resolved.append(updated)
+        return resolved
 
     def monitor_signals(self, prices: dict[str, float]) -> list[dict[str, Any]]:
         self.ensure_monitoring_queue()
@@ -75,31 +101,25 @@ class MissedOpportunityService:
             exit_reason = check_exit_reason(side, price, sl, tp)
             if exit_reason == "TP":
                 points = reward_points(side, entry, tp)
-                updated = self.repository.resolve_missed(
-                    record["id"], "MISSED_WINNER", points
+                updated = self._resolve(
+                    record,
+                    status="MISSED_WINNER",
+                    points=points,
+                    exit_reason=MISSED_EXIT_TP,
+                    exit_price=tp,
                 )
                 if updated:
-                    logger.info(
-                        "Missed winner: id=%s %s %s +%.2f pts",
-                        updated["id"],
-                        symbol,
-                        side,
-                        points,
-                    )
                     resolved.append(updated)
             elif exit_reason == "SL":
                 points = -risk_points(side, entry, sl)
-                updated = self.repository.resolve_missed(
-                    record["id"], "MISSED_LOSER", points
+                updated = self._resolve(
+                    record,
+                    status="MISSED_LOSER",
+                    points=points,
+                    exit_reason=MISSED_EXIT_SL,
+                    exit_price=sl,
                 )
                 if updated:
-                    logger.info(
-                        "Missed loser: id=%s %s %s %.2f pts",
-                        updated["id"],
-                        symbol,
-                        side,
-                        points,
-                    )
                     resolved.append(updated)
         return resolved
 
@@ -148,6 +168,8 @@ class MissedOpportunityService:
                     "symbol": row["symbol"],
                     "outcome": row["status"],
                     "points_missed": row.get("points_captured"),
+                    "exit_reason": row.get("missed_exit_reason"),
+                    "exit_price": row.get("missed_exit_price"),
                 }
                 for row in records
             ],
@@ -170,6 +192,72 @@ class MissedOpportunityService:
         stats["period"] = period
         stats["since"] = since
         return stats
+
+    def _resolve_opposite(
+        self,
+        record: dict[str, Any],
+        exit_price: float,
+        closing_signal_id: int,
+    ) -> dict[str, Any] | None:
+        points = realized_points(record["side"], record["entry"], exit_price)
+        status = "MISSED_WINNER" if points > 0 else "MISSED_LOSER"
+        updated = self._resolve(
+            record,
+            status=status,
+            points=points,
+            exit_reason=MISSED_EXIT_OPPOSITE,
+            exit_price=exit_price,
+        )
+        if updated:
+            logger.info(
+                "Missed %s via opposite signal: id=%s %s %s %.2f pts "
+                "exit=%.4f closing_signal=%s",
+                status.replace("_", " ").lower(),
+                updated["id"],
+                record["symbol"],
+                record["side"],
+                points,
+                exit_price,
+                closing_signal_id,
+            )
+        return updated
+
+    def _resolve(
+        self,
+        record: dict[str, Any],
+        *,
+        status: str,
+        points: float,
+        exit_reason: str,
+        exit_price: float,
+    ) -> dict[str, Any] | None:
+        updated = self.repository.resolve_missed(
+            record["id"],
+            status,
+            points,
+            exit_reason=exit_reason,
+            exit_price=exit_price,
+        )
+        if not updated:
+            return None
+
+        if exit_reason == MISSED_EXIT_TP:
+            logger.info(
+                "Missed winner: id=%s %s %s +%.2f pts (TP)",
+                updated["id"],
+                record["symbol"],
+                record["side"],
+                points,
+            )
+        elif exit_reason == MISSED_EXIT_SL:
+            logger.info(
+                "Missed loser: id=%s %s %s %.2f pts (SL)",
+                updated["id"],
+                record["symbol"],
+                record["side"],
+                points,
+            )
+        return updated
 
     @staticmethod
     def _monitoring_expired(record: dict[str, Any]) -> bool:

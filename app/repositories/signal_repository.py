@@ -304,6 +304,27 @@ class SignalRepository:
             ).fetchall()
         return [self._row_to_dict(row) for row in rows]
 
+    def list_missed_monitoring_for(
+        self,
+        *,
+        symbol: str,
+        timeframe: str,
+        side: str,
+    ) -> list[dict[str, Any]]:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM signals
+                WHERE missed_monitoring = 1
+                  AND symbol = ?
+                  AND timeframe = ?
+                  AND side = ?
+                ORDER BY datetime(monitoring_started_at) ASC, id ASC
+                """,
+                (symbol, timeframe, side),
+            ).fetchall()
+        return [self._row_to_dict(row) for row in rows]
+
     def update_excursions(
         self,
         signal_id: int,
@@ -342,6 +363,9 @@ class SignalRepository:
         signal_id: int,
         status: str,
         points_captured: float,
+        *,
+        exit_reason: str,
+        exit_price: float,
     ) -> dict[str, Any] | None:
         if status not in {"MISSED_WINNER", "MISSED_LOSER"}:
             raise ValueError(f"Invalid missed status: {status}")
@@ -352,13 +376,23 @@ class SignalRepository:
                 UPDATE signals
                 SET status = ?,
                     points_captured = ?,
+                    missed_exit_reason = ?,
+                    missed_exit_price = ?,
                     missed_monitoring = 0,
                     missed_resolved_at = ?,
                     updated_at = ?
                 WHERE id = ?
                   AND missed_monitoring = 1
                 """,
-                (status, points_captured, now, now, signal_id),
+                (
+                    status,
+                    points_captured,
+                    exit_reason,
+                    exit_price,
+                    now,
+                    now,
+                    signal_id,
+                ),
             )
             conn.commit()
             if cursor.rowcount == 0:
