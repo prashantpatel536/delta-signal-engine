@@ -782,7 +782,17 @@ class PaperTradingService:
 
         from app.paper_trader import build_closed_trade_payload
 
-        return [build_closed_trade_payload(position) for position in self.repository.list_closed()]
+        trades: list[dict[str, Any]] = []
+        for position in self.repository.list_closed():
+            try:
+                trades.append(build_closed_trade_payload(position))
+            except Exception as exc:
+                logger.exception(
+                    "Skipping corrupt closed position id=%s: %s",
+                    position.get("id"),
+                    exc,
+                )
+        return trades
 
 
 

@@ -245,48 +245,89 @@ def normalize_exit_reason(exit_reason: str | None) -> str | None:
     return value
 
 
+def safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        number = float(value)
+        if number != number or number in (float("inf"), float("-inf")):
+            return default
+        return number
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_optional_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        number = float(value)
+        if number != number or number in (float("inf"), float("-inf")):
+            return None
+        return number
+    except (TypeError, ValueError):
+        return None
+
+
+def safe_iso_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def build_closed_trade_payload(position: dict[str, Any]) -> dict[str, Any]:
     """Normalize a closed position row for /trade-history responses."""
-    entry = float(position["entry"])
-    exit_price_raw = position.get("exit_price")
-    exit_price = float(exit_price_raw) if exit_price_raw is not None else None
-    stop_loss = float(position["stop_loss"]) if position.get("stop_loss") is not None else entry
-    take_profit = float(position["take_profit"]) if position.get("take_profit") is not None else entry
+    entry = safe_float(position.get("entry"))
+    exit_price = safe_optional_float(position.get("exit_price"))
+    stop_loss_raw = position.get("stop_loss")
+    take_profit_raw = position.get("take_profit")
+    stop_loss = safe_float(stop_loss_raw, entry) if stop_loss_raw is not None else entry
+    take_profit = safe_float(take_profit_raw, entry) if take_profit_raw is not None else entry
     side = normalize_side(position.get("side"))
-    pnl = float(position.get("pnl") or 0)
-    margin = float(position.get("margin_used") or 0.0)
+    pnl = safe_float(position.get("pnl"), 0.0)
+    margin = safe_float(position.get("margin_used"), 0.0)
     exit_reason = normalize_exit_reason(position.get("exit_reason"))
 
-    price_points = position.get("price_points")
+    price_points = safe_optional_float(position.get("price_points"))
     if price_points is None and exit_price is not None:
         price_points = realized_points(side, entry, exit_price)
 
-    duration = safe_duration_seconds(position.get("opened_at"), position.get("closed_at"))
+    opened_at = safe_iso_text(position.get("opened_at")) or ""
+    closed_at = safe_iso_text(position.get("closed_at"))
+    duration = safe_duration_seconds(opened_at, closed_at)
     roe = calculate_roe(pnl, margin) if margin > 0 else None
 
+    signal_id_raw = position.get("signal_id")
+    signal_id = int(signal_id_raw) if signal_id_raw is not None else None
+
+    position_id = position.get("id")
+    if position_id is None:
+        raise ValueError("closed position missing id")
+
     return {
-        "id": int(position["id"]),
-        "signal_id": position.get("signal_id"),
-        "symbol": str(position["symbol"]),
+        "id": int(position_id),
+        "signal_id": signal_id,
+        "symbol": str(position.get("symbol") or "UNKNOWN"),
         "side": side,
         "entry": entry,
         "stop_loss": stop_loss,
         "take_profit": take_profit,
-        "original_stop_loss": position.get("original_stop_loss"),
-        "original_take_profit": position.get("original_take_profit"),
-        "risk_reward": float(position.get("risk_reward") or 0.0),
-        "quantity": float(position.get("quantity") or 1.0),
-        "leverage": float(position.get("leverage") or 1.0),
+        "original_stop_loss": safe_optional_float(position.get("original_stop_loss")),
+        "original_take_profit": safe_optional_float(position.get("original_take_profit")),
+        "risk_reward": safe_float(position.get("risk_reward"), 0.0),
+        "quantity": safe_float(position.get("quantity"), 1.0),
+        "leverage": safe_float(position.get("leverage"), 1.0),
         "margin_used": margin,
-        "position_value": float(position.get("position_value") or 0.0),
+        "position_value": safe_float(position.get("position_value"), 0.0),
         "status": "CLOSED",
-        "opened_at": str(position.get("opened_at") or ""),
-        "closed_at": position.get("closed_at"),
+        "opened_at": opened_at,
+        "closed_at": closed_at,
         "exit_price": exit_price,
         "exit_reason": exit_reason,
         "pnl": pnl,
         "price_points": price_points,
-        "account_impact_pct": position.get("account_impact_pct"),
+        "account_impact_pct": safe_optional_float(position.get("account_impact_pct")),
         "roe": roe,
         "result": trade_result(pnl),
         "duration_seconds": duration,

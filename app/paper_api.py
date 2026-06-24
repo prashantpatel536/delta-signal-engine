@@ -158,13 +158,21 @@ def close_position(position_id: int) -> Position:
 
 @router.get("/trade-history", response_model=ClosedTradesResponse)
 def get_trade_history() -> ClosedTradesResponse:
-    trades: list[ClosedTrade] = []
-    for item in paper_service.get_closed_trades():
-        try:
-            trades.append(ClosedTrade(**item))
-        except Exception as exc:
-            logger.warning("Skipping closed trade id=%s in /trade-history: %s", item.get("id"), exc)
-    return ClosedTradesResponse(trades=trades, count=len(trades))
+    try:
+        trades: list[ClosedTrade] = []
+        for item in paper_service.get_closed_trades():
+            try:
+                trades.append(ClosedTrade(**item))
+            except Exception as exc:
+                logger.warning(
+                    "Skipping closed trade id=%s in /trade-history: %s",
+                    item.get("id"),
+                    exc,
+                )
+        return ClosedTradesResponse(trades=trades, count=len(trades))
+    except Exception as exc:
+        logger.exception("/trade-history failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.get("/paper-statistics", response_model=PaperStatistics)
