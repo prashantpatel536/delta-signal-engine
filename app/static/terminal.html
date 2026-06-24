@@ -44,50 +44,55 @@
 
     <div class="terminal-grid">
       <section class="terminal-main-col">
-        <div class="symbol-tabs" id="symbol-tabs"></div>
-        <div class="tf-toolbar">
-          <span class="tf-label">Chart TF</span>
-          <button type="button" class="tf-btn chart-tf-btn" data-tf="1m">1m</button>
-          <button type="button" class="tf-btn chart-tf-btn active" data-tf="5m">5m</button>
-          <button type="button" class="tf-btn chart-tf-btn" data-tf="15m">15m</button>
-          <button type="button" class="tf-btn chart-tf-btn" data-tf="1h">1h</button>
-          <span class="tf-spacer"></span>
-          <label class="ctrl ctrl-inline">
-            <span>Bars</span>
-            <select id="window-select">
-              <option value="60">60</option>
-              <option value="100" selected>100</option>
-              <option value="200">200</option>
-            </select>
-          </label>
-          <button id="refresh-btn" type="button" class="btn-primary btn-sm">Refresh</button>
-        </div>
-        <div class="tf-toolbar signal-tf-toolbar">
-          <span class="tf-label">Signal TF</span>
-          <button type="button" class="tf-btn signal-tf-btn" data-tf="1m">1m</button>
-          <button type="button" class="tf-btn signal-tf-btn active" data-tf="5m">5m</button>
-          <button type="button" class="tf-btn signal-tf-btn" data-tf="15m">15m</button>
-          <button type="button" class="tf-btn signal-tf-btn" data-tf="1h">1h</button>
-        </div>
-
-        <div class="chart-symbol-header">
-          <h2 id="chart-symbol">ETHUSDT</h2>
-          <span class="live-price" id="last-price">—</span>
-          <span class="price-change" id="price-change"></span>
-        </div>
-
-        <div class="chart-legend chart-legend-bar chart-legend-compact">
-          <span class="leg-time" id="leg-time">—</span>
-          <span>O <b id="leg-o">—</b></span>
-          <span>H <b id="leg-h">—</b></span>
-          <span>L <b id="leg-l">—</b></span>
-          <span>C <b id="leg-c">—</b></span>
-          <span class="leg-sep">|</span>
-          <span>Vol <b id="leg-v">—</b></span>
-          <span class="leg-sep">|</span>
-          <span class="ind-sma">SMA84 <b id="leg-sma">—</b></span>
-          <span class="ind-hh">HH50 <b id="leg-hh">—</b></span>
-          <span class="ind-ll">LL50 <b id="leg-ll">—</b></span>
+        <div class="chart-controls-compact">
+          <div class="chart-controls-row row-symbols">
+            <div class="symbol-tabs" id="symbol-tabs"></div>
+            <div class="chart-price-strip">
+              <h2 id="chart-symbol">ETHUSDT</h2>
+              <span class="live-price" id="last-price">—</span>
+              <span class="price-change" id="price-change"></span>
+            </div>
+            <div class="chart-controls-actions">
+              <label class="ctrl ctrl-inline ctrl-compact">
+                <span>Bars</span>
+                <select id="window-select">
+                  <option value="60">60</option>
+                  <option value="100" selected>100</option>
+                  <option value="200">200</option>
+                </select>
+              </label>
+              <button id="refresh-btn" type="button" class="btn-primary btn-sm">Refresh</button>
+            </div>
+          </div>
+          <div class="chart-controls-row row-tf">
+            <div class="tf-group">
+              <span class="tf-label">Chart</span>
+              <button type="button" class="tf-btn chart-tf-btn" data-tf="1m">1m</button>
+              <button type="button" class="tf-btn chart-tf-btn active" data-tf="5m">5m</button>
+              <button type="button" class="tf-btn chart-tf-btn" data-tf="15m">15m</button>
+              <button type="button" class="tf-btn chart-tf-btn" data-tf="1h">1h</button>
+            </div>
+            <div class="tf-group tf-group-signal">
+              <span class="tf-label">Signal</span>
+              <button type="button" class="tf-btn signal-tf-btn" data-tf="1m">1m</button>
+              <button type="button" class="tf-btn signal-tf-btn active" data-tf="5m">5m</button>
+              <button type="button" class="tf-btn signal-tf-btn" data-tf="15m">15m</button>
+              <button type="button" class="tf-btn signal-tf-btn" data-tf="1h">1h</button>
+            </div>
+          </div>
+          <div class="chart-legend chart-legend-compact">
+            <span class="leg-time" id="leg-time">—</span>
+            <span>O <b id="leg-o">—</b></span>
+            <span>H <b id="leg-h">—</b></span>
+            <span>L <b id="leg-l">—</b></span>
+            <span>C <b id="leg-c">—</b></span>
+            <span class="leg-sep">|</span>
+            <span>Vol <b id="leg-v">—</b></span>
+            <span class="leg-sep">|</span>
+            <span class="ind-sma">SMA84 <b id="leg-sma">—</b></span>
+            <span class="ind-hh">HH50 <b id="leg-hh">—</b></span>
+            <span class="ind-ll">LL50 <b id="leg-ll">—</b></span>
+          </div>
         </div>
 
         <div class="chart-stage terminal-chart-stage">
