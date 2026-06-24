@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -393,3 +394,23 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
     if "text/html" in accept and not path.startswith("/static"):
         return FileResponse(STATIC_DIR / "404.html", status_code=404)
     return JSONResponse({"detail": exc.detail}, status_code=404)
+
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_handler(
+    request: Request,
+    exc: ResponseValidationError,
+) -> JSONResponse:
+    logger.exception("Response validation failed on %s", request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Response validation failed", "errors": exc.errors()},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if isinstance(exc, (StarletteHTTPException, RequestValidationError, ResponseValidationError)):
+        raise exc
+    logger.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse(status_code=500, content={"detail": str(exc), "path": request.url.path})

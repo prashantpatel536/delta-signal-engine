@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
@@ -156,23 +157,24 @@ def close_position(position_id: int) -> Position:
     return Position(**closed)
 
 
-@router.get("/trade-history", response_model=ClosedTradesResponse)
-def get_trade_history() -> ClosedTradesResponse:
+@router.get("/trade-history")
+def get_trade_history() -> dict[str, Any]:
+    """Return closed trades as plain JSON (avoids response-model 500s on legacy rows)."""
+    trades: list[dict[str, Any]] = []
     try:
-        trades: list[ClosedTrade] = []
         for item in paper_service.get_closed_trades():
             try:
-                trades.append(ClosedTrade(**item))
+                trades.append(ClosedTrade.model_validate(item).model_dump(mode="json"))
             except Exception as exc:
                 logger.warning(
                     "Skipping closed trade id=%s in /trade-history: %s",
                     item.get("id"),
                     exc,
                 )
-        return ClosedTradesResponse(trades=trades, count=len(trades))
     except Exception as exc:
         logger.exception("/trade-history failed")
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"trades": trades, "count": len(trades)}
 
 
 @router.get("/paper-statistics", response_model=PaperStatistics)
