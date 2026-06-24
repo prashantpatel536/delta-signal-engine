@@ -112,6 +112,28 @@ Common fixes:
 - **No .env:** `cp .env.example .env` then edit Telegram/API keys on VPS
 - **Port in use:** `sudo lsof -i :8000` then kill old uvicorn
 
+**Symptom:** journalctl shows `address already in use` and `curl /trade-history` returns old errors.
+
+An old manual `uvicorn` or `nohup` process is still on port 8000 while systemd keeps failing to bind.
+
+```bash
+cd ~/delta-signal-engine
+sudo systemctl stop delta-signal-engine
+sudo pkill -f "uvicorn app.main:app" || true
+sudo fuser -k 8000/tcp 2>/dev/null || sudo kill -9 $(sudo lsof -t -i :8000) 2>/dev/null
+sleep 2
+sudo lsof -i :8000   # should show nothing
+sudo systemctl start delta-signal-engine
+sleep 3
+curl -s http://127.0.0.1:8000/trade-history
+```
+
+Or use the deploy script (kills stale port 8000 automatically):
+
+```bash
+bash scripts/vps_deploy.sh
+```
+
 ### TLS / certifi errors (`Could not find a suitable TLS CA certificate bundle`)
 
 Health shows `market_data: degraded` with paths like `venv/.../certifi/cacert.pem`.
