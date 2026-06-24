@@ -1094,13 +1094,15 @@ select, button {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  align-items: stretch;
 }
 
 .terminal-main-col {
   grid-area: main;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: repeat(5, auto) minmax(280px, 1fr) auto;
   min-height: 0;
+  height: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1113,7 +1115,7 @@ select, button {
 .terminal-main-col > .chart-symbol-header,
 .terminal-main-col > .chart-legend,
 .terminal-main-col > .chart-foot {
-  flex-shrink: 0;
+  min-height: 0;
 }
 
 .terminal-right-col {
@@ -1572,8 +1574,8 @@ select, button {
 }
 
 .terminal-chart-stage {
-  flex: 1 1 auto;
   min-height: 280px;
+  height: 100%;
   position: relative;
   background: #0b0e11;
   isolation: isolate;

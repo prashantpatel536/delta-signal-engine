@@ -514,13 +514,17 @@
     }
 
     init() {
+      if (this.chart) return true;
       if (typeof LightweightCharts === "undefined") {
         console.error("[chart] LightweightCharts not loaded");
         return false;
       }
       const width = this.container.clientWidth;
       const height = this.container.clientHeight;
-      if (width <= 0 || height <= 0) return false;
+      if (width <= 0 || height <= 0) {
+        this._watchContainerSize();
+        return false;
+      }
 
       const self = this;
       const bgType = LightweightCharts.ColorType?.Solid ?? 0;
@@ -660,7 +664,21 @@
       });
 
       this.ready = true;
+      this._resizeObserver?.disconnect();
+      this._resizeObserver = null;
       return true;
+    }
+
+    _watchContainerSize() {
+      if (!this.container || this._resizeObserver) return;
+      this._resizeObserver = new ResizeObserver(() => {
+        if (this.ready || !this.container) return;
+        if (this.container.clientWidth <= 0 || this.container.clientHeight <= 0) return;
+        if (this.init()) {
+          window.dispatchEvent(new CustomEvent("chart-engine-ready"));
+        }
+      });
+      this._resizeObserver.observe(this.container);
     }
 
     update(chartData, { windowSize, timeframe, signalTimeframe, symbol, position, signalQuality }) {

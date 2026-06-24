@@ -218,46 +218,56 @@ function initTerminal() {
     return;
   }
 
-  Terminal.initMobileNav();
-  Terminal.bindPositionClose(refreshTerminal);
-  Terminal.bindTerminalActions(refreshTerminal);
+  if (!window.__terminalUiBound) {
+    window.__terminalUiBound = true;
+    Terminal.initMobileNav();
+    Terminal.bindPositionClose(refreshTerminal);
+    Terminal.bindTerminalActions(refreshTerminal);
 
-  const prefs = DSE.getPrefs();
-  const windowSelect = document.getElementById("window-select");
-  if (windowSelect) windowSelect.value = String(prefs.bars);
+    const prefs = DSE.getPrefs();
+    const windowSelect = document.getElementById("window-select");
+    if (windowSelect) windowSelect.value = String(prefs.bars);
 
-  windowSelect?.addEventListener("change", () => {
-    DSE.setPrefs({ bars: Number(windowSelect.value) });
-    chartEngine?.resetPan();
-    refreshTerminal();
-  });
-
-  document.getElementById("refresh-btn")?.addEventListener("click", () => {
-    chartEngine?.resetPan();
-    refreshTerminal();
-  });
-
-  const engine = buildEngine();
-  if (!engine.init()) {
-    requestAnimationFrame(initTerminal);
-    return;
-  }
-  clearChartBootError();
-
-  syncTerminalTimeframesFromServer().then(() => {
-    Terminal.bindTimeframeButtons(() => {
+    windowSelect?.addEventListener("change", () => {
+      DSE.setPrefs({ bars: Number(windowSelect.value) });
       chartEngine?.resetPan();
       refreshTerminal();
     });
 
-    refreshTerminal();
+    document.getElementById("refresh-btn")?.addEventListener("click", () => {
+      chartEngine?.resetPan();
+      refreshTerminal();
+    });
 
     document.getElementById("recalc-missed-btn")?.addEventListener("click", () => {
       Terminal.recalculateMissedOpportunities(() => refreshTerminal());
     });
+  }
 
-    setInterval(refreshTerminal, 10000);
+  const engine = buildEngine();
+  if (!engine.init()) {
+    window.addEventListener(
+      "chart-engine-ready",
+      () => {
+        clearChartBootError();
+        syncTerminalTimeframesFromServer().then(startTerminalPolling);
+      },
+      { once: true }
+    );
+    showChartBootError("Chart engine initializing…");
+    return;
+  }
+  clearChartBootError();
+  syncTerminalTimeframesFromServer().then(startTerminalPolling);
+}
+
+function startTerminalPolling() {
+  Terminal.bindTimeframeButtons(() => {
+    chartEngine?.resetPan();
+    refreshTerminal();
   });
+  refreshTerminal();
+  setInterval(refreshTerminal, 10000);
 }
 
 initTerminal();
