@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from datetime import datetime
+from typing import Any, Literal
 
 from app.contract_specs import contracts_from_notional, sizing_from_contracts
 
@@ -205,7 +206,93 @@ def exit_status_label(exit_reason: str | None) -> str | None:
         return "CLOSED"
     if exit_reason == "Opposite Signal":
         return "OPPOSITE SIGNAL"
+    if exit_reason:
+        return str(exit_reason).strip().upper()
     return None
+
+
+def safe_duration_seconds(opened_at: str | None, closed_at: str | None) -> float:
+    if not opened_at or not closed_at:
+        return 0.0
+    try:
+        opened = datetime.fromisoformat(str(opened_at).replace("Z", "+00:00"))
+        closed = datetime.fromisoformat(str(closed_at).replace("Z", "+00:00"))
+        return max(0.0, (closed - opened).total_seconds())
+    except (ValueError, TypeError, AttributeError):
+        return 0.0
+
+
+def normalize_side(side: str | None) -> Side:
+    value = str(side or "").upper()
+    return "SELL" if value == "SELL" else "BUY"
+
+
+def normalize_exit_reason(exit_reason: str | None) -> str | None:
+    if exit_reason is None:
+        return None
+    value = str(exit_reason).strip()
+    if not value:
+        return None
+    upper = value.upper()
+    if upper == "TP":
+        return "TP"
+    if upper == "SL":
+        return "SL"
+    if upper == "MANUAL":
+        return "MANUAL"
+    if upper in {"OPPOSITE SIGNAL", "OPPOSITE"} or "OPPOSITE" in upper:
+        return "Opposite Signal"
+    return value
+
+
+def build_closed_trade_payload(position: dict[str, Any]) -> dict[str, Any]:
+    """Normalize a closed position row for /trade-history responses."""
+    entry = float(position["entry"])
+    exit_price_raw = position.get("exit_price")
+    exit_price = float(exit_price_raw) if exit_price_raw is not None else None
+    stop_loss = float(position["stop_loss"]) if position.get("stop_loss") is not None else entry
+    take_profit = float(position["take_profit"]) if position.get("take_profit") is not None else entry
+    side = normalize_side(position.get("side"))
+    pnl = float(position.get("pnl") or 0)
+    margin = float(position.get("margin_used") or 0.0)
+    exit_reason = normalize_exit_reason(position.get("exit_reason"))
+
+    price_points = position.get("price_points")
+    if price_points is None and exit_price is not None:
+        price_points = realized_points(side, entry, exit_price)
+
+    duration = safe_duration_seconds(position.get("opened_at"), position.get("closed_at"))
+    roe = calculate_roe(pnl, margin) if margin > 0 else None
+
+    return {
+        "id": int(position["id"]),
+        "signal_id": position.get("signal_id"),
+        "symbol": str(position["symbol"]),
+        "side": side,
+        "entry": entry,
+        "stop_loss": stop_loss,
+        "take_profit": take_profit,
+        "original_stop_loss": position.get("original_stop_loss"),
+        "original_take_profit": position.get("original_take_profit"),
+        "risk_reward": float(position.get("risk_reward") or 0.0),
+        "quantity": float(position.get("quantity") or 1.0),
+        "leverage": float(position.get("leverage") or 1.0),
+        "margin_used": margin,
+        "position_value": float(position.get("position_value") or 0.0),
+        "status": "CLOSED",
+        "opened_at": str(position.get("opened_at") or ""),
+        "closed_at": position.get("closed_at"),
+        "exit_price": exit_price,
+        "exit_reason": exit_reason,
+        "pnl": pnl,
+        "price_points": price_points,
+        "account_impact_pct": position.get("account_impact_pct"),
+        "roe": roe,
+        "result": trade_result(pnl),
+        "duration_seconds": duration,
+        "duration": format_duration_seconds(duration),
+        "exit_status": exit_status_label(exit_reason),
+    }
 
 
 def trade_result(pnl: float) -> str:

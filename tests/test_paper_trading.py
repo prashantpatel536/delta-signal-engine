@@ -284,3 +284,44 @@ def test_trade_history_includes_opposite_signal_exit(temp_db, monkeypatch):
     assert len(trades) == 1
     assert trades[0]["exit_reason"] == "Opposite Signal"
     assert trades[0]["exit_status"] == "OPPOSITE SIGNAL"
+
+
+def test_trade_history_tolerates_bad_closed_row(temp_db, monkeypatch):
+    monkeypatch.setattr(
+        paper_service.repository,
+        "list_closed",
+        lambda: [
+            {
+                "id": 999,
+                "signal_id": None,
+                "symbol": "ETHUSDT",
+                "side": "buy",
+                "entry": 100.0,
+                "stop_loss": None,
+                "take_profit": None,
+                "original_stop_loss": None,
+                "original_take_profit": None,
+                "risk_reward": 0.0,
+                "quantity": 1.0,
+                "leverage": 10.0,
+                "margin_used": 100.0,
+                "position_value": 1000.0,
+                "status": "CLOSED",
+                "opened_at": "not-a-date",
+                "closed_at": "also-bad",
+                "exit_price": 105.0,
+                "exit_reason": "",
+                "pnl": 5.0,
+                "price_points": None,
+                "account_impact_pct": 0.5,
+            }
+        ],
+    )
+
+    resp = client.get("/trade-history")
+    assert resp.status_code == 200
+    trades = resp.json()["trades"]
+    assert len(trades) == 1
+    assert trades[0]["id"] == 999
+    assert trades[0]["exit_reason"] is None
+    assert trades[0]["duration_seconds"] == 0.0

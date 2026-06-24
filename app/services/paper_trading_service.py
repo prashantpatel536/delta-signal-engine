@@ -780,54 +780,9 @@ class PaperTradingService:
 
     def get_closed_trades(self) -> list[dict[str, Any]]:
 
-        trades: list[dict[str, Any]] = []
+        from app.paper_trader import build_closed_trade_payload
 
-        for position in self.repository.list_closed():
-
-            duration = self._duration_seconds(position["opened_at"], position["closed_at"])
-
-            pnl = float(position["pnl"] or 0)
-
-            margin = float(position.get("margin_used") or 0.0)
-
-            price_points = position.get("price_points")
-            if price_points is None and position.get("exit_price") is not None:
-                from app.paper_trader import realized_points
-
-                price_points = realized_points(
-                    position["side"],
-                    float(position["entry"]),
-                    float(position["exit_price"]),
-                )
-
-            account_impact = position.get("account_impact_pct")
-            roe = calculate_roe(pnl, margin) if margin > 0 else None
-
-            trades.append(
-
-                {
-
-                    **position,
-
-                    "result": trade_result(pnl),
-
-                    "duration_seconds": duration,
-
-                    "duration": format_duration_seconds(duration),
-
-                    "exit_status": exit_status_label(position.get("exit_reason")),
-
-                    "price_points": price_points,
-
-                    "account_impact_pct": account_impact,
-
-                    "roe": roe,
-
-                }
-
-            )
-
-        return trades
+        return [build_closed_trade_payload(position) for position in self.repository.list_closed()]
 
 
 
@@ -993,13 +948,7 @@ class PaperTradingService:
 
     def _duration_seconds(opened_at: str, closed_at: str | None) -> float:
 
-        if not closed_at:
+        from app.paper_trader import safe_duration_seconds
 
-            return 0.0
-
-        opened = datetime.fromisoformat(opened_at.replace("Z", "+00:00"))
-
-        closed = datetime.fromisoformat(closed_at.replace("Z", "+00:00"))
-
-        return max(0.0, (closed - opened).total_seconds())
+        return safe_duration_seconds(opened_at, closed_at)
 

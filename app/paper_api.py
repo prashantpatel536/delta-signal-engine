@@ -158,11 +158,13 @@ def close_position(position_id: int) -> Position:
 
 @router.get("/trade-history", response_model=ClosedTradesResponse)
 def get_trade_history() -> ClosedTradesResponse:
-    trades = paper_service.get_closed_trades()
-    return ClosedTradesResponse(
-        trades=[ClosedTrade(**item) for item in trades],
-        count=len(trades),
-    )
+    trades: list[ClosedTrade] = []
+    for item in paper_service.get_closed_trades():
+        try:
+            trades.append(ClosedTrade(**item))
+        except Exception as exc:
+            logger.warning("Skipping closed trade id=%s in /trade-history: %s", item.get("id"), exc)
+    return ClosedTradesResponse(trades=trades, count=len(trades))
 
 
 @router.get("/paper-statistics", response_model=PaperStatistics)
