@@ -1085,7 +1085,7 @@ select, button {
 .terminal-grid {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 11rem);
   grid-template-areas:
     "main sidebar"
     "recent recent";
@@ -1099,8 +1099,8 @@ select, button {
 
 .terminal-main-col {
   grid-area: main;
-  display: grid;
-  grid-template-rows: repeat(5, auto) minmax(280px, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   height: 100%;
   background: var(--surface);
@@ -1115,7 +1115,7 @@ select, button {
 .terminal-main-col > .chart-symbol-header,
 .terminal-main-col > .chart-legend,
 .terminal-main-col > .chart-foot {
-  min-height: 0;
+  flex-shrink: 0;
 }
 
 .terminal-right-col {
@@ -1186,6 +1186,16 @@ select, button {
 .terminal-recent-panel {
   grid-area: recent;
   min-height: 0;
+  max-height: 11rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-recent-panel .table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .symbol-tabs {
@@ -1451,15 +1461,20 @@ select, button {
 @media (max-width: 1100px) {
   .terminal-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(280px, 1fr) auto minmax(0, 10rem);
     grid-template-areas:
       "main"
       "sidebar"
       "recent";
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .terminal-chart-stage {
-    min-height: 320px;
+    min-height: 240px;
+  }
+
+  .terminal-recent-panel {
+    max-height: 10rem;
   }
 }
 
@@ -1574,8 +1589,8 @@ select, button {
 }
 
 .terminal-chart-stage {
-  min-height: 280px;
-  height: 100%;
+  flex: 1 1 0;
+  min-height: 240px;
   position: relative;
   background: #0b0e11;
   isolation: isolate;

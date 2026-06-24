@@ -183,7 +183,7 @@ async function refreshTerminal() {
     showChartBootError("Chart engine initializing…");
   }
 
-  Terminal.renderRecentSignals(signals.slice(0, 25), closedMap);
+  Terminal.renderRecentSignals(signals.slice(0, 8), closedMap);
 
   try {
     await AlertManager.checkAlerts();

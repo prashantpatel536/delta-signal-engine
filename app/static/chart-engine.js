@@ -666,7 +666,20 @@
       this.ready = true;
       this._resizeObserver?.disconnect();
       this._resizeObserver = null;
+      this._bindContainerResize();
       return true;
+    }
+
+    _bindContainerResize() {
+      if (!this.container || !this.chart) return;
+      const observer = new ResizeObserver(() => {
+        if (!this.chart || !this.container) return;
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
+        if (w > 0 && h > 0) this.chart.resize(w, h);
+      });
+      observer.observe(this.container);
+      this._resizeObserver = observer;
     }
 
     _watchContainerSize() {
