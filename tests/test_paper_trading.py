@@ -32,6 +32,16 @@ def test_paper_account_starts_at_1000(temp_db):
     assert body["used_margin"] == 0.0
 
 
+def test_available_margin_uses_equity(temp_db):
+    _open_eth_trade(margin_percent=25, leverage=10)
+    summary = paper_service.get_account_summary({"ETHUSDT": 95.0})
+    # BUY 125 @ 100, mark 95 → unrealized -625; equity 375; used margin 500
+    assert summary["unrealized_pnl"] == -625.0
+    assert summary["total_balance"] == 375.0
+    assert summary["used_margin"] == 500.0
+    assert summary["available_margin"] == -125.0
+
+
 def test_open_paper_trade_margin_allocation(temp_db):
     resp = _open_eth_trade(margin_percent=25, leverage=10)
     assert resp.status_code == 200

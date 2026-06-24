@@ -132,11 +132,9 @@ class PaperTradingService:
 
         unrealized_pnl = round(unrealized_pnl, 2)
 
-
-
-        available_margin = round(balance - used_margin, 2)
-
         total_balance = round(balance + unrealized_pnl, 2)
+        # Equity-based free margin: account equity minus margin reserved by open positions.
+        available_margin = round(total_balance - used_margin, 2)
 
 
 
