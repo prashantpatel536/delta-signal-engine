@@ -107,7 +107,10 @@ class TelegramService:
         self._proxy_override = proxy
         self.repository = repository or TelegramNotificationRepository()
         self._session = session or requests.Session()
-        self._last_error: str | None = None
+        if session is None:
+            from app.ssl_utils import configure_requests_session
+
+            configure_requests_session(self._session)
 
     @staticmethod
     def _clean(value: str | None) -> str | None:

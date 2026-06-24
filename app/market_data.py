@@ -204,6 +204,9 @@ class DeltaExchangeClient:
         self.api_secret = api_secret if api_secret is not None else settings.api_secret
         self.session = requests.Session()
         self.session.headers.update({"Accept": "application/json"})
+        from app.ssl_utils import configure_requests_session
+
+        self._verify = configure_requests_session(self.session)
         self._request_lock = Lock()
 
     def _auth_headers(self, method: str, path: str, query: str = "") -> dict[str, str]:

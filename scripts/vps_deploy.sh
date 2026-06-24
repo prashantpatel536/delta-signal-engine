@@ -26,6 +26,9 @@ fi
 
 echo "Installing dependencies..."
 .venv/bin/pip install -q -r requirements.txt
+echo "Ensuring CA certificates (certifi)..."
+.venv/bin/pip install -q --force-reinstall certifi
+.venv/bin/python -c "import certifi; from pathlib import Path; p=certifi.where(); assert Path(p).is_file(), p; print('CA bundle OK:', p)"
 
 if [[ ! -f .env ]]; then
   echo "WARNING: .env missing — copy .env.example and configure on VPS"

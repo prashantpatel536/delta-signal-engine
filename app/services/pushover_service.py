@@ -70,6 +70,10 @@ class PushoverService:
         self._enabled_override = enabled
         self.repository = repository or TelegramNotificationRepository()
         self._session = session or requests.Session()
+        if session is None:
+            from app.ssl_utils import configure_requests_session
+
+            configure_requests_session(self._session)
 
     @staticmethod
     def _clean(value: str | None) -> str | None:

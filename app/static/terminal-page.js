@@ -177,6 +177,7 @@ async function refreshTerminal() {
       position: activePosition,
       signalQuality: overlaySignal,
     });
+    clearChartBootError();
     Terminal.updateDebugStrip(ctx, chartTimeframe, signalTimeframe, pendingSignal);
   } else {
     showChartBootError("Chart engine initializing…");
@@ -241,6 +242,7 @@ function initTerminal() {
     requestAnimationFrame(initTerminal);
     return;
   }
+  clearChartBootError();
 
   syncTerminalTimeframesFromServer().then(() => {
     Terminal.bindTimeframeButtons(() => {

@@ -7,6 +7,8 @@ Type=simple
 User=root
 WorkingDirectory=/root/delta-signal-engine
 EnvironmentFile=-/root/delta-signal-engine/.env
+Environment=SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+Environment=REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ExecStart=/root/delta-signal-engine/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5

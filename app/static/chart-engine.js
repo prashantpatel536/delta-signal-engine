@@ -7,18 +7,18 @@
 
   const TERMINAL = {
     bg: "#0b0e11",
-    grid: "#1e2329",
-    border: "#2b3139",
-    text: "#848e9c",
-    crosshair: "#758696",
+    grid: "#2b3139",
+    border: "#363d47",
+    text: "#b7bdc6",
+    crosshair: "#848e9c",
     crosshairLabel: "#363a45",
-    up: "#0ecb81",
-    down: "#f6465d",
-    sma: "#f0b90b",
-    hh: "#1e88e5",
-    ll: "#f6465d",
-    volUp: "rgba(14, 203, 129, 0.45)",
-    volDown: "rgba(246, 70, 93, 0.45)",
+    up: "#14d990",
+    down: "#ff5b6a",
+    sma: "#f5c518",
+    hh: "#42a5f5",
+    ll: "#ff5b6a",
+    volUp: "rgba(20, 217, 144, 0.55)",
+    volDown: "rgba(255, 91, 106, 0.55)",
   };
 
   function formatPrice(value) {
@@ -523,8 +523,14 @@
       if (width <= 0 || height <= 0) return false;
 
       const self = this;
+      const bgType = LightweightCharts.ColorType?.Solid ?? 0;
       this.chart = LightweightCharts.createChart(this.container, {
-        layout: { background: { color: TERMINAL.bg }, textColor: TERMINAL.text, fontSize: 11 },
+        autoSize: true,
+        layout: {
+          background: { type: bgType, color: TERMINAL.bg },
+          textColor: TERMINAL.text,
+          fontSize: 11,
+        },
         grid: { vertLines: { color: TERMINAL.grid }, horzLines: { color: TERMINAL.grid } },
         crosshair: {
           mode: LightweightCharts.CrosshairMode.Normal,
@@ -546,8 +552,8 @@
           borderColor: TERMINAL.border,
           timeVisible: true,
           secondsVisible: false,
-          barSpacing: 10,
-          minBarSpacing: 4,
+          barSpacing: 12,
+          minBarSpacing: 5,
           rightOffset: 8,
         },
         handleScroll: {
@@ -561,8 +567,6 @@
           mouseWheel: true,
           pinch: true,
         },
-        width,
-        height,
       });
 
       this.candleSeries = this.chart.addCandlestickSeries({
@@ -572,6 +576,8 @@
         borderDownColor: TERMINAL.down,
         wickUpColor: TERMINAL.up,
         wickDownColor: TERMINAL.down,
+        borderVisible: true,
+        wickVisible: true,
         priceScaleId: "right",
         autoscaleInfoProvider: () => self.visibleCandleAutoscaleProvider(),
       });
@@ -652,14 +658,6 @@
         if (!self.isProgrammaticScroll) self.userHasPanned = true;
         self.refreshPriceScale();
       });
-
-      this._resizeObserver = new ResizeObserver(() => {
-        if (!self.chart) return;
-        const w = self.container.clientWidth;
-        const h = self.container.clientHeight;
-        if (w > 0 && h > 0) self.chart.applyOptions({ width: w, height: h });
-      });
-      this._resizeObserver.observe(this.container);
 
       this.ready = true;
       return true;

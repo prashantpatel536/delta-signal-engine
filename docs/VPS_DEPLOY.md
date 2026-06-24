@@ -111,3 +111,27 @@ Common fixes:
 - **No venv:** `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`
 - **No .env:** `cp .env.example .env` then edit Telegram/API keys on VPS
 - **Port in use:** `sudo lsof -i :8000` then kill old uvicorn
+
+### TLS / certifi errors (`Could not find a suitable TLS CA certificate bundle`)
+
+Health shows `market_data: degraded` with paths like `venv/.../certifi/cacert.pem`.
+
+**Cause:** broken or missing certifi bundle in the venv (often after copying venv or mixed `venv` vs `.venv`).
+
+**Fix (deploy script does this automatically):**
+
+```bash
+cd ~/delta-signal-engine
+.venv/bin/pip install --force-reinstall certifi
+.venv/bin/python -c "import certifi; print(certifi.where())"
+./scripts/vps_deploy.sh
+```
+
+After deploy, `/health` should show `ssl.verify_path` and `market_data: ok`. The systemd unit sets `SSL_CERT_FILE` to the Debian system bundle as a fallback.
+
+**Do not run the app with `venv/` if systemd uses `.venv/`** — use one venv only:
+
+```bash
+ls -la .venv/bin/python venv/bin/python 2>/dev/null
+sudo systemctl restart delta-signal-engine
+```

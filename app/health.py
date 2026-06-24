@@ -107,4 +107,13 @@ def build_health_payload() -> dict[str, Any]:
         "signal_engine": signals,
         "paper_trading": paper,
         "notifications": notifications,
+        "ssl": _ssl_health(),
     }
+
+
+def _ssl_health() -> dict[str, Any]:
+    from app.ssl_utils import ssl_diagnostics
+
+    diag = ssl_diagnostics()
+    ok = diag.get("certifi_exists") or diag.get("verify_path") not in ("", "requests-default")
+    return _subsystem("ok" if ok else "degraded", str(diag.get("verify_path", "")))
