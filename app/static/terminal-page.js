@@ -242,6 +242,11 @@ function initTerminal() {
     document.getElementById("recalc-missed-btn")?.addEventListener("click", () => {
       Terminal.recalculateMissedOpportunities(() => refreshTerminal());
     });
+
+    document.getElementById("chart-reset-scale")?.addEventListener("click", () => {
+      chartEngine?.resetView();
+      refreshTerminal();
+    });
   }
 
   const engine = buildEngine();

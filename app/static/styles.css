@@ -1163,6 +1163,12 @@ select, button {
   border-top: 1px solid var(--border);
 }
 
+.chart-scale-btn {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+}
+
 .tf-debug b {
   color: var(--text);
   font-weight: 700;

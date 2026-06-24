@@ -3,6 +3,7 @@
   const VISIBLE_BARS_DEFAULT = 80;
   const MAX_SIGNAL_MARKERS = 8;
   const PRICE_MARGIN_PCT = 0.05;
+  const PRICE_SCALE_HIT_WIDTH = 64;
   const NO_AUTOSCALE = () => null;
 
   const TERMINAL = {
@@ -231,7 +232,10 @@
       this.llSeries = null;
       this.ready = false;
       this.userHasPanned = false;
+      this.userHasManualPriceScale = false;
       this.isProgrammaticScroll = false;
+      this._lastSymbol = null;
+      this._lastPositionId = null;
       this.context = {
         displayToReal: new Map(),
         realCandles: new Map(),
@@ -378,22 +382,133 @@
         <div class="pnl-overlay-row ${pnlClass}">PnL: <b>${pnl >= 0 ? "+" : ""}${formatPrice(pnl)}</b></div>`;
     }
 
-    mergeTradeLevelsIntoRange(baseRange) {
-      if (!baseRange) return baseRange;
-      const levelSource = this.tradeLevels || this.signalLevels;
-      if (!levelSource) return baseRange;
-      const prices = Object.values(levelSource).filter(Number.isFinite);
-      if (!prices.length) return baseRange;
+    _includePrice(value, minRef, maxRef) {
+      if (!Number.isFinite(value)) return;
+      minRef.v = Math.min(minRef.v, value);
+      maxRef.v = Math.max(maxRef.v, value);
+    }
 
-      let minV = baseRange.priceRange.minValue;
-      let maxV = baseRange.priceRange.maxValue;
-      for (const p of prices) {
-        minV = Math.min(minV, p);
-        maxV = Math.max(maxV, p);
+    _visibleBarIndices() {
+      const bars = this.context.displayCandles;
+      if (!bars.length) return { from: 0, to: -1 };
+      const logicalRange = this.chart?.timeScale().getVisibleLogicalRange();
+      if (!logicalRange) return { from: 0, to: bars.length - 1 };
+      return {
+        from: Math.max(0, Math.floor(logicalRange.from)),
+        to: Math.min(bars.length - 1, Math.ceil(logicalRange.to)),
+      };
+    }
+
+    _seriesValueAt(data, index) {
+      const point = data?.[index];
+      if (point == null) return null;
+      return typeof point === "object" ? Number(point.value) : Number(point);
+    }
+
+    buildAutoscaleInfo() {
+      const bars = this.context.displayCandles;
+      if (!bars.length) return null;
+
+      const { from, to } = this._visibleBarIndices();
+      if (from > to) return null;
+
+      const minRef = { v: Infinity };
+      const maxRef = { v: -Infinity };
+
+      for (let i = from; i <= to; i += 1) {
+        const c = bars[i];
+        if (c) {
+          this._includePrice(c.low, minRef, maxRef);
+          this._includePrice(c.high, minRef, maxRef);
+        }
+        this._includePrice(this._seriesValueAt(this.context.smaData, i), minRef, maxRef);
+        this._includePrice(this._seriesValueAt(this.context.hhData, i), minRef, maxRef);
+        this._includePrice(this._seriesValueAt(this.context.llData, i), minRef, maxRef);
       }
-      const range = maxV - minV || 1;
+
+      const levels = this.tradeLevels || this.signalLevels;
+      if (levels) {
+        this._includePrice(levels.entry, minRef, maxRef);
+        this._includePrice(levels.sl, minRef, maxRef);
+        this._includePrice(levels.tp, minRef, maxRef);
+        if (Number.isFinite(levels.current)) {
+          this._includePrice(levels.current, minRef, maxRef);
+        }
+      }
+
+      let minV = minRef.v;
+      let maxV = maxRef.v;
+      if (!Number.isFinite(minV) || !Number.isFinite(maxV)) return null;
+
+      let range = maxV - minV;
+      if (range <= 0) {
+        const pad = Math.max(Math.abs(maxV) * 0.001, 0.05);
+        minV -= pad;
+        maxV += pad;
+        range = maxV - minV;
+      }
+
       const margin = range * PRICE_MARGIN_PCT;
       return { priceRange: { minValue: minV - margin, maxValue: maxV + margin } };
+    }
+
+    _isPointOverPriceScale(x) {
+      if (!this.container || x == null) return false;
+      return x >= this.container.clientWidth - PRICE_SCALE_HIT_WIDTH;
+    }
+
+    _isEventOverPriceScale(event) {
+      if (!this.container) return false;
+      const rect = this.container.getBoundingClientRect();
+      return event.clientX - rect.left >= rect.width - PRICE_SCALE_HIT_WIDTH;
+    }
+
+    _lockManualPriceScale() {
+      if (!this.chart || this.userHasManualPriceScale) return;
+      this.userHasManualPriceScale = true;
+      this.chart.priceScale("right").applyOptions({ autoScale: false });
+    }
+
+    resetPriceScale() {
+      this.userHasManualPriceScale = false;
+      this.applyAutoPriceScale();
+    }
+
+    applyAutoPriceScale() {
+      if (!this.chart || !this.candleSeries) return;
+      const self = this;
+      this.candleSeries.applyOptions({
+        autoscaleInfoProvider: () => self.buildAutoscaleInfo(),
+      });
+      if (!this.userHasManualPriceScale) {
+        this.chart.priceScale("right").applyOptions({ autoScale: true });
+      }
+    }
+
+    refreshPriceScale() {
+      this.applyAutoPriceScale();
+    }
+
+    _bindPriceScaleInteraction() {
+      if (!this.container || !this.chart) return;
+
+      const onPriceScalePointer = (event) => {
+        if (this._isEventOverPriceScale(event)) this._lockManualPriceScale();
+      };
+
+      this.container.addEventListener("mousedown", onPriceScalePointer);
+      this.container.addEventListener("wheel", onPriceScalePointer, { passive: true });
+      this.container.addEventListener("touchstart", onPriceScalePointer, { passive: true });
+
+      this.chart.subscribeDblClick((param) => {
+        if (param.point && this._isPointOverPriceScale(param.point.x)) {
+          this.resetPriceScale();
+        }
+      });
+    }
+
+    visibleCandleAutoscaleProvider() {
+      return this.buildAutoscaleInfo();
     }
 
     updateTradeTooltip(hoverPrice, currentPrice) {
@@ -428,44 +543,6 @@
       this.tradeTooltipEl.innerHTML = `
         <strong>${hit.label}</strong> ${formatPrice(hit.price)}<br/>
         <span class="muted">Distance: ${distSign}${formatPrice(dist)}</span>`;
-    }
-
-    candleRangeFromBars(bars, fromIndex, toIndex) {
-      let minV = Infinity;
-      let maxV = -Infinity;
-      for (let i = fromIndex; i <= toIndex; i += 1) {
-        const c = bars[i];
-        if (!c) continue;
-        minV = Math.min(minV, c.low);
-        maxV = Math.max(maxV, c.high);
-      }
-      if (!Number.isFinite(minV) || !Number.isFinite(maxV)) return null;
-      let range = maxV - minV;
-      if (range <= 0) {
-        const pad = Math.max(Math.abs(maxV) * 0.001, 0.05);
-        minV -= pad;
-        maxV += pad;
-        range = maxV - minV;
-      }
-      const margin = range * PRICE_MARGIN_PCT;
-      return { priceRange: { minValue: minV - margin, maxValue: maxV + margin } };
-    }
-
-    visibleCandleAutoscaleProvider() {
-      const bars = this.context.displayCandles;
-      if (!bars.length) return null;
-      const logicalRange = this.chart?.timeScale().getVisibleLogicalRange();
-      if (!logicalRange) return this.mergeTradeLevelsIntoRange(this.candleRangeFromBars(bars, 0, bars.length - 1));
-      const from = Math.max(0, Math.floor(logicalRange.from));
-      const to = Math.min(bars.length - 1, Math.ceil(logicalRange.to));
-      if (from > to) return this.mergeTradeLevelsIntoRange(this.candleRangeFromBars(bars, 0, bars.length - 1));
-      return this.mergeTradeLevelsIntoRange(this.candleRangeFromBars(bars, from, to));
-    }
-
-    refreshPriceScale() {
-      if (!this.chart || !this.candleSeries) return;
-      this.candleSeries.applyOptions({ autoscaleInfoProvider: () => this.visibleCandleAutoscaleProvider() });
-      this.chart.priceScale("right").applyOptions({ autoScale: true });
     }
 
     updateLegend(realCandle, sma, hh, ll) {
@@ -513,6 +590,11 @@
       this.userHasPanned = false;
     }
 
+    resetView() {
+      this.userHasPanned = false;
+      this.resetPriceScale();
+    }
+
     init() {
       if (this.chart) return true;
       if (typeof LightweightCharts === "undefined") {
@@ -551,7 +633,10 @@
             labelBackgroundColor: TERMINAL.crosshairLabel,
           },
         },
-        rightPriceScale: { borderColor: TERMINAL.border, scaleMargins: { top: 0.06, bottom: 0.06 } },
+        rightPriceScale: {
+          borderColor: TERMINAL.border,
+          scaleMargins: { top: 0.05, bottom: 0.05 },
+        },
         timeScale: {
           borderColor: TERMINAL.border,
           timeVisible: true,
@@ -568,6 +653,7 @@
         },
         handleScale: {
           axisPressedMouseMove: { time: true, price: true },
+          axisDoubleClickReset: { price: true, time: false },
           mouseWheel: true,
           pinch: true,
         },
@@ -583,11 +669,11 @@
         borderVisible: true,
         wickVisible: true,
         priceScaleId: "right",
-        autoscaleInfoProvider: () => self.visibleCandleAutoscaleProvider(),
+        autoscaleInfoProvider: () => self.buildAutoscaleInfo(),
       });
       this.candleSeries.priceScale().applyOptions({
         autoScale: true,
-        scaleMargins: { top: 0.04, bottom: 0.18 },
+        scaleMargins: { top: 0.05, bottom: 0.22 },
       });
 
       this.volumeSeries = this.chart.addHistogramSeries({
@@ -660,9 +746,10 @@
 
       this.chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
         if (!self.isProgrammaticScroll) self.userHasPanned = true;
-        self.refreshPriceScale();
+        if (!self.userHasManualPriceScale) self.applyAutoPriceScale();
       });
 
+      this._bindPriceScaleInteraction();
       this.ready = true;
       this._resizeObserver?.disconnect();
       this._resizeObserver = null;
@@ -697,6 +784,18 @@
     update(chartData, { windowSize, timeframe, signalTimeframe, symbol, position, signalQuality }) {
       if (!this.ready) return;
 
+      if (this._lastSymbol !== symbol) {
+        this._lastSymbol = symbol;
+        this.userHasPanned = false;
+        this.userHasManualPriceScale = false;
+      }
+
+      const positionId = position?.id ?? null;
+      if (positionId !== this._lastPositionId) {
+        this._lastPositionId = positionId;
+        if (positionId != null) this.userHasManualPriceScale = false;
+      }
+
       const expectedInterval = INTERVAL_SECONDS[timeframe] || 300;
       let rawCandles = chartData.candles || [];
       const livePrice = chartData.signal_context?.live_price;
@@ -727,6 +826,9 @@
         realCandles: display.realCandles,
         realToDisplay: display.realToDisplay,
         displayCandles: display.displayCandles,
+        smaData: display.smaData,
+        hhData: display.hhData,
+        llData: display.llData,
         latestCandle: candles[candles.length - 1] || null,
         latestSma: alignedSma[alignedSma.length - 1],
         latestHh: alignedHh[alignedHh.length - 1],
