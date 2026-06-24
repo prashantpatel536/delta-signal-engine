@@ -1066,7 +1066,9 @@ select, button {
 .terminal-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
+  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -1103,6 +1105,15 @@ select, button {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.terminal-main-col > .symbol-tabs,
+.terminal-main-col > .tf-toolbar,
+.terminal-main-col > .signal-tf-toolbar,
+.terminal-main-col > .chart-symbol-header,
+.terminal-main-col > .chart-legend,
+.terminal-main-col > .chart-foot {
+  flex-shrink: 0;
 }
 
 .terminal-right-col {
@@ -1446,8 +1457,7 @@ select, button {
   }
 
   .terminal-chart-stage {
-    max-height: 52vh;
-    min-height: 240px;
+    min-height: 320px;
   }
 }
 
@@ -1563,8 +1573,7 @@ select, button {
 
 .terminal-chart-stage {
   flex: 1 1 auto;
-  min-height: 220px;
-  max-height: 62vh;
+  min-height: 280px;
   position: relative;
   background: #0b0e11;
   isolation: isolate;
