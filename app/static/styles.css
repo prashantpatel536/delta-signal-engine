@@ -1561,6 +1561,21 @@ select, button {
   min-height: 480px;
 }
 
+.chart-boot-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--sell);
+  background: rgba(11, 14, 17, 0.92);
+  font-size: 0.95rem;
+  z-index: 5;
+  pointer-events: none;
+}
+
 .tv-chart-stage {
   background: #0b0e11;
 }

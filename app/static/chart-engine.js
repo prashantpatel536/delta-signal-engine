@@ -514,6 +514,10 @@
     }
 
     init() {
+      if (typeof LightweightCharts === "undefined") {
+        console.error("[chart] LightweightCharts not loaded");
+        return false;
+      }
       const width = this.container.clientWidth;
       const height = this.container.clientHeight;
       if (width <= 0 || height <= 0) return false;

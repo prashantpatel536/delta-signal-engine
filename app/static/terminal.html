@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trading Terminal — Delta Signal Engine</title>
   <link rel="stylesheet" href="/static/styles.css" />
-  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+  <script>
+    if (typeof LightweightCharts === "undefined") {
+      document.write('<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"><\\/script>');
+    }
+  </script>
 </head>
 <body class="app-shell terminal-shell" data-page="terminal">
   <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
@@ -89,6 +94,7 @@
           <div id="trade-pnl-overlay" class="trade-pnl-overlay hidden"></div>
           <div id="trade-line-tooltip" class="trade-line-tooltip hidden"></div>
           <div id="chart-container"></div>
+          <div id="chart-boot-error" class="chart-boot-error" hidden></div>
         </div>
         <div class="chart-foot chart-foot-debug">
           <span id="signal-marker-count" class="muted"></span>

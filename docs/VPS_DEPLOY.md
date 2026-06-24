@@ -83,9 +83,18 @@ git stash push -u -m "deploy" ; git pull origin main ; sudo systemctl restart de
 ```bash
 curl http://127.0.0.1:8000/api/debug/system
 curl http://127.0.0.1:8000/health
+curl "http://127.0.0.1:8000/chart/ETH?timeframe=5m&limit=50"
 ```
 
 Browser: `http://YOUR_VPS_IP:8000/debug/system`
+
+### Chart not loading
+
+1. Check health: `curl http://127.0.0.1:8000/health` — `market_data` must not be `fail`
+2. Check chart API: `curl "http://127.0.0.1:8000/chart/ETH?timeframe=5m"` — must return candles JSON, not 503
+3. Restart after deploy: `./scripts/vps_deploy.sh`
+4. View logs: `sudo journalctl -u delta-signal-engine -n 100 --no-pager`
+5. Hard refresh browser: Ctrl+Shift+R (loads `/static/vendor/lightweight-charts...` from server)
 
 ---
 

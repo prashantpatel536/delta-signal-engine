@@ -262,6 +262,11 @@ async def lifespan(app: FastAPI):
         logger.warning(
             "Pushover enabled but not configured — set PUSHOVER_USER_KEY and PUSHOVER_APP_TOKEN"
         )
+    try:
+        logger.info("Running initial market data refresh before accepting traffic...")
+        await refresh_market_data()
+    except Exception:
+        logger.exception("Initial market data refresh failed — chart may be empty until next cycle")
     refresh_task = asyncio.create_task(scheduler_loop())
     live_price_task = asyncio.create_task(live_price_loop())
     try:

@@ -38,6 +38,38 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def _warm_chart_cache_if_needed(delta_symbol: str, timeframe: str) -> None:
+    """Fetch candles on demand when in-memory cache is empty (e.g. after VPS restart)."""
+    chart_data = store.get_chart_data(delta_symbol, timeframe)
+    tf_data = chart_data.get(timeframe)
+    if tf_data is not None and not tf_data.candles.empty:
+        return
+
+    from app.indicators import calculate_indicators
+
+    logger.info("Chart cache miss — fetching %s %s on demand", delta_symbol, timeframe)
+    try:
+        candles = delta_client.fetch_candles(delta_symbol, timeframe)
+        if candles.empty:
+            return
+        display_candles, _ = delta_client.resolve_ohlc_candles(
+            candles, delta_symbol, timeframe
+        )
+        sma84, hh50, ll50 = calculate_indicators(display_candles)
+        store.update(
+            delta_symbol,
+            timeframe,
+            candles,
+            sma84,
+            hh50,
+            ll50,
+            None,
+            display_candles=display_candles,
+        )
+    except Exception as exc:
+        logger.warning("On-demand chart fetch failed for %s %s: %s", delta_symbol, timeframe, exc)
+
+
 def resolve_delta_symbol(symbol: str) -> str:
     """Map short symbol (ETH) or full symbol (ETHUSDT) to Delta product symbol."""
     upper = symbol.upper()
@@ -111,6 +143,7 @@ def get_chart(
 
     delta_symbol = resolve_delta_symbol(symbol)
     short_symbol = resolve_short_symbol(symbol)
+    _warm_chart_cache_if_needed(delta_symbol, timeframe)
     chart_data = store.get_chart_data(delta_symbol, timeframe)
     tf_data = chart_data.get(timeframe)
 
