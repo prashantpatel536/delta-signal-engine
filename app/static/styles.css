@@ -1444,6 +1444,11 @@ select, button {
       "recent";
     overflow-y: auto;
   }
+
+  .terminal-chart-stage {
+    max-height: 52vh;
+    min-height: 240px;
+  }
 }
 
 .terminal-header {
@@ -1557,13 +1562,13 @@ select, button {
 }
 
 .terminal-chart-stage {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  min-height: 220px;
+  max-height: 62vh;
   position: relative;
-  height: calc(100vh - 168px);
-  min-height: 480px;
   background: #0b0e11;
   isolation: isolate;
+  overflow: hidden;
 }
 
 .chart-boot-error {
@@ -1672,7 +1677,7 @@ select, button {
 
 .terminal-chart-stage #chart-container {
   height: 100%;
-  min-height: 420px;
+  min-height: 0;
 }
 
 .terminal-chart-stage #chart-container canvas {
