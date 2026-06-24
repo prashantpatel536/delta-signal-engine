@@ -369,6 +369,7 @@ class ValidationReportResponse(BaseModel):
 
 
 PositionStatus = Literal["OPEN", "CLOSED"]
+ExitReason = Literal["TP", "SL", "MANUAL", "Opposite Signal"]
 
 
 class PaperStatistics(BaseModel):
@@ -467,7 +468,7 @@ class Position(BaseModel):
     opened_at: str
     closed_at: str | None = None
     exit_price: float | None = None
-    exit_reason: Literal["TP", "SL", "MANUAL"] | None = None
+    exit_reason: ExitReason | None = None
     pnl: float | None = None
     price_points: float | None = None
     account_impact_pct: float | None = None

@@ -258,3 +258,29 @@ def test_closed_trade_shows_original_and_current_levels(temp_db, monkeypatch):
     assert trade["stop_loss"] == 97.0
     assert trade["original_take_profit"] == 110.0
     assert trade["take_profit"] == 112.0
+
+
+def test_trade_history_includes_opposite_signal_exit(temp_db, monkeypatch):
+    open_resp = _open_eth_trade()
+    position_id = open_resp.json()["id"]
+
+    from app.market_data import store
+
+    monkeypatch.setattr(store, "get_latest_prices", lambda: {"ETHUSDT": 102.0})
+
+    closed = paper_service.close_on_opposite_signal(
+        symbol="ETHUSDT",
+        timeframe="5m",
+        new_side="SELL",
+        exit_price=102.0,
+    )
+    assert closed is not None
+    assert closed["id"] == position_id
+    assert closed["exit_reason"] == "Opposite Signal"
+
+    resp = client.get("/trade-history")
+    assert resp.status_code == 200
+    trades = resp.json()["trades"]
+    assert len(trades) == 1
+    assert trades[0]["exit_reason"] == "Opposite Signal"
+    assert trades[0]["exit_status"] == "OPPOSITE SIGNAL"
