@@ -33,6 +33,7 @@ class OptimizerStartRequest(BaseModel):
     leverage: float = 25.0
     margin_percent: float = 50.0
     timeframe: str = "5m"
+    debug: bool = False
 
 
 def _request_dict(body: OptimizerStartRequest) -> dict[str, Any]:
@@ -53,21 +54,27 @@ def _request_dict(body: OptimizerStartRequest) -> dict[str, Any]:
         "leverage": body.leverage,
         "margin_percent": body.margin_percent,
         "timeframe": body.timeframe,
+        "debug": body.debug,
     }
+
+
+@router.post("/preview")
+def preview_combinations(body: OptimizerStartRequest) -> dict[str, Any]:
+    req = _request_dict(body)
+    return btc_optimizer_service.preview_grid(req)
 
 
 @router.post("/start")
 def start_optimization(body: OptimizerStartRequest) -> dict[str, Any]:
     req = _request_dict(body)
-    from app.research.btc_optimizer_service import build_param_combinations
-
-    total = len(build_param_combinations(req))
+    plan = btc_optimizer_service.preview_grid(req)
+    total = plan["final_tested_combinations"]
     if total <= 0:
         raise HTTPException(status_code=400, detail="No parameter combinations in ranges")
     if total > 50_000:
         raise HTTPException(status_code=400, detail=f"Too many combinations ({total}). Narrow ranges.")
-    job_id = btc_optimizer_service.start(req)
-    return {"job_id": job_id, "total_combinations": total}
+    started = btc_optimizer_service.start(req)
+    return {**started, "grid_plan": plan}
 
 
 @router.post("/stop/{job_id}")
@@ -89,19 +96,32 @@ def optimization_progress(job_id: str) -> dict[str, Any]:
 def optimization_results(
     job_id: str,
     include_trades: bool = Query(default=False),
+    include_curves: bool = Query(default=False),
 ) -> dict[str, Any]:
-    payload = btc_optimizer_service.get_results(job_id, include_trades=include_trades)
+    payload = btc_optimizer_service.get_results(
+        job_id,
+        include_trades=include_trades,
+        include_curves=include_curves,
+    )
     if not payload:
         raise HTTPException(status_code=404, detail="Job not found")
     return payload
 
 
+@router.get("/results/{job_id}/detail/{result_index}")
+def optimization_result_detail(job_id: str, result_index: int) -> dict[str, Any]:
+    detail = btc_optimizer_service.get_result_detail(job_id, result_index)
+    if not detail:
+        raise HTTPException(status_code=404, detail="Job or result index not found")
+    return detail
+
+
 @router.get("/results/{job_id}/trades/{result_index}")
 def optimization_trades(job_id: str, result_index: int) -> dict[str, Any]:
-    trades = btc_optimizer_service.get_trades(job_id, result_index)
-    if trades is None:
+    payload = btc_optimizer_service.get_trades(job_id, result_index)
+    if payload is None:
         raise HTTPException(status_code=404, detail="Job or result index not found")
-    return {"job_id": job_id, "result_index": result_index, "trades": trades}
+    return payload
 
 
 @router.get("/heatmap/{job_id}")
@@ -116,6 +136,23 @@ def optimization_heatmap(
     return data
 
 
+_TOP_FIELDS = [
+    "rank", "gap_filter_pct", "min_sl_points", "max_sl_points",
+    "profit_factor", "return_pct", "max_drawdown_pct", "win_rate",
+    "trade_count", "score",
+]
+
+_RESULT_FIELDS = [
+    "gap_filter_pct", "min_sl_points", "max_sl_points",
+    "profit_factor", "return_pct", "max_drawdown_pct", "win_rate",
+    "trade_count", "total_trades", "winning_trades", "losing_trades",
+    "loss_rate", "net_profit_usd", "avg_winner", "avg_loser",
+    "avg_r_multiple", "expectancy", "avg_trade", "avg_duration_seconds",
+    "largest_winner", "largest_loser", "longest_winning_streak",
+    "longest_losing_streak", "score", "rankable", "rank_disqualify_reason",
+]
+
+
 @router.get("/export/{job_id}/csv")
 def export_csv(job_id: str) -> StreamingResponse:
     payload = btc_optimizer_service.get_results(job_id, include_trades=False)
@@ -126,12 +163,7 @@ def export_csv(job_id: str) -> StreamingResponse:
         raise HTTPException(status_code=400, detail="No results to export")
 
     buffer = io.StringIO()
-    fields = [
-        "gap_filter_pct", "min_sl_points", "max_sl_points",
-        "profit_factor", "return_pct", "max_drawdown_pct", "win_rate",
-        "trade_count", "avg_winner", "avg_loser", "score",
-    ]
-    writer = csv.DictWriter(buffer, fieldnames=fields, extrasaction="ignore")
+    writer = csv.DictWriter(buffer, fieldnames=_RESULT_FIELDS, extrasaction="ignore")
     writer.writeheader()
     for row in rows:
         writer.writerow(row)
@@ -143,9 +175,64 @@ def export_csv(job_id: str) -> StreamingResponse:
     )
 
 
+@router.get("/export/{job_id}/top-csv")
+def export_top_csv(job_id: str) -> StreamingResponse:
+    payload = btc_optimizer_service.get_results(job_id, include_trades=False)
+    if not payload:
+        raise HTTPException(status_code=404, detail="Job not found")
+    rows = payload.get("top_results") or []
+    if not rows:
+        raise HTTPException(status_code=400, detail="No rankable results to export")
+
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=_TOP_FIELDS, extrasaction="ignore")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(row)
+    buffer.seek(0)
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="btc-optimizer-top20-{job_id}.csv"'},
+    )
+
+
+@router.get("/export/{job_id}/trades-csv")
+def export_trades_csv(job_id: str) -> StreamingResponse:
+    job = btc_optimizer_service.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    buffer = io.StringIO()
+    fields = [
+        "gap_filter_pct", "min_sl_points", "max_sl_points", "trade_num",
+        "entry_time", "exit_time", "side", "entry", "exit_price",
+        "stop_loss", "take_profit", "exit_reason", "profit_usd",
+        "r_multiple", "duration_seconds",
+    ]
+    writer = csv.DictWriter(buffer, fieldnames=fields)
+    writer.writeheader()
+
+    for row in sorted(job.results, key=lambda r: float(r.get("score") or 0), reverse=True):
+        base = {
+            "gap_filter_pct": row.get("gap_filter_pct"),
+            "min_sl_points": row.get("min_sl_points"),
+            "max_sl_points": row.get("max_sl_points"),
+        }
+        for trade in row.get("trades") or []:
+            writer.writerow({**base, **trade})
+
+    buffer.seek(0)
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="btc-optimizer-trades-{job_id}.csv"'},
+    )
+
+
 @router.get("/export/{job_id}/json")
 def export_json(job_id: str) -> Response:
-    payload = btc_optimizer_service.get_results(job_id, include_trades=True)
+    payload = btc_optimizer_service.get_results(job_id, include_trades=True, include_curves=True)
     if not payload:
         raise HTTPException(status_code=404, detail="Job not found")
     return Response(

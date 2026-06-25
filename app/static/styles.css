@@ -2996,3 +2996,156 @@ select, button {
 .sortable-table th[data-sort]:hover {
   color: var(--accent);
 }
+
+.combo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.55rem;
+  padding: 0.65rem;
+}
+
+.combo-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.combo-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.combo-values {
+  font-size: 0.68rem;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.combo-count {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.combo-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.55rem;
+  padding: 0 0.65rem 0.65rem;
+}
+
+.combo-skip-list {
+  margin: 0 0.65rem 0.65rem;
+  padding-left: 1.25rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.pro-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.5rem;
+}
+
+.stat-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+}
+
+.stat-card .k {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.stat-card strong {
+  font-size: 0.9rem;
+}
+
+.opt-pos { color: #22c55e !important; }
+.opt-pos.stat-card { border-color: rgba(34, 197, 94, 0.35); }
+.opt-warn { color: #f0b90b !important; }
+.opt-warn.stat-card { border-color: rgba(240, 185, 11, 0.35); }
+.opt-neg { color: #ef4444 !important; }
+.opt-neg.stat-card { border-color: rgba(239, 68, 68, 0.35); }
+
+.optimizer-current-param {
+  padding: 0 0.65rem 0.65rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.optimizer-debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.optimizer-debug-log {
+  margin: 0 0.65rem 0.65rem;
+  padding: 0.55rem;
+  max-height: 14rem;
+  overflow: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.optimizer-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.65rem;
+  padding: 0.65rem;
+}
+
+.chart-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem;
+}
+
+.chart-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.chart-card canvas {
+  width: 100%;
+  display: block;
+}
+
+.optimizer-table-wrap {
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.stats-grid {
+  padding: 0.65rem;
+}
+
+.optimizer-export-panel .optimizer-actions {
+  padding-top: 0;
+}
+
+@media (max-width: 768px) {
+  .optimizer-charts { grid-template-columns: 1fr; }
+  .combo-grid { grid-template-columns: 1fr; }
+  .pro-cards { grid-template-columns: repeat(2, 1fr); }
+}

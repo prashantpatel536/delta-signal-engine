@@ -35,7 +35,7 @@
     <header class="topbar">
       <div>
         <h1 class="page-title">BTC Strategy Optimizer</h1>
-        <p class="page-sub">Read-only grid search · HH50/LL50 + SMA84 + Gap + V2 exit · does not affect live trading</p>
+        <p class="page-sub">Professional parameter research · HH50/LL50 + SMA84 + Gap + V2 exit · read-only backtesting</p>
       </div>
     </header>
 
@@ -78,9 +78,18 @@
           <div class="optimizer-actions">
             <button type="submit" class="btn-primary" id="start-btn">Start Optimization</button>
             <button type="button" class="btn-secondary" id="stop-btn" disabled>Stop</button>
-            <span id="combo-count" class="muted"></span>
+            <label class="optimizer-debug-toggle">
+              <input type="checkbox" id="debug-mode" /> Debug mode
+            </label>
           </div>
         </form>
+      </section>
+
+      <section class="panel optimizer-combo-panel" id="combo-panel">
+        <div class="panel-head"><h2>Combination Plan</h2></div>
+        <div class="combo-breakdown" id="combo-breakdown">
+          <p class="muted">Adjust parameters to preview combination counts.</p>
+        </div>
       </section>
 
       <section class="panel optimizer-progress-panel" id="progress-panel" hidden>
@@ -88,12 +97,50 @@
         <div class="optimizer-progress-body">
           <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
           <div class="optimizer-progress-stats" id="progress-stats"></div>
+          <div class="optimizer-current-param" id="current-param"></div>
         </div>
       </section>
 
-      <section class="panel" id="best-card" hidden>
-        <div class="panel-head"><h2>Best Result</h2></div>
-        <div class="best-result-grid" id="best-result-grid"></div>
+      <section class="panel optimizer-debug-panel" id="debug-panel" hidden>
+        <div class="panel-head"><h2>Debug Log</h2></div>
+        <pre class="optimizer-debug-log" id="debug-log"></pre>
+      </section>
+
+      <section class="panel optimizer-best-card" id="best-card" hidden>
+        <div class="panel-head"><h2>Best Rankable Result</h2></div>
+        <div class="best-result-grid pro-cards" id="best-result-grid"></div>
+      </section>
+
+      <section class="panel" id="top-results-panel" hidden>
+        <div class="panel-head">
+          <h2>Top 20 Results</h2>
+          <div class="optimizer-table-tools">
+            <input type="search" id="top-search" placeholder="Search top results…" />
+            <button type="button" class="btn-secondary btn-sm" id="export-top-csv" disabled>Top CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table sortable-table" id="top-results-table">
+            <thead>
+              <tr>
+                <th data-sort="rank">Rank</th>
+                <th data-sort="gap_filter_pct">Gap</th>
+                <th data-sort="min_sl_points">Min SL</th>
+                <th data-sort="max_sl_points">Max SL</th>
+                <th data-sort="profit_factor">PF</th>
+                <th data-sort="return_pct">Return %</th>
+                <th data-sort="max_drawdown_pct">DD %</th>
+                <th data-sort="win_rate">Win %</th>
+                <th data-sort="trade_count">Trades</th>
+                <th data-sort="score">Score</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="top-results-body">
+              <tr><td colspan="11" class="empty">Run an optimization to see ranked results.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="panel" id="heatmap-panel" hidden>
@@ -107,52 +154,50 @@
         <p class="muted optimizer-hint">X: Max SL · Y: Min SL · Color: Profit Factor</p>
       </section>
 
-      <section class="panel">
-        <div class="panel-head">
-          <h2>Results</h2>
-          <div class="optimizer-table-tools">
-            <input type="search" id="results-search" placeholder="Search…" />
-            <button type="button" class="btn-secondary btn-sm" id="export-csv" disabled>CSV</button>
-            <button type="button" class="btn-secondary btn-sm" id="export-json" disabled>JSON</button>
+      <section class="panel" id="detail-panel" hidden>
+        <div class="panel-head"><h2 id="detail-title">Result Detail</h2></div>
+        <div class="stats-grid pro-cards" id="detail-stats"></div>
+        <div class="optimizer-charts">
+          <div class="chart-card">
+            <h3>Equity Curve</h3>
+            <canvas id="equity-chart" height="160"></canvas>
           </div>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table sortable-table" id="results-table">
-            <thead>
-              <tr>
-                <th data-sort="gap_filter_pct">Gap</th>
-                <th data-sort="min_sl_points">Min SL</th>
-                <th data-sort="max_sl_points">Max SL</th>
-                <th data-sort="profit_factor">PF</th>
-                <th data-sort="return_pct">Return %</th>
-                <th data-sort="max_drawdown_pct">DD %</th>
-                <th data-sort="win_rate">Win %</th>
-                <th data-sort="trade_count">Trades</th>
-                <th data-sort="avg_winner">Avg Win</th>
-                <th data-sort="avg_loser">Avg Loss</th>
-                <th data-sort="score">Score</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="results-body">
-              <tr><td colspan="12" class="empty">Run an optimization to see results.</td></tr>
-            </tbody>
-          </table>
+          <div class="chart-card">
+            <h3>Drawdown Curve</h3>
+            <canvas id="drawdown-chart" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Daily Profit</h3>
+            <canvas id="daily-chart" height="160"></canvas>
+          </div>
         </div>
       </section>
 
       <section class="panel" id="trades-panel" hidden>
-        <div class="panel-head"><h2 id="trades-title">Trades</h2></div>
-        <div class="table-wrap">
+        <div class="panel-head">
+          <h2 id="trades-title">Trade Log</h2>
+          <button type="button" class="btn-secondary btn-sm" id="export-trades-csv" disabled>Export Trades CSV</button>
+        </div>
+        <div class="table-wrap optimizer-table-wrap">
           <table class="data-table compact-table">
             <thead>
               <tr>
-                <th>Entry time</th><th>Exit time</th><th>Side</th><th>Entry</th><th>Exit</th>
-                <th>SL</th><th>TP (2R)</th><th>Reason</th><th>PnL $</th><th>R</th><th>Duration</th>
+                <th>#</th><th>Entry Time</th><th>Exit Time</th><th>Dir</th>
+                <th>Entry</th><th>Exit</th><th>SL</th><th>TP</th>
+                <th>Reason</th><th>PnL</th><th>R</th><th>Duration</th>
               </tr>
             </thead>
             <tbody id="trades-body"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="panel optimizer-export-panel">
+        <div class="panel-head"><h2>Export</h2></div>
+        <div class="optimizer-actions">
+          <button type="button" class="btn-secondary" id="export-csv" disabled>All Results CSV</button>
+          <button type="button" class="btn-secondary" id="export-json" disabled>Full JSON</button>
+          <button type="button" class="btn-secondary" id="export-all-trades" disabled>Complete Trade Log CSV</button>
         </div>
       </section>
     </main>

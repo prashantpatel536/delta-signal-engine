@@ -275,27 +275,95 @@ def _simulate_v2_trade(
     return trade, exit_bar_index
 
 
+def _streaks(pnls: list[float]) -> tuple[int, int]:
+    longest_win = longest_loss = 0
+    current_win = current_loss = 0
+    for pnl in pnls:
+        if pnl > 0:
+            current_win += 1
+            current_loss = 0
+        elif pnl < 0:
+            current_loss += 1
+            current_win = 0
+        else:
+            current_win = 0
+            current_loss = 0
+        longest_win = max(longest_win, current_win)
+        longest_loss = max(longest_loss, current_loss)
+    return longest_win, longest_loss
+
+
+def _build_curves(
+    trades: list[ResearchTrade],
+    *,
+    initial_capital: float,
+) -> dict[str, list[dict[str, Any]]]:
+    equity_curve: list[dict[str, Any]] = [
+        {"trade_index": 0, "time": None, "equity": round(initial_capital, 2)},
+    ]
+    drawdown_curve: list[dict[str, Any]] = []
+    daily_pnl: dict[str, float] = {}
+
+    equity = float(initial_capital)
+    peak = equity
+
+    for idx, trade in enumerate(trades, start=1):
+        equity += trade.profit_usd
+        peak = max(peak, equity)
+        dd_pct = (peak - equity) / peak * 100.0 if peak > 0 else 0.0
+        exit_day = (trade.exit_time or "")[:10]
+        if exit_day:
+            daily_pnl[exit_day] = daily_pnl.get(exit_day, 0.0) + trade.profit_usd
+        equity_curve.append({
+            "trade_index": idx,
+            "time": trade.exit_time,
+            "equity": round(equity, 2),
+        })
+        drawdown_curve.append({
+            "time": trade.exit_time,
+            "drawdown_pct": round(dd_pct, 2),
+        })
+
+    daily_profit_curve = [
+        {"date": day, "profit_usd": round(profit, 2)}
+        for day, profit in sorted(daily_pnl.items())
+    ]
+    return {
+        "equity_curve": equity_curve,
+        "drawdown_curve": drawdown_curve,
+        "daily_profit_curve": daily_profit_curve,
+    }
+
+
 def _aggregate_metrics(
     trades: list[ResearchTrade],
     *,
     initial_capital: float,
 ) -> dict[str, Any]:
+    empty = {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "total_return_pct": 0.0,
+        "net_profit_usd": 0.0,
+        "profit_factor": 0.0,
+        "win_rate": 0.0,
+        "loss_rate": 0.0,
+        "max_drawdown_pct": 0.0,
+        "trade_count": 0,
+        "avg_winner": 0.0,
+        "avg_loser": 0.0,
+        "avg_r_multiple": 0.0,
+        "expectancy": 0.0,
+        "avg_trade": 0.0,
+        "avg_duration_seconds": 0.0,
+        "largest_winner": 0.0,
+        "largest_loser": 0.0,
+        "longest_winning_streak": 0,
+        "longest_losing_streak": 0,
+    }
     if not trades:
-        return {
-            "total_return_pct": 0.0,
-            "net_profit_usd": 0.0,
-            "profit_factor": 0.0,
-            "win_rate": 0.0,
-            "max_drawdown_pct": 0.0,
-            "trade_count": 0,
-            "avg_winner": 0.0,
-            "avg_loser": 0.0,
-            "avg_r_multiple": 0.0,
-            "expectancy": 0.0,
-            "avg_duration_seconds": 0.0,
-            "largest_winner": 0.0,
-            "largest_loser": 0.0,
-        }
+        return empty
 
     pnls = [t.profit_usd for t in trades]
     winners = [p for p in pnls if p > 0]
@@ -316,22 +384,32 @@ def _aggregate_metrics(
 
     net = round(balance - initial_capital, 2)
     ret_pct = round(net / initial_capital * 100.0, 2) if initial_capital else 0.0
+    win_count = len(winners)
+    loss_count = len(losers)
+    longest_win, longest_loss = _streaks(pnls)
 
     return {
+        "total_trades": len(trades),
+        "winning_trades": win_count,
+        "losing_trades": loss_count,
         "total_return_pct": ret_pct,
         "return_pct": ret_pct,
         "net_profit_usd": net,
         "profit_factor": pf,
-        "win_rate": round(len(winners) / len(pnls) * 100.0, 2),
+        "win_rate": round(win_count / len(pnls) * 100.0, 2),
+        "loss_rate": round(loss_count / len(pnls) * 100.0, 2),
         "max_drawdown_pct": round(max_dd_pct, 2),
         "trade_count": len(trades),
         "avg_winner": round(sum(winners) / len(winners), 2) if winners else 0.0,
         "avg_loser": round(sum(losers) / len(losers), 2) if losers else 0.0,
         "avg_r_multiple": round(sum(t.r_multiple for t in trades) / len(trades), 4),
         "expectancy": round(sum(pnls) / len(pnls), 2),
+        "avg_trade": round(sum(pnls) / len(pnls), 2),
         "avg_duration_seconds": round(sum(t.duration_seconds for t in trades) / len(trades), 0),
         "largest_winner": round(max(winners), 2) if winners else 0.0,
         "largest_loser": round(min(losers), 2) if losers else 0.0,
+        "longest_winning_streak": longest_win,
+        "longest_losing_streak": longest_loss,
     }
 
 
@@ -341,7 +419,9 @@ def run_btc_backtest(
 ) -> BtcBacktestResult:
     """Full BTC research backtest for one parameter set."""
     if candles.empty or len(candles) < 100:
-        return BtcBacktestResult(params=params, metrics=_aggregate_metrics([], initial_capital=params.initial_capital))
+        empty = _aggregate_metrics([], initial_capital=params.initial_capital)
+        empty.update(_build_curves([], initial_capital=params.initial_capital))
+        return BtcBacktestResult(params=params, metrics=empty)
 
     sma84, hh50, ll50 = calculate_indicators(candles)
     signals = _detect_research_signals(
@@ -370,7 +450,8 @@ def run_btc_backtest(
         last_exit_idx = exit_idx
 
     metrics = _aggregate_metrics(trades, initial_capital=params.initial_capital)
-    return BtcBacktestResult(params=params, trades=trades, metrics=metrics)
+    curves = _build_curves(trades, initial_capital=params.initial_capital)
+    return BtcBacktestResult(params=params, trades=trades, metrics={**metrics, **curves})
 
 
 def candles_to_arrays(candles: pd.DataFrame) -> dict[str, Any]:
@@ -391,20 +472,29 @@ def arrays_to_candles(data: dict[str, Any]) -> pd.DataFrame:
 
 def backtest_worker_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Top-level worker for ProcessPoolExecutor."""
-    from app.research.scoring import overall_score
+    from app.research.scoring import is_rankable, overall_score, rank_disqualify_reason
 
     candles = arrays_to_candles(payload["candles"])
     params = BtcBacktestParams(**payload["params"])
     result = run_btc_backtest(candles, params)
+    curves = {
+        "equity_curve": result.metrics.get("equity_curve", []),
+        "drawdown_curve": result.metrics.get("drawdown_curve", []),
+        "daily_profit_curve": result.metrics.get("daily_profit_curve", []),
+    }
+    metrics = {k: v for k, v in result.metrics.items() if k not in curves}
     row = {
         "gap_filter_pct": params.gap_filter_pct,
         "min_sl_points": params.min_sl_points,
         "max_sl_points": params.max_sl_points,
-        **result.metrics,
+        **metrics,
     }
     row["score"] = overall_score(row)
+    row["rankable"] = is_rankable(row)
+    row["rank_disqualify_reason"] = rank_disqualify_reason(row)
     row["trades"] = [
         {
+            "trade_num": i + 1,
             "side": t.side,
             "entry": t.entry,
             "exit_price": t.exit_price,
@@ -418,6 +508,7 @@ def backtest_worker_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "duration_seconds": t.duration_seconds,
             "quantity": t.quantity,
         }
-        for t in result.trades
+        for i, t in enumerate(result.trades)
     ]
+    row.update(curves)
     return row
