@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC Strategy Optimizer — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="research">
+  <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">RESEARCH</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <div class="nav-section-label">Research</div>
+      <a class="nav-item active" data-nav="research" href="/research/btc-optimizer"><span class="nav-icon">◉</span> BTC Strategy Optimizer</a>
+      <a class="nav-item" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status">
+      <span class="dot ok"></span>
+      <span>Research mode</span>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">BTC Strategy Optimizer</h1>
+        <p class="page-sub">Read-only grid search · HH50/LL50 + SMA84 + Gap + V2 exit · does not affect live trading</p>
+      </div>
+    </header>
+
+    <main class="page-content optimizer-page">
+      <section class="panel optimizer-form-panel">
+        <div class="panel-head"><h2>Parameters</h2></div>
+        <form id="optimizer-form" class="optimizer-form">
+          <div class="optimizer-form-grid">
+            <fieldset>
+              <legend>Date range</legend>
+              <label>Start <input type="date" id="start-date" required /></label>
+              <label>End <input type="date" id="end-date" required /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Gap filter %</legend>
+              <label>Start <input type="number" id="gap-start" value="0.8" step="0.1" required /></label>
+              <label>End <input type="number" id="gap-end" value="1.6" step="0.1" required /></label>
+              <label>Step <input type="number" id="gap-step" value="0.1" step="0.1" required /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Minimum SL (pts)</legend>
+              <label>Start <input type="number" id="min-sl-start" value="300" step="100" required /></label>
+              <label>End <input type="number" id="min-sl-end" value="1000" step="100" required /></label>
+              <label>Step <input type="number" id="min-sl-step" value="100" step="100" required /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Maximum SL (pts)</legend>
+              <label>Start <input type="number" id="max-sl-start" value="600" step="100" required /></label>
+              <label>End <input type="number" id="max-sl-end" value="1500" step="100" required /></label>
+              <label>Step <input type="number" id="max-sl-step" value="100" step="100" required /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Capital &amp; sizing</legend>
+              <label>Initial capital <input type="number" id="initial-capital" value="1000" step="100" /></label>
+              <label>Commission % <input type="number" id="commission" value="0" step="0.01" /></label>
+              <label>Leverage <input type="number" id="leverage" value="25" step="1" /></label>
+              <label>Position size % <input type="number" id="margin-percent" value="50" step="1" /></label>
+            </fieldset>
+          </div>
+          <div class="optimizer-actions">
+            <button type="submit" class="btn-primary" id="start-btn">Start Optimization</button>
+            <button type="button" class="btn-secondary" id="stop-btn" disabled>Stop</button>
+            <span id="combo-count" class="muted"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel optimizer-progress-panel" id="progress-panel" hidden>
+        <div class="panel-head"><h2>Progress</h2></div>
+        <div class="optimizer-progress-body">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+          <div class="optimizer-progress-stats" id="progress-stats"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="best-card" hidden>
+        <div class="panel-head"><h2>Best Result</h2></div>
+        <div class="best-result-grid" id="best-result-grid"></div>
+      </section>
+
+      <section class="panel" id="heatmap-panel" hidden>
+        <div class="panel-head">
+          <h2>Heatmap</h2>
+          <label class="ctrl-inline">Gap %
+            <select id="heatmap-gap"></select>
+          </label>
+        </div>
+        <canvas id="heatmap-canvas" height="320"></canvas>
+        <p class="muted optimizer-hint">X: Max SL · Y: Min SL · Color: Profit Factor</p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Results</h2>
+          <div class="optimizer-table-tools">
+            <input type="search" id="results-search" placeholder="Search…" />
+            <button type="button" class="btn-secondary btn-sm" id="export-csv" disabled>CSV</button>
+            <button type="button" class="btn-secondary btn-sm" id="export-json" disabled>JSON</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table sortable-table" id="results-table">
+            <thead>
+              <tr>
+                <th data-sort="gap_filter_pct">Gap</th>
+                <th data-sort="min_sl_points">Min SL</th>
+                <th data-sort="max_sl_points">Max SL</th>
+                <th data-sort="profit_factor">PF</th>
+                <th data-sort="return_pct">Return %</th>
+                <th data-sort="max_drawdown_pct">DD %</th>
+                <th data-sort="win_rate">Win %</th>
+                <th data-sort="trade_count">Trades</th>
+                <th data-sort="avg_winner">Avg Win</th>
+                <th data-sort="avg_loser">Avg Loss</th>
+                <th data-sort="score">Score</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="results-body">
+              <tr><td colspan="12" class="empty">Run an optimization to see results.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="trades-panel" hidden>
+        <div class="panel-head"><h2 id="trades-title">Trades</h2></div>
+        <div class="table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr>
+                <th>Entry time</th><th>Exit time</th><th>Side</th><th>Entry</th><th>Exit</th>
+                <th>SL</th><th>TP (2R)</th><th>Reason</th><th>PnL $</th><th>R</th><th>Duration</th>
+              </tr>
+            </thead>
+            <tbody id="trades-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/research-optimizer.js"></script>
+</body>
+</html>
