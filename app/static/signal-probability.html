@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signal Probability Optimizer — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="signal-probability">
+  <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">RESEARCH</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="positions" href="/positions"><span class="nav-icon">◫</span> Positions</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <div class="nav-section-label">Research</div>
+      <a class="nav-item" data-nav="research" href="/research/btc-optimizer"><span class="nav-icon">◉</span> BTC Strategy Optimizer</a>
+      <a class="nav-item active" data-nav="signal-probability" href="/research/signal-probability"><span class="nav-icon">◎</span> Signal Probability</a>
+      <a class="nav-item" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status">
+      <span class="dot ok"></span>
+      <span>Statistical analyzer</span>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Signal Probability Optimizer</h1>
+        <p class="page-sub">SMA crossover statistics · target vs stop resolution · not a trading strategy</p>
+      </div>
+      <div class="topbar-controls">
+        <span class="muted" id="analysis-meta">—</span>
+      </div>
+    </header>
+
+    <main class="page-content sigprob-page">
+      <section class="panel sigprob-controls">
+        <div class="panel-head"><h2>Parameters</h2><span class="muted" id="loading-label"></span></div>
+        <div class="sigprob-form-grid">
+          <label>Symbol
+            <select id="symbol">
+              <option value="SOLUSDT" selected>SOLUSDT</option>
+              <option value="BTCUSDT">BTCUSDT</option>
+              <option value="ETHUSDT">ETHUSDT</option>
+            </select>
+          </label>
+          <label>Timeframe
+            <select id="timeframe">
+              <option value="1m">1m</option>
+              <option value="5m" selected>5m</option>
+              <option value="15m">15m</option>
+              <option value="1h">1h</option>
+            </select>
+          </label>
+          <label>Months back
+            <input type="number" id="months-back" value="6" min="1" max="36" step="1" />
+          </label>
+          <label>SMA length
+            <input type="number" id="sma-length" value="84" min="5" max="500" step="1" />
+          </label>
+          <label>Target points
+            <input type="number" id="target-points" value="3.0" min="0.1" step="0.1" />
+          </label>
+          <label>Stop loss points
+            <input type="number" id="stop-points" value="1.0" min="0.1" step="0.1" />
+          </label>
+          <label>Direction
+            <select id="direction">
+              <option value="BOTH" selected>BOTH</option>
+              <option value="BUY">BUY</option>
+              <option value="SELL">SELL</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <div class="sigprob-stats-row">
+        <section class="panel sigprob-stat-panel">
+          <div class="panel-head"><h2>BUY Signals</h2></div>
+          <div class="pro-cards" id="buy-stats"></div>
+        </section>
+        <section class="panel sigprob-stat-panel">
+          <div class="panel-head"><h2>SELL Signals</h2></div>
+          <div class="pro-cards" id="sell-stats"></div>
+        </section>
+        <section class="panel sigprob-stat-panel">
+          <div class="panel-head"><h2>Combined</h2></div>
+          <div class="pro-cards" id="combined-stats"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Charts</h2></div>
+        <div class="sigprob-charts">
+          <div class="chart-card">
+            <h3>Bars to Target</h3>
+            <canvas id="hist-target" height="180"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Bars to Stop</h3>
+            <canvas id="hist-stop" height="180"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Monthly Win Rate %</h3>
+            <canvas id="chart-monthly" height="180"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Target vs Stop (bars)</h3>
+            <canvas id="chart-scatter" height="180"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Every Signal</h2>
+          <input type="search" id="signal-search" class="sigprob-search" placeholder="Filter signals…" />
+        </div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table compact-table" id="signals-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Time</th><th>Dir</th><th>Entry</th><th>Exit</th>
+                <th>Target</th><th>Stop</th><th>Bars</th><th>Result</th><th>Duration</th><th>PnL</th>
+              </tr>
+            </thead>
+            <tbody id="signals-body">
+              <tr><td colspan="11" class="empty">Loading analysis…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/signal-probability.js"></script>
+</body>
+</html>

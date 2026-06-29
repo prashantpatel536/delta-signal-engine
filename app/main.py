@@ -30,6 +30,7 @@ from app.pushover_api import router as pushover_router
 from app.risk_api import router as risk_router
 from app.debug_api import router as debug_router
 from app.research_optimizer_api import router as research_optimizer_router
+from app.research_signal_probability_api import router as signal_probability_router
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
 from app.validation_api import router as validation_router
@@ -304,6 +305,7 @@ app.include_router(admin_router)
 app.include_router(risk_router)
 app.include_router(validation_router)
 app.include_router(research_optimizer_router)
+app.include_router(signal_probability_router)
 app.include_router(debug_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -383,6 +385,11 @@ def validation_page() -> FileResponse:
 @app.get("/research/btc-optimizer", include_in_schema=False)
 def btc_optimizer_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "research-optimizer.html")
+
+
+@app.get("/research/signal-probability", include_in_schema=False)
+def signal_probability_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "signal-probability.html")
 
 
 @app.get("/health/page", include_in_schema=False)
