@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMA Signal Optimizer — Delta Signal Engine</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell page-only" data-page="sma-optimizer">
+  <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">☰</button>
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">DELTA</div>
+        <div class="brand-sub">RESEARCH</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="terminal" href="/"><span class="nav-icon">▦</span> Trading Terminal</a>
+      <a class="nav-item" data-nav="signals" href="/signals"><span class="nav-icon">⚡</span> Signals</a>
+      <a class="nav-item" data-nav="performance" href="/performance"><span class="nav-icon">◔</span> Performance</a>
+      <div class="nav-section-label">Research</div>
+      <a class="nav-item" data-nav="research" href="/research/btc-optimizer"><span class="nav-icon">◉</span> BTC Strategy Optimizer</a>
+      <a class="nav-item" data-nav="signal-probability" href="/research/signal-probability"><span class="nav-icon">◎</span> Signal Probability</a>
+      <a class="nav-item active" data-nav="sma-optimizer" href="/research/sma-optimizer"><span class="nav-icon">◈</span> SMA Signal Optimizer</a>
+      <a class="nav-item" data-nav="settings" href="/settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status"><span class="dot ok"></span> Statistical optimizer</div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">SMA Signal Optimizer</h1>
+        <p class="page-sub">Grid search SMA length × Stop × Target · crossover statistics only</p>
+      </div>
+    </header>
+
+    <main class="page-content optimizer-page">
+      <section class="panel">
+        <div class="panel-head"><h2>Configuration</h2><span class="muted" id="combo-summary">—</span></div>
+        <form id="optimizer-form" class="optimizer-form">
+          <div class="optimizer-form-grid">
+            <fieldset>
+              <legend>Market</legend>
+              <label>Symbol
+                <select id="symbol"><option value="SOLUSDT" selected>SOLUSDT</option><option value="BTCUSDT">BTCUSDT</option><option value="ETHUSDT">ETHUSDT</option></select>
+              </label>
+              <label>Timeframe
+                <select id="timeframe"><option value="5m" selected>5m</option><option value="1m">1m</option><option value="15m">15m</option><option value="1h">1h</option></select>
+              </label>
+              <label>Months back <input type="number" id="months-back" value="6" min="1" max="36" /></label>
+              <label>Ambiguous bar
+                <select id="ambiguous">
+                  <option value="STOP_FIRST" selected>Stop First</option>
+                  <option value="TARGET_FIRST">Target First</option>
+                  <option value="IGNORE">Ignore Ambiguous</option>
+                </select>
+              </label>
+            </fieldset>
+            <fieldset>
+              <legend>SMA length</legend>
+              <label>Start <input type="number" id="sma-start" value="20" min="5" step="1" /></label>
+              <label>End <input type="number" id="sma-end" value="200" min="5" step="1" /></label>
+              <label>Step <input type="number" id="sma-step" value="2" min="1" step="1" /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Stop loss (pts)</legend>
+              <label>Start <input type="number" id="stop-start" value="0.5" step="0.5" /></label>
+              <label>End <input type="number" id="stop-end" value="10" step="0.5" /></label>
+              <label>Step <input type="number" id="stop-step" value="0.5" step="0.5" /></label>
+            </fieldset>
+            <fieldset>
+              <legend>Target (pts)</legend>
+              <label>Start <input type="number" id="target-start" value="1" step="0.5" /></label>
+              <label>End <input type="number" id="target-end" value="20" step="0.5" /></label>
+              <label>Step <input type="number" id="target-step" value="0.5" step="0.5" /></label>
+            </fieldset>
+          </div>
+          <div class="optimizer-actions">
+            <button type="submit" class="btn-primary" id="start-btn">Start Optimization</button>
+            <button type="button" class="btn-secondary" id="stop-btn" disabled>Stop</button>
+            <label class="optimizer-debug-toggle">Sort by
+              <select id="sort-by">
+                <option value="score" selected>Custom Score</option>
+                <option value="profit_factor">Profit Factor</option>
+                <option value="expected_value">Expected Value</option>
+                <option value="win_rate">Win Rate</option>
+                <option value="net_points">Net Points</option>
+                <option value="total_profit">Total Profit</option>
+                <option value="max_drawdown_points">Lowest Drawdown</option>
+                <option value="total_trades">Trades</option>
+              </select>
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="progress-panel" hidden>
+        <div class="panel-head"><h2>Progress</h2></div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <div class="optimizer-progress-stats" id="progress-stats"></div>
+        <div class="optimizer-current-param" id="current-param"></div>
+      </section>
+
+      <section class="panel" id="top-panel" hidden>
+        <div class="panel-head">
+          <h2>Top 20 Combinations</h2>
+          <input type="search" id="top-search" class="sigprob-search" placeholder="Search…" />
+        </div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table sortable-table" id="top-table">
+            <thead>
+              <tr>
+                <th>Rank</th><th>SMA</th><th>Target</th><th>Stop</th><th>Trades</th>
+                <th>Win %</th><th>PF</th><th>EV</th><th>Net</th><th>Score</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="top-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="heatmap-panel" hidden>
+        <div class="panel-head">
+          <h2>Heatmaps</h2>
+          <select id="heatmap-chart">
+            <option value="sma_win_rate">SMA vs Win Rate</option>
+            <option value="sma_pf">SMA vs Profit Factor</option>
+            <option value="sma_net">SMA vs Net Points</option>
+            <option value="tp_sl">Target vs Stop Loss</option>
+            <option value="sma_target">SMA vs Target</option>
+            <option value="sma_stop">SMA vs Stop Loss</option>
+          </select>
+        </div>
+        <canvas id="heatmap-canvas" height="320"></canvas>
+      </section>
+
+      <section class="panel" id="trades-panel" hidden>
+        <div class="panel-head"><h2 id="trades-title">Trade Explorer</h2></div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr>
+                <th>Entry Time</th><th>Dir</th><th>Entry</th><th>Exit</th>
+                <th>Target</th><th>Stop</th><th>Bars</th><th>Result</th><th>PnL</th>
+              </tr>
+            </thead>
+            <tbody id="trades-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Export</h2></div>
+        <div class="optimizer-actions">
+          <button type="button" class="btn-secondary" id="export-csv" disabled>CSV (All)</button>
+          <button type="button" class="btn-secondary" id="export-top" disabled>CSV (Top 20)</button>
+          <button type="button" class="btn-secondary" id="export-xlsx" disabled>Excel</button>
+          <button type="button" class="btn-secondary" id="export-json" disabled>JSON</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/sma-optimizer.js"></script>
+</body>
+</html>
