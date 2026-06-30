@@ -38,7 +38,7 @@ class SolReversalEngine:
         settings: dict[str, Any],
         debug_on: bool,
     ) -> dict[str, Any] | None:
-        ha_high, ha_low, ha_close, _ = sol_market.ha_bar_at(idx)
+        ha_high, ha_low, ha_close, _ = sol_market.signal_bar_at(idx)
         closed = self.paper.monitor(
             open_pos,
             high=ha_high,
@@ -67,7 +67,7 @@ class SolReversalEngine:
                     "highest_profit_pct": closed.get("highest_profit_pct"),
                     "mfe_pct": closed.get("mfe_pct"),
                     "mae_pct": closed.get("mae_pct"),
-                    "ohlc_source": "heikin_ashi",
+                    "ohlc_source": "regular_ohlc",
                 })
         return closed
 
@@ -79,9 +79,9 @@ class SolReversalEngine:
         idx = sol_market.closed_candle_index()
         if idx < 0:
             return
-        ha = sol_market.get_ha()
+        candles = sol_market.get_signal_candles()
         atr = sol_market.get_atr()
-        candle_time = int(ha.iloc[idx]["time"])
+        candle_time = int(candles.iloc[idx]["time"])
         if self._last_processed_candle == candle_time:
             return
 
@@ -92,15 +92,15 @@ class SolReversalEngine:
         self._last_processed_candle = candle_time
 
         settings = self.settings()
-        ha_high, ha_low, ha_close, ha_open = sol_market.ha_bar_at(idx)
+        ha_high, ha_low, ha_close, ha_open = sol_market.signal_bar_at(idx)
         debug_on = bool(settings.get("debug_mode"))
 
-        explain = explain_signal_at_index(ha, settings, idx, atr=atr)
+        explain = explain_signal_at_index(candles, settings, idx, atr=atr)
         if debug_on and (settings.get("debug_log_bar_evals") or explain.get("signal")):
             log_debug_event("BAR_EVAL", {
                 **explain,
-                "ohlc_source": "heikin_ashi",
-                "ha_bar": {"open": ha_open, "high": ha_high, "low": ha_low, "close": ha_close},
+                "ohlc_source": "regular_ohlc",
+                "bar_ohlc": {"open": ha_open, "high": ha_high, "low": ha_low, "close": ha_close},
             })
 
         open_pos = self.paper.positions.get_open()
@@ -109,7 +109,7 @@ class SolReversalEngine:
             open_pos = self.paper.positions.get_open()
 
         if open_pos is None:
-            signal = explain.get("signal") or detect_signal_at_index(ha, settings, idx, atr=atr)
+            signal = explain.get("signal") or detect_signal_at_index(candles, settings, idx, atr=atr)
             if signal:
                 if debug_on:
                     log_debug_event("SIGNAL", explain)
@@ -129,7 +129,7 @@ class SolReversalEngine:
                             "stop_loss": sl,
                             "signal_eval": explain,
                             "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close},
-                            "entry_price_source": "ha_close",
+                            "entry_price_source": "bar_close",
                         })
                     # Pine: exit logic runs same bar after entry
                     still_open = self.paper.positions.get_open()

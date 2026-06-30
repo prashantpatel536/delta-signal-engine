@@ -1,4 +1,4 @@
-"""SOL Reversal backtest — reuses strategy.py + simulation.py (same as paper)."""
+"""SOL Reversal backtest — regular chart candles (Pine open/close), shared simulation."""
 
 from __future__ import annotations
 
@@ -15,25 +15,48 @@ from app.backtest.metrics import (
     build_performance_insights,
 )
 from app.market_data import delta_client
-from app.strategies.sol_reversal.ha import to_heikin_ashi
+from app.strategies.sol_reversal.ha import attach_candle_colors
 from app.strategies.sol_reversal.indicators import compute_atr
 from app.strategies.sol_reversal.repositories import SolSettingsRepository
 from app.strategies.sol_reversal.settings_defaults import DEFAULT_SETTINGS
 from app.strategies.sol_reversal.simulation import open_position, pnl_at_price, process_bar
-from app.strategies.sol_reversal.strategy import detect_signal_at_index
+from app.strategies.sol_reversal.strategy import detect_signal_at_index, scan_signals
 
 SYMBOL = "SOLUSDT"
 
 
-def _apply_slippage(price: float, side: str, is_entry: bool, slippage_pct: float) -> float:
+def _apply_slippage(price: float, is_entry: bool, slippage_pct: float) -> float:
     slip = slippage_pct / 100.0
-    if side == "BUY":
-        return price * (1 + slip) if is_entry else price * (1 - slip)
-    return price * (1 - slip) if is_entry else price * (1 + slip)
+    if is_entry:
+        return price * (1 + slip)
+    return price * (1 - slip)
 
 
 def _commission_cost(notional: float, commission_pct: float) -> float:
     return notional * commission_pct / 100.0
+
+
+def _close_trade(
+    closed: dict[str, Any],
+    *,
+    slippage_pct: float,
+    commission_pct: float,
+    equity: float,
+) -> tuple[dict[str, Any], float]:
+    exit_px = _apply_slippage(closed["exit_price"], False, slippage_pct)
+    qty = float(closed["quantity"])
+    closed = {**closed, "exit_price": round(exit_px, 4)}
+    pnl_usd, move_pct = pnl_at_price(
+        {"side": "BUY", "entry": closed["entry_price"], "quantity": qty},
+        exit_px,
+    )
+    pnl_usd -= _commission_cost(qty * exit_px, commission_pct)
+    equity += pnl_usd
+    return {
+        **closed,
+        "pnl_usd": round(pnl_usd, 4),
+        "price_move_pct": move_pct,
+    }, equity
 
 
 def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
@@ -54,21 +77,22 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("No candle data for the selected range")
 
     display_df, _ = delta_client.resolve_ohlc_candles(ohlc, symbol, timeframe)
-    ha = to_heikin_ashi(display_df)
-    atr = compute_atr(ha, int(settings.get("atr_period", 14)))
+    # Pine: close/open on chart candles (regular OHLC — NOT Heikin Ashi unless TV chart is HA)
+    candles = attach_candle_colors(display_df)
+    atr = compute_atr(candles, int(settings.get("atr_period", 14)))
+    all_signals = scan_signals(candles, settings, atr=atr)
 
     equity = initial_capital
     position: dict[str, Any] | None = None
     trades: list[dict[str, Any]] = []
     trade_num = 0
 
-    # Bar-by-bar replay on HA series (same as Pine chart HA open/close)
-    for idx in range(1, len(ha)):
-        bar_time = int(ha.iloc[idx]["time"])
-        ha_row = ha.iloc[idx]
-        high = float(ha_row["high"])
-        low = float(ha_row["low"])
-        close = float(ha_row["close"])
+    for idx in range(1, len(candles)):
+        bar_time = int(candles.iloc[idx]["time"])
+        row = candles.iloc[idx]
+        high = float(row["high"])
+        low = float(row["low"])
+        close = float(row["close"])
 
         if position:
             position, closed = process_bar(
@@ -80,38 +104,19 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
                 settings=settings,
             )
             if closed:
-                exit_px = _apply_slippage(closed["exit_price"], "BUY", False, slippage_pct)
-                qty = float(closed["quantity"])
-                closed["exit_price"] = round(exit_px, 4)
-                pnl_usd, move_pct = pnl_at_price(
-                    {"side": "BUY", "entry": closed["entry_price"], "quantity": closed["quantity"]},
-                    exit_px,
+                closed, equity = _close_trade(
+                    closed, slippage_pct=slippage_pct, commission_pct=commission_pct, equity=equity
                 )
-                comm = _commission_cost(qty * exit_px, commission_pct)
-                pnl_usd -= comm
-                equity += pnl_usd
                 trade_num += 1
-                trades.append({
-                    **closed,
-                    "trade_num": trade_num,
-                    "pnl_usd": round(pnl_usd, 4),
-                    "price_move_pct": move_pct,
-                })
+                trades.append({**closed, "trade_num": trade_num})
 
         if position is None:
-            signal = detect_signal_at_index(ha, settings, idx, atr=atr)
+            signal = detect_signal_at_index(candles, settings, idx, atr=atr)
             if signal:
-                raw_entry = close
-                entry = _apply_slippage(raw_entry, "BUY", True, slippage_pct)
-                position = open_position(
-                    "BUY", entry, bar_time, settings, equity, symbol=symbol
-                )
+                entry = _apply_slippage(close, True, slippage_pct)
+                position = open_position("BUY", entry, bar_time, settings, equity, symbol=symbol)
                 if position:
-                    comm = _commission_cost(
-                        float(position["quantity"]) * entry, commission_pct
-                    )
-                    equity -= comm
-                    # Pine: exit on same bar after entry
+                    equity -= _commission_cost(float(position["quantity"]) * entry, commission_pct)
                     position, closed = process_bar(
                         position,
                         bar_time=bar_time,
@@ -121,23 +126,11 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
                         settings=settings,
                     )
                     if closed:
-                        exit_px = _apply_slippage(closed["exit_price"], "BUY", False, slippage_pct)
-                        qty = float(closed["quantity"])
-                        closed["exit_price"] = round(exit_px, 4)
-                        pnl_usd, move_pct = pnl_at_price(
-                            {"side": "BUY", "entry": closed["entry_price"], "quantity": closed["quantity"]},
-                            exit_px,
+                        closed, equity = _close_trade(
+                            closed, slippage_pct=slippage_pct, commission_pct=commission_pct, equity=equity
                         )
-                        comm_exit = _commission_cost(qty * exit_px, commission_pct)
-                        pnl_usd -= comm_exit
-                        equity += pnl_usd
                         trade_num += 1
-                        trades.append({
-                            **closed,
-                            "trade_num": trade_num,
-                            "pnl_usd": round(pnl_usd, 4),
-                            "price_move_pct": move_pct,
-                        })
+                        trades.append({**closed, "trade_num": trade_num})
 
     equity_curve = build_equity_curve(initial_capital, trades)
     stats = aggregate_statistics(initial_capital, equity, trades, equity_curve)
@@ -156,7 +149,15 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
         "drawdown_series": build_drawdown_series(equity_curve),
         "monthly_report": build_monthly_report(trades),
         "performance": build_performance_insights(initial_capital, trades, equity_curve),
-        "bar_count": len(ha),
+        "bar_count": len(candles),
+        "diagnostics": {
+            "candle_mode": "regular_ohlc",
+            "note": "Matches Pine close<open on standard TV candlestick chart (not Heikin Ashi)",
+            "bars_in_range": len(candles),
+            "pine_signals_unfiltered": len(all_signals),
+            "trades_executed": len(trades),
+            "signal_times": [s["time"] for s in all_signals],
+        },
     }
 
 

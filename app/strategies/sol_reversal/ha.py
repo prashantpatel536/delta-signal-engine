@@ -1,8 +1,21 @@
-"""Heikin Ashi candles from Delta Exchange OHLC."""
+"""Candle helpers — Pine uses chart open/close (regular OHLC unless TV chart is HA)."""
 
 from __future__ import annotations
 
 import pandas as pd
+
+
+def attach_candle_colors(ohlc: pd.DataFrame) -> pd.DataFrame:
+    """Pine: isRed = close < open, isGreen = close > open."""
+    if ohlc.empty:
+        return pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume", "color"])
+    out = ohlc.copy()
+    out["color"] = out.apply(
+        lambda r: "green" if float(r["close"]) > float(r["open"])
+        else ("red" if float(r["close"]) < float(r["open"]) else "doji"),
+        axis=1,
+    )
+    return out
 
 
 def to_heikin_ashi(ohlc: pd.DataFrame) -> pd.DataFrame:

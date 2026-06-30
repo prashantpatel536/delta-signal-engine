@@ -13,7 +13,7 @@ import pandas as pd
 from app.indicators import candles_to_records
 from app.market_data import delta_client
 from app.research.candle_cache import fetch_candles_range, months_back_range
-from app.strategies.sol_reversal.ha import to_heikin_ashi
+from app.strategies.sol_reversal.ha import attach_candle_colors, to_heikin_ashi
 from app.strategies.sol_reversal.indicators import compute_atr
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class SolMarketStore:
     def __init__(self) -> None:
         self._lock = Lock()
         self._ohlc = pd.DataFrame()
+        self._signal_candles = pd.DataFrame()
         self._ha = pd.DataFrame()
         self._atr = pd.Series(dtype=float)
         self._last_price: float | None = None
@@ -43,6 +44,7 @@ class SolMarketStore:
     def _apply_ohlc(self, df: pd.DataFrame) -> None:
         if df.empty:
             self._ohlc = df.copy()
+            self._signal_candles = pd.DataFrame()
             self._ha = pd.DataFrame()
             self._atr = pd.Series(dtype=float)
             return
@@ -54,8 +56,14 @@ class SolMarketStore:
             stats.get("ohlc_source"),
         )
         self._ohlc = display_df.copy()
+        self._signal_candles = attach_candle_colors(self._ohlc)
         self._ha = to_heikin_ashi(self._ohlc)
-        self._atr = compute_atr(self._ha, 14) if not self._ha.empty else pd.Series(dtype=float)
+        period = 14
+        self._atr = (
+            compute_atr(self._signal_candles, period)
+            if not self._signal_candles.empty
+            else pd.Series(dtype=float)
+        )
         if not self._ohlc.empty:
             self._last_price = float(self._ohlc["close"].iloc[-1])
 
@@ -69,8 +77,9 @@ class SolMarketStore:
                     self._ohlc.at[idx, "high"] = price
                 if price < self._ohlc.at[idx, "low"]:
                     self._ohlc.at[idx, "low"] = price
+                self._signal_candles = attach_candle_colors(self._ohlc)
                 self._ha = to_heikin_ashi(self._ohlc)
-                self._atr = compute_atr(self._ha, 14)
+                self._atr = compute_atr(self._signal_candles, 14)
 
     def append_or_update_candle(self, candle: dict[str, Any]) -> bool:
         """Returns True if a new closed candle was finalized."""
@@ -97,8 +106,9 @@ class SolMarketStore:
                 closed = True
             else:
                 return False
+            self._signal_candles = attach_candle_colors(self._ohlc)
             self._ha = to_heikin_ashi(self._ohlc)
-            self._atr = compute_atr(self._ha, 14)
+            self._atr = compute_atr(self._signal_candles, 14)
             self._last_price = float(row["close"])
             return closed
 
@@ -199,13 +209,21 @@ class SolMarketStore:
 
     def closed_candle_index(self) -> int:
         with self._lock:
-            return len(self._ha) - 2 if len(self._ha) >= 2 else -1
+            return len(self._signal_candles) - 2 if len(self._signal_candles) >= 2 else -1
+
+    def signal_bar_at(self, idx: int) -> tuple[float, float, float, float]:
+        """Regular chart OHLC at index (Pine close/open series)."""
+        with self._lock:
+            r = self._signal_candles.iloc[idx]
+            return float(r["high"]), float(r["low"]), float(r["close"]), float(r["open"])
+
+    def get_signal_candles(self) -> pd.DataFrame:
+        with self._lock:
+            return self._signal_candles.copy()
 
     def ha_bar_at(self, idx: int) -> tuple[float, float, float, float]:
-        """HA OHLC for closed bar at index (same series as signals)."""
-        with self._lock:
-            r = self._ha.iloc[idx]
-            return float(r["high"]), float(r["low"]), float(r["close"]), float(r["open"])
+        """Deprecated alias — use signal_bar_at."""
+        return self.signal_bar_at(idx)
 
     def get_ha(self) -> pd.DataFrame:
         with self._lock:

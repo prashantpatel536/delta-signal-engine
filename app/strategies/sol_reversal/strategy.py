@@ -1,4 +1,4 @@
-"""SOL Reversal signal detection — Pine Script parity (long-only, HA chart series)."""
+"""SOL Reversal signal detection — Pine Script parity (long-only, regular chart candles)."""
 
 from __future__ import annotations
 
@@ -39,27 +39,26 @@ def _passes_atr(atr_val: float, settings: dict[str, Any]) -> bool:
 
 
 def detect_signal_at_index(
-    ha: pd.DataFrame,
+    candles: pd.DataFrame,
     settings: dict[str, Any],
     idx: int,
     *,
     atr: pd.Series | None = None,
 ) -> Side | None:
-    """Evaluate long entry on closed HA candle — mirrors Pine longSignal."""
-    if idx < 1 or idx >= len(ha):
+    """Evaluate long entry — mirrors Pine longSignal on chart candles."""
+    if idx < 1 or idx >= len(candles):
         return None
 
     if atr is None:
-        atr = compute_atr(ha, int(settings.get("atr_period", 14)))
+        atr = compute_atr(candles, int(settings.get("atr_period", 14)))
 
-    colors = ha["color"].tolist()
-    row = ha.iloc[idx]
-    atr_val = float(atr.iloc[idx]) if not pd.isna(atr.iloc[idx]) else 0.0
+    colors = candles["color"].tolist()
+    row = candles.iloc[idx]
+    atr_val = float(atr.iloc[idx]) if not pd.isna(atr.iloc[idx]) else float("nan")
 
     min_red = int(settings.get("min_red_candles", 7))
     max_green = int(settings.get("max_green_candles", 3))
 
-    # Pine: validGreenSeq and consecReds[1] >= minConsecReds on green bar
     if colors[idx] != "green":
         return None
 
@@ -74,6 +73,30 @@ def detect_signal_at_index(
     if not _passes_atr(atr_val, settings):
         return None
     return "BUY"
+
+
+def scan_signals(
+    candles: pd.DataFrame,
+    settings: dict[str, Any],
+    *,
+    atr: pd.Series | None = None,
+) -> list[dict[str, Any]]:
+    """List every bar where Pine longSignal would fire (ignores open position)."""
+    if candles.empty:
+        return []
+    if atr is None:
+        atr = compute_atr(candles, int(settings.get("atr_period", 14)))
+    out: list[dict[str, Any]] = []
+    for idx in range(1, len(candles)):
+        if detect_signal_at_index(candles, settings, idx, atr=atr):
+            row = candles.iloc[idx]
+            out.append({
+                "idx": idx,
+                "time": int(row["time"]),
+                "open": float(row["open"]),
+                "close": float(row["close"]),
+            })
+    return out
 
 
 def levels_for_side(

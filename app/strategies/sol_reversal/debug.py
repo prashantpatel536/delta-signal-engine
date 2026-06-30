@@ -37,8 +37,8 @@ def explain_signal_at_index(
     prev_row = ha.iloc[idx - 1]
     atr_val = float(atr.iloc[idx]) if not pd.isna(atr.iloc[idx]) else 0.0
 
-    min_red = int(settings.get("min_red_candles", 4))
-    max_green = int(settings.get("max_green_candles", 2))
+    min_red = int(settings.get("min_red_candles", 7))
+    max_green = int(settings.get("max_green_candles", 3))
 
     color = colors[idx]
     is_red = color == "red"
@@ -65,11 +65,11 @@ def explain_signal_at_index(
     return {
         "idx": idx,
         "time": int(row["time"]),
-        "ha_open": round(float(row["open"]), 6),
-        "ha_high": round(float(row["high"]), 6),
-        "ha_low": round(float(row["low"]), 6),
-        "ha_close": round(float(row["close"]), 6),
-        "prev_ha_close": round(float(prev_row["close"]), 6),
+        "open": round(float(row["open"]), 6),
+        "high": round(float(row["high"]), 6),
+        "low": round(float(row["low"]), 6),
+        "close": round(float(row["close"]), 6),
+        "prev_close": round(float(prev_row["close"]), 6),
         "color": color,
         "is_red": is_red,
         "is_green": is_green,
