@@ -115,15 +115,44 @@ class SolMarketStore:
                 "last_candle_time": int(self._ohlc["time"].iloc[-1]) if not self._ohlc.empty else None,
             }
 
-    def chart_payload(self, bars: int = 200) -> dict[str, Any]:
+    def chart_payload(self, bars: int = 300) -> dict[str, Any]:
         with self._lock:
             ohlc = self._ohlc.tail(bars).copy()
             ha = self._ha.tail(bars).copy()
+        # Ensure JSON-safe int timestamps and valid OHLC ordering
+        ohlc_rows = []
+        for _, r in ohlc.iterrows():
+            o = float(r["open"])
+            h = float(max(r["high"], o, float(r["close"])))
+            l = float(min(r["low"], o, float(r["close"])))
+            c = float(r["close"])
+            ohlc_rows.append({
+                "time": int(r["time"]),
+                "open": round(o, 4),
+                "high": round(h, 4),
+                "low": round(l, 4),
+                "close": round(c, 4),
+                "volume": float(r.get("volume", 0)),
+            })
+        ha_rows = []
+        for _, r in ha.iterrows():
+            o = float(r["open"])
+            c = float(r["close"])
+            h = float(max(r["high"], o, c))
+            l = float(min(r["low"], o, c))
+            ha_rows.append({
+                "time": int(r["time"]),
+                "open": round(o, 4),
+                "high": round(h, 4),
+                "low": round(l, 4),
+                "close": round(c, 4),
+            })
         return {
             "symbol": SYMBOL,
             "timeframe": TIMEFRAME,
-            "ohlc": ohlc.to_dict(orient="records"),
-            "heikin_ashi": ha.to_dict(orient="records"),
+            "interval_seconds": RESOLUTION_SECONDS[TIMEFRAME],
+            "ohlc": ohlc_rows,
+            "heikin_ashi": ha_rows,
         }
 
     def closed_candle_index(self) -> int:

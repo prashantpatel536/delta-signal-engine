@@ -1,6 +1,5 @@
 (() => {
-  let chart = null;
-  let haSeries = null;
+  let chartEngine = null;
   let settingsCache = {};
 
   const $ = (id) => document.getElementById(id);
@@ -81,32 +80,13 @@
 
   function initChart() {
     const el = $("sol-chart");
-    if (!el || typeof LightweightCharts === "undefined") return;
-    chart = LightweightCharts.createChart(el, {
-      layout: { background: { color: "#0b0e11" }, textColor: "#b7bdc6" },
-      grid: { vertLines: { color: "#1e2329" }, horzLines: { color: "#1e2329" } },
-      height: 360,
-    });
-    haSeries = chart.addCandlestickSeries({
-      upColor: "#22c55e", downColor: "#ef4444",
-      borderVisible: false, wickUpColor: "#22c55e", wickDownColor: "#ef4444",
-    });
-    new ResizeObserver(() => {
-      chart.applyOptions({ width: el.clientWidth });
-    }).observe(el);
+    if (!el || typeof SolChartEngine === "undefined") return;
+    chartEngine = new SolChartEngine(el);
   }
 
-  function updateChart(payload) {
-    if (!haSeries || !payload?.heikin_ashi) return;
-    const data = payload.heikin_ashi.map((c) => ({
-      time: c.time,
-      open: c.open,
-      high: c.high,
-      low: c.low,
-      close: c.close,
-    }));
-    haSeries.setData(data);
-    chart.timeScale().fitContent();
+  function updateChart(payload, trades) {
+    if (!chartEngine || !payload) return;
+    chartEngine.update(payload, trades);
   }
 
   function drawLine(canvasId, values, labels, color) {
@@ -176,9 +156,9 @@
     renderKpis(status);
     renderPosition(status.position);
     renderStats(status.statistics || {});
-    const chartData = await DSE.fetchJson("/sol/api/chart?bars=200");
-    updateChart(chartData);
+    const chartData = await DSE.fetchJson("/sol/api/chart?bars=300");
     const trades = await DSE.fetchJson("/sol/api/trades");
+    updateChart(chartData, trades.trades);
     renderTrades(trades.trades);
     if (!$("settings-form").children.length) {
       renderSettingsForm(status.settings || {});

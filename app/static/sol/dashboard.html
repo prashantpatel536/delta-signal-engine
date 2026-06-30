@@ -6,6 +6,7 @@
   <title>SOL Reversal Engine — Delta Terminal</title>
   <link rel="stylesheet" href="/static/styles.css" />
   <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+  <script src="/static/sol/sol-chart.js"></script>
 </head>
 <body class="app-shell sol-shell" data-page="sol-reversal">
   <aside class="sidebar sidebar-narrow">
@@ -46,7 +47,10 @@
 
       <div class="sol-main-grid">
         <section class="panel sol-chart-panel">
-          <div class="panel-head"><h2>Chart (Delta OHLC + HA)</h2></div>
+          <div class="panel-head">
+            <h2>Chart (Delta OHLC)</h2>
+            <span class="muted chart-legend">Candles = Delta OHLC · Gold line = HA close</span>
+          </div>
           <div id="sol-chart" class="sol-chart-container"></div>
         </section>
         <section class="panel" id="position-panel">

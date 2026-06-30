@@ -3311,8 +3311,12 @@ select, button {
 }
 
 .sol-chart-container {
-  min-height: 360px;
+  min-height: 420px;
   width: 100%;
+}
+
+.chart-legend {
+  font-size: 0.72rem;
 }
 
 .sol-mode-pill {
