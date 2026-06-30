@@ -123,29 +123,29 @@ class SolMarketStore:
         ohlc_rows = []
         for _, r in ohlc.iterrows():
             o = float(r["open"])
-            h = float(max(r["high"], o, float(r["close"])))
-            l = float(min(r["low"], o, float(r["close"])))
+            h = float(r["high"])
+            l = float(r["low"])
             c = float(r["close"])
             ohlc_rows.append({
                 "time": int(r["time"]),
-                "open": round(o, 4),
-                "high": round(h, 4),
-                "low": round(l, 4),
-                "close": round(c, 4),
+                "open": o,
+                "high": max(h, o, c, l),
+                "low": min(l, o, c, h),
+                "close": c,
                 "volume": float(r.get("volume", 0)),
             })
         ha_rows = []
         for _, r in ha.iterrows():
             o = float(r["open"])
+            h = float(r["high"])
+            l = float(r["low"])
             c = float(r["close"])
-            h = float(max(r["high"], o, c))
-            l = float(min(r["low"], o, c))
             ha_rows.append({
                 "time": int(r["time"]),
-                "open": round(o, 4),
-                "high": round(h, 4),
-                "low": round(l, 4),
-                "close": round(c, 4),
+                "open": o,
+                "high": max(h, o, c, l),
+                "low": min(l, o, c, h),
+                "close": c,
             })
         return {
             "symbol": SYMBOL,

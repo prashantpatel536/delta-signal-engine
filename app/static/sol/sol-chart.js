@@ -1,8 +1,8 @@
 /**
- * SOL Reversal chart — Heikin Ashi on real candle times (TradingView-style).
- * Strategy reads HA; chart shows HA candles + paper trade markers.
+ * SOL Reversal chart — Heikin Ashi (TradingView-style bodies).
  */
 (() => {
+  const INTERVAL_SEC = 300;
   const TV = {
     bg: "#131722",
     grid: "#1e222d",
@@ -12,22 +12,39 @@
     down: "#ef5350",
   };
 
-  function visualCandle(c) {
-    const open = Number(c.open);
-    const high = Number(c.high);
-    const low = Number(c.low);
-    const close = Number(c.close);
-    if (high > low && Math.abs(open - close) > 1e-9) {
-      return {
-        open,
-        high: Math.max(high, open, close),
-        low: Math.min(low, open, close),
-        close,
-      };
+  /** Ensure every HA bar has a visible body + wicks for Lightweight Charts. */
+  function visualCandle(candle) {
+    const open = Number(candle.open);
+    const high = Number(candle.high);
+    const low = Number(candle.low);
+    const close = Number(candle.close);
+    const bullish = close >= open;
+
+    if (high > low) {
+      if (Math.abs(open - close) > 1e-10) {
+        return {
+          open,
+          high: Math.max(high, open, close),
+          low: Math.min(low, open, close),
+          close,
+        };
+      }
+      const span = high - low;
+      const body = Math.max(span * 0.4, Math.abs(close) * 0.0002, 0.05);
+      const mid = (open + close) / 2;
+      return bullish
+        ? { open: mid - body / 2, close: mid + body / 2, high, low }
+        : { open: mid + body / 2, close: mid - body / 2, high, low };
     }
+
     const mid = close || open || 0;
-    const pad = Math.max(Math.abs(mid) * 0.0002, 0.03);
-    return { open: mid + pad / 2, high: mid + pad, low: mid - pad, close: mid - pad / 2 };
+    const pad = Math.max(Math.abs(mid) * 0.0003, 0.08);
+    return {
+      open: mid + pad / 2,
+      high: mid + pad,
+      low: mid - pad,
+      close: mid - pad / 2,
+    };
   }
 
   function prepareHaCandles(raw) {
@@ -51,11 +68,18 @@
     return Array.from(byTime.values()).sort((a, b) => a.time - b.time);
   }
 
-  function toHaSeries(candles) {
-    return candles.map((c) => {
+  /** Evenly spaced bars (TV-style) — avoids gap artifacts from missing candles. */
+  function toDisplaySeries(candles) {
+    if (!candles.length) return { series: [], timeMap: new Map() };
+    const base = candles[0].time;
+    const timeMap = new Map();
+    const series = candles.map((c, i) => {
+      const t = base + i * INTERVAL_SEC;
+      timeMap.set(c.time, t);
       const v = visualCandle(c);
-      return { time: c.time, open: v.open, high: v.high, low: v.low, close: v.close };
+      return { time: t, open: v.open, high: v.high, low: v.low, close: v.close };
     });
+    return { series, timeMap };
   }
 
   function isoToUnix(iso) {
@@ -78,15 +102,17 @@
     return bestD <= 600 ? best : null;
   }
 
-  function buildTradeMarkers(trades, candleTimes) {
+  function buildTradeMarkers(trades, candleTimes, timeMap) {
     if (!trades?.length || !candleTimes.length) return [];
     const markers = [];
     for (const tr of trades.slice(0, 50)) {
       const isBuy = (tr.side || "").toUpperCase() === "BUY";
       const pnl = Number(tr.pnl_pct ?? 0);
       const win = pnl >= 0;
-      const entryT = snapToCandle(isoToUnix(tr.opened_at || tr.entry_time), candleTimes);
-      const exitT = snapToCandle(isoToUnix(tr.closed_at || tr.exit_time), candleTimes);
+      const entryReal = snapToCandle(isoToUnix(tr.opened_at || tr.entry_time), candleTimes);
+      const exitReal = snapToCandle(isoToUnix(tr.closed_at || tr.exit_time), candleTimes);
+      const entryT = entryReal ? timeMap.get(entryReal) : null;
+      const exitT = exitReal ? timeMap.get(exitReal) : null;
       if (entryT) {
         markers.push({
           time: entryT,
@@ -141,18 +167,29 @@
         },
         rightPriceScale: {
           borderColor: TV.grid,
-          scaleMargins: { top: 0.1, bottom: 0.1 },
+          scaleMargins: { top: 0.08, bottom: 0.08 },
         },
         timeScale: {
           borderColor: TV.grid,
           timeVisible: true,
           secondsVisible: false,
-          rightOffset: 6,
-          barSpacing: 8,
-          minBarSpacing: 3,
+          rightOffset: 8,
+          barSpacing: 10,
+          minBarSpacing: 4,
         },
         handleScroll: { mouseWheel: true, pressedMouseMove: true },
         handleScale: { mouseWheel: true, pinch: true },
+        localization: {
+          timeFormatter: (ts) => {
+            const d = new Date(ts * 1000);
+            return d.toLocaleString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          },
+        },
       });
 
       this.haSeries = this.chart.addCandlestickSeries({
@@ -164,6 +201,7 @@
         wickDownColor: TV.down,
         borderVisible: true,
         wickVisible: true,
+        thinBars: false,
       });
     }
 
@@ -172,12 +210,15 @@
       const candles = prepareHaCandles(payload.heikin_ashi);
       if (!candles.length) return;
 
-      const series = toHaSeries(candles);
+      const { series, timeMap } = toDisplaySeries(candles);
       this.haSeries.setData(series);
 
-      const markers = buildTradeMarkers(trades || [], candles.map((c) => c.time));
+      const markers = buildTradeMarkers(
+        trades || [],
+        candles.map((c) => c.time),
+        timeMap,
+      );
       this.haSeries.setMarkers(markers);
-
       this.chart.timeScale().fitContent();
     }
 
