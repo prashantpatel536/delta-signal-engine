@@ -13,7 +13,7 @@ import pandas as pd
 from app.indicators import candles_to_records
 from app.market_data import delta_client
 from app.research.candle_cache import fetch_candles_range, months_back_range
-from app.strategies.sol_reversal.ha import attach_candle_colors, to_heikin_ashi
+from app.strategies.sol_reversal.ha import to_heikin_ashi
 from app.strategies.sol_reversal.indicators import compute_atr
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,6 @@ class SolMarketStore:
     def __init__(self) -> None:
         self._lock = Lock()
         self._ohlc = pd.DataFrame()
-        self._signal_candles = pd.DataFrame()
         self._ha = pd.DataFrame()
         self._atr = pd.Series(dtype=float)
         self._last_price: float | None = None
@@ -44,7 +43,6 @@ class SolMarketStore:
     def _apply_ohlc(self, df: pd.DataFrame) -> None:
         if df.empty:
             self._ohlc = df.copy()
-            self._signal_candles = pd.DataFrame()
             self._ha = pd.DataFrame()
             self._atr = pd.Series(dtype=float)
             return
@@ -56,14 +54,9 @@ class SolMarketStore:
             stats.get("ohlc_source"),
         )
         self._ohlc = display_df.copy()
-        self._signal_candles = attach_candle_colors(self._ohlc)
         self._ha = to_heikin_ashi(self._ohlc)
         period = 14
-        self._atr = (
-            compute_atr(self._signal_candles, period)
-            if not self._signal_candles.empty
-            else pd.Series(dtype=float)
-        )
+        self._atr = compute_atr(self._ha, period) if not self._ha.empty else pd.Series(dtype=float)
         if not self._ohlc.empty:
             self._last_price = float(self._ohlc["close"].iloc[-1])
 
@@ -77,9 +70,8 @@ class SolMarketStore:
                     self._ohlc.at[idx, "high"] = price
                 if price < self._ohlc.at[idx, "low"]:
                     self._ohlc.at[idx, "low"] = price
-                self._signal_candles = attach_candle_colors(self._ohlc)
                 self._ha = to_heikin_ashi(self._ohlc)
-                self._atr = compute_atr(self._signal_candles, 14)
+                self._atr = compute_atr(self._ha, 14)
 
     def append_or_update_candle(self, candle: dict[str, Any]) -> bool:
         """Returns True if a new closed candle was finalized."""
@@ -106,9 +98,8 @@ class SolMarketStore:
                 closed = True
             else:
                 return False
-            self._signal_candles = attach_candle_colors(self._ohlc)
             self._ha = to_heikin_ashi(self._ohlc)
-            self._atr = compute_atr(self._signal_candles, 14)
+            self._atr = compute_atr(self._ha, 14)
             self._last_price = float(row["close"])
             return closed
 
@@ -137,10 +128,57 @@ class SolMarketStore:
                 "last_candle_time": int(self._ohlc["time"].iloc[-1]) if not self._ohlc.empty else None,
             }
 
-    def chart_payload(self, bars: int = 200) -> dict[str, Any]:
-        """BTC-terminal compatible chart payload (HA candles, no SMA/HH/LL)."""
+    def _ha_strategy_signals(self, ha: pd.DataFrame, settings: dict[str, Any]) -> list[dict[str, Any]]:
+        """Scan HA candles with current settings — matches engine / TV HA chart."""
+        from app.strategies.sol_reversal.strategy import scan_signals
+
+        if ha.empty or len(ha) < 2:
+            return []
+        period = int(settings.get("atr_period", 14))
+        atr = compute_atr(ha, period)
+        return [
+            {
+                "candle_time": int(s["time"]),
+                "signal": "BUY",
+                "timeframe": TIMEFRAME,
+                "status": "HA_SIGNAL",
+            }
+            for s in scan_signals(ha, settings, atr=atr)
+        ]
+
+    def _trade_chart_signals(self, candle_times: list[int]) -> list[dict[str, Any]]:
         from datetime import datetime
 
+        signals: list[dict[str, Any]] = []
+        try:
+            from app.strategies.sol_reversal.repositories import SolPositionRepository
+
+            for tr in SolPositionRepository().list_closed(80):
+                entry_iso = tr.get("opened_at") or tr.get("entry_time")
+                if not entry_iso:
+                    continue
+                try:
+                    entry_unix = int(datetime.fromisoformat(entry_iso.replace("Z", "+00:00")).timestamp())
+                except (TypeError, ValueError):
+                    continue
+                snapped = min(candle_times, key=lambda t: abs(t - entry_unix))
+                if abs(snapped - entry_unix) > 600:
+                    continue
+                signals.append({
+                    "candle_time": snapped,
+                    "signal": tr.get("side", "BUY"),
+                    "timeframe": TIMEFRAME,
+                    "status": "TP_HIT" if float(tr.get("pnl_usd") or 0) >= 0 else "SL_HIT",
+                })
+        except Exception:
+            logger.exception("SOL chart trade markers failed")
+        return signals
+
+    def chart_payload(self, bars: int = 200) -> dict[str, Any]:
+        """HA chart + strategy signal markers (HA open/close rules)."""
+        from app.strategies.sol_reversal.repositories import SolSettingsRepository
+
+        settings = SolSettingsRepository().get_all()
         with self._lock:
             ohlc = self._ohlc.tail(bars).copy()
             ha = self._ha.tail(bars).copy()
@@ -165,29 +203,14 @@ class SolMarketStore:
         candle_times = [int(t) for t in ha["time"].tolist()]
         candles = candles_to_records(ha)
 
-        signals: list[dict[str, Any]] = []
-        try:
-            from app.strategies.sol_reversal.repositories import SolPositionRepository
-
-            for tr in SolPositionRepository().list_closed(40):
-                entry_iso = tr.get("opened_at") or tr.get("entry_time")
-                if not entry_iso:
-                    continue
-                try:
-                    entry_unix = int(datetime.fromisoformat(entry_iso.replace("Z", "+00:00")).timestamp())
-                except (TypeError, ValueError):
-                    continue
-                snapped = min(candle_times, key=lambda t: abs(t - entry_unix))
-                if abs(snapped - entry_unix) > 600:
-                    continue
-                signals.append({
-                    "candle_time": snapped,
-                    "signal": tr.get("side", "BUY"),
-                    "timeframe": TIMEFRAME,
-                    "status": "TP_HIT" if float(tr.get("pnl_usd") or 0) >= 0 else "SL_HIT",
-                })
-        except Exception:
-            logger.exception("SOL chart trade markers failed")
+        strategy_signals = self._ha_strategy_signals(ha, settings)
+        trade_signals = self._trade_chart_signals(candle_times)
+        by_time: dict[int, dict[str, Any]] = {}
+        for sig in strategy_signals:
+            by_time[int(sig["candle_time"])] = sig
+        for sig in trade_signals:
+            by_time[int(sig["candle_time"])] = sig
+        signals = list(by_time.values())
 
         return {
             "symbol": "SOL",
@@ -197,33 +220,29 @@ class SolMarketStore:
             "hh50": [],
             "ll50": [],
             "signals": signals,
+            "signal_marker_limit": 60,
             "signal_context": {
                 "live_price": last_price,
                 "chart_timeframe": TIMEFRAME,
                 "signal_timeframe": TIMEFRAME,
                 "candle_count": len(candles),
-                "chart_display_source": "heikin_ashi_mark_ohlc",
+                "chart_display_source": "heikin_ashi",
+                "strategy_candle_mode": "heikin_ashi",
+                "strategy_signal_count": len(strategy_signals),
+                "trade_marker_count": len(trade_signals),
             },
             "candle_counts": {"sent": len(candles)},
         }
 
     def closed_candle_index(self) -> int:
         with self._lock:
-            return len(self._signal_candles) - 2 if len(self._signal_candles) >= 2 else -1
-
-    def signal_bar_at(self, idx: int) -> tuple[float, float, float, float]:
-        """Regular chart OHLC at index (Pine close/open series)."""
-        with self._lock:
-            r = self._signal_candles.iloc[idx]
-            return float(r["high"]), float(r["low"]), float(r["close"]), float(r["open"])
-
-    def get_signal_candles(self) -> pd.DataFrame:
-        with self._lock:
-            return self._signal_candles.copy()
+            return len(self._ha) - 2 if len(self._ha) >= 2 else -1
 
     def ha_bar_at(self, idx: int) -> tuple[float, float, float, float]:
-        """Deprecated alias — use signal_bar_at."""
-        return self.signal_bar_at(idx)
+        """HA OHLC at index — same series as strategy + TV HA chart."""
+        with self._lock:
+            r = self._ha.iloc[idx]
+            return float(r["high"]), float(r["low"]), float(r["close"]), float(r["open"])
 
     def get_ha(self) -> pd.DataFrame:
         with self._lock:

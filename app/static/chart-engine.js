@@ -204,11 +204,11 @@
     return bestD <= 600 ? realToDisplay.get(bestReal) : null;
   }
 
-  function buildArrowMarkers(chartSignals, realToDisplay) {
+  function buildArrowMarkers(chartSignals, realToDisplay, maxMarkers = MAX_SIGNAL_MARKERS) {
     const sorted = [...chartSignals]
       .filter((s) => s.candle_time)
       .sort((a, b) => Number(b.candle_time) - Number(a.candle_time))
-      .slice(0, MAX_SIGNAL_MARKERS);
+      .slice(0, maxMarkers);
 
     const seen = new Set();
     const markers = [];
@@ -293,6 +293,7 @@
     if (!status) return "";
     if (status === "TP_HIT") return "TP HIT";
     if (status === "SL_HIT") return "SL HIT";
+    if (status === "HA_SIGNAL") return "Signal";
     return status;
   }
 
@@ -301,6 +302,7 @@
       this.container = options.container;
       this.legend = options.legend || {};
       this.showIndicators = options.showIndicators !== false;
+      this.maxSignalMarkers = options.maxSignalMarkers || MAX_SIGNAL_MARKERS;
       this.onFootnote = options.onFootnote;
       this.onTitle = options.onTitle;
       this.onPriceChange = options.onPriceChange;
@@ -992,7 +994,8 @@
         expectedInterval,
         !this.showIndicators,
       );
-      const markers = buildArrowMarkers(chartData.signals || [], display.realToDisplay);
+      const markerLimit = chartData.signal_marker_limit || this.maxSignalMarkers;
+      const markers = buildArrowMarkers(chartData.signals || [], display.realToDisplay, markerLimit);
 
       if (position) {
         position = { ...position, current_price: position.current_price ?? candles[candles.length - 1]?.close };
@@ -1039,7 +1042,9 @@
 
       if (this.onFootnote) {
         const sigTf = signalTimeframe || chartData.signal_context?.signal_timeframe || timeframe;
-        this.onFootnote(`${markers.length} markers · ${n} bars · chart ${timeframe} · signals ${sigTf}`);
+        const sigN = chartData.signal_context?.strategy_signal_count;
+        const sigPart = sigN != null ? ` · ${sigN} HA signals in view` : "";
+        this.onFootnote(`${markers.length} markers · ${n} bars · chart ${timeframe} · signals ${sigTf}${sigPart}`);
       }
       if (this.onTitle) this.onTitle(symbol, timeframe);
 

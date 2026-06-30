@@ -1,10 +1,8 @@
-"""SOL Reversal backtest — regular chart candles (Pine open/close), shared simulation."""
+"""SOL Reversal backtest — Heikin Ashi candles (matches TV HA chart + dashboard)."""
 
 from __future__ import annotations
 
 from typing import Any
-
-import pandas as pd
 
 from app.backtest.candle_store import get_candles
 from app.backtest.metrics import (
@@ -15,7 +13,7 @@ from app.backtest.metrics import (
     build_performance_insights,
 )
 from app.market_data import delta_client
-from app.strategies.sol_reversal.ha import attach_candle_colors
+from app.strategies.sol_reversal.ha import to_heikin_ashi
 from app.strategies.sol_reversal.indicators import compute_atr
 from app.strategies.sol_reversal.repositories import SolSettingsRepository
 from app.strategies.sol_reversal.settings_defaults import DEFAULT_SETTINGS
@@ -77,19 +75,18 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("No candle data for the selected range")
 
     display_df, _ = delta_client.resolve_ohlc_candles(ohlc, symbol, timeframe)
-    # Pine: close/open on chart candles (regular OHLC — NOT Heikin Ashi unless TV chart is HA)
-    candles = attach_candle_colors(display_df)
-    atr = compute_atr(candles, int(settings.get("atr_period", 14)))
-    all_signals = scan_signals(candles, settings, atr=atr)
+    ha = to_heikin_ashi(display_df)
+    atr = compute_atr(ha, int(settings.get("atr_period", 14)))
+    all_signals = scan_signals(ha, settings, atr=atr)
 
     equity = initial_capital
     position: dict[str, Any] | None = None
     trades: list[dict[str, Any]] = []
     trade_num = 0
 
-    for idx in range(1, len(candles)):
-        bar_time = int(candles.iloc[idx]["time"])
-        row = candles.iloc[idx]
+    for idx in range(1, len(ha)):
+        bar_time = int(ha.iloc[idx]["time"])
+        row = ha.iloc[idx]
         high = float(row["high"])
         low = float(row["low"])
         close = float(row["close"])
@@ -111,7 +108,7 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
                 trades.append({**closed, "trade_num": trade_num})
 
         if position is None:
-            signal = detect_signal_at_index(candles, settings, idx, atr=atr)
+            signal = detect_signal_at_index(ha, settings, idx, atr=atr)
             if signal:
                 entry = _apply_slippage(close, True, slippage_pct)
                 position = open_position("BUY", entry, bar_time, settings, equity, symbol=symbol)
@@ -149,11 +146,11 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
         "drawdown_series": build_drawdown_series(equity_curve),
         "monthly_report": build_monthly_report(trades),
         "performance": build_performance_insights(initial_capital, trades, equity_curve),
-        "bar_count": len(candles),
+        "bar_count": len(ha),
         "diagnostics": {
-            "candle_mode": "regular_ohlc",
-            "note": "Matches Pine close<open on standard TV candlestick chart (not Heikin Ashi)",
-            "bars_in_range": len(candles),
+            "candle_mode": "heikin_ashi",
+            "note": "Matches Pine on TradingView when chart type is Heikin Ashi",
+            "bars_in_range": len(ha),
             "pine_signals_unfiltered": len(all_signals),
             "trades_executed": len(trades),
             "signal_times": [s["time"] for s in all_signals],

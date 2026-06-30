@@ -400,7 +400,7 @@
       $("bt-status").textContent = `Done — ${resp.result.statistics.total_trades} trades`;
       const diag = resp.result.diagnostics;
       if (diag) {
-        $("bt-status").textContent += ` · ${diag.pine_signals_unfiltered} Pine signals / ${diag.bars_in_range} bars`;
+        $("bt-status").textContent += ` · ${diag.pine_signals_unfiltered} HA signals / ${diag.bars_in_range} bars`;
       }
       await loadSavedRuns();
     } catch (e) {

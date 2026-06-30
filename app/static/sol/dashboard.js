@@ -24,6 +24,7 @@
     chartEngine = ChartEngine.create({
       container: $("chart-container"),
       showIndicators: false,
+      maxSignalMarkers: 60,
       pnlOverlay: $("trade-pnl-overlay"),
       legend: {
         chartSymbol: $("chart-symbol"),
@@ -44,16 +45,18 @@
     return chartEngine;
   }
 
-  function renderKpis(data) {
+  function renderKpis(data, chartData) {
     const m = data.market || {};
     const a = data.account || {};
+    const sigCount = chartData?.signal_context?.strategy_signal_count;
     $("kpi-grid").innerHTML = `
       ${statCard("Status", data.engine?.running ? "Running" : "Stopped", "opt-pos")}
       ${statCard("Price", m.last_price?.toFixed(4) ?? "—")}
       ${statCard("ATR", m.atr?.toFixed(4) ?? "—")}
       ${statCard("Equity", `$${a.equity}`, valCls(a.equity - (a.initial_capital || 1000)))}
       ${statCard("Today's PnL", `$${a.realized_pnl?.toFixed(2) ?? 0}`, valCls(a.realized_pnl))}
-      ${statCard("HA Candle", m.ha_candle?.color ?? "—", m.ha_candle?.color === "green" ? "opt-pos" : "opt-neg")}`;
+      ${statCard("HA Candle", m.ha_candle?.color ?? "—", m.ha_candle?.color === "green" ? "opt-pos" : "opt-neg")}
+      ${statCard("HA Signals (view)", sigCount ?? "—")}`;
     $("ws-status").textContent = m.ws_connected ? "WS Connected" : "REST Polling";
     $("sol-status-dot").className = `dot ${data.engine?.running ? "ok" : ""}`;
   }
@@ -239,7 +242,7 @@
       DSE.fetchJson(`/sol/api/chart?bars=${bars}`),
       DSE.fetchJson("/sol/api/trades"),
     ]);
-    renderKpis(status);
+    renderKpis(status, chartData);
     renderPosition(status.position);
     renderStats(status.statistics || {});
     updateChart(chartData, status);

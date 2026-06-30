@@ -1,4 +1,4 @@
-"""SOL Reversal signal detection — Pine Script parity (long-only, regular chart candles)."""
+"""SOL Reversal signal detection — Pine parity on Heikin Ashi (TV HA chart)."""
 
 from __future__ import annotations
 
