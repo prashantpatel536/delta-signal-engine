@@ -103,16 +103,25 @@
     return { candles, pipeline };
   }
 
-  function visualCandle(candle) {
+  function visualCandle(candle, haMode = false) {
     const open = Number(candle.open);
     const high = Number(candle.high);
     const low = Number(candle.low);
     const close = Number(candle.close);
     if (high > low) {
-      if (open !== close) return { open, high, low, close };
       const span = high - low;
-      const body = Math.max(span * 0.12, Math.abs(close) * 0.00008, 0.02);
-      const mid = close;
+      const bodySpan = Math.abs(open - close);
+      const minBody = haMode ? span * 0.08 : 0;
+      if (!haMode && open !== close) return { open, high, low, close };
+      if (haMode && bodySpan > minBody && bodySpan > 1e-10) {
+        return { open, high: Math.max(high, open, close), low: Math.min(low, open, close), close };
+      }
+      const body = Math.max(
+        span * (haMode ? 0.5 : 0.12),
+        Math.abs(close) * (haMode ? 0.0003 : 0.00008),
+        haMode ? 0.08 : 0.02,
+      );
+      const mid = (open + close) / 2 || close;
       return {
         open: mid + body / 2,
         high,
@@ -121,11 +130,11 @@
       };
     }
     const mid = close || open || 0;
-    const pad = Math.max(Math.abs(mid) * 0.00012, 0.05);
-    return { open, high: mid + pad, low: mid - pad, close };
+    const pad = Math.max(Math.abs(mid) * (haMode ? 0.00035 : 0.00012), haMode ? 0.1 : 0.05);
+    return { open: mid + pad / 2, high: mid + pad, low: mid - pad, close: mid - pad / 2 };
   }
 
-  function buildChartDisplaySeries(candles, alignedSma, alignedHh, alignedLl, intervalSec) {
+  function buildChartDisplaySeries(candles, alignedSma, alignedHh, alignedLl, intervalSec, haMode = false) {
     if (!candles.length) {
       return {
         displayCandles: [],
@@ -154,7 +163,7 @@
       realToDisplay.set(c.time, displayTime);
       displayToReal.set(displayTime, c.time);
       realCandles.set(c.time, c);
-      const v = visualCandle(c);
+      const v = visualCandle(c, haMode);
       const bullish = c.close >= c.open;
       displayCandles.push({ time: displayTime, open: v.open, high: v.high, low: v.low, close: v.close });
       volumeData.push({
@@ -179,6 +188,22 @@
     };
   }
 
+  function snapSignalTime(unix, realToDisplay) {
+    if (!unix || !realToDisplay.size) return null;
+    const exact = realToDisplay.get(unix);
+    if (exact) return exact;
+    let bestReal = null;
+    let bestD = Infinity;
+    for (const real of realToDisplay.keys()) {
+      const d = Math.abs(real - unix);
+      if (d < bestD) {
+        bestD = d;
+        bestReal = real;
+      }
+    }
+    return bestD <= 600 ? realToDisplay.get(bestReal) : null;
+  }
+
   function buildArrowMarkers(chartSignals, realToDisplay) {
     const sorted = [...chartSignals]
       .filter((s) => s.candle_time)
@@ -189,7 +214,7 @@
     const markers = [];
     for (const sig of sorted) {
       const realTime = Math.trunc(Number(sig.candle_time));
-      const displayTime = realToDisplay.get(realTime);
+      const displayTime = snapSignalTime(realTime, realToDisplay);
       if (!displayTime || seen.has(displayTime)) continue;
       seen.add(displayTime);
       const isBuy = sig.signal === "BUY";
@@ -723,6 +748,7 @@
         wickDownColor: TERMINAL.down,
         borderVisible: true,
         wickVisible: true,
+        thinBars: !this.showIndicators,
         priceScaleId: "right",
         autoscaleInfoProvider: () => self.buildAutoscaleInfo(),
       });
@@ -914,7 +940,7 @@
 
       const { candles } = prepareCandleSeriesData(rawCandles, expectedInterval, windowSize);
       const empty = [];
-      const display = buildChartDisplaySeries(candles, empty, empty, empty, expectedInterval);
+      const display = buildChartDisplaySeries(candles, empty, empty, empty, expectedInterval, true);
       const markers = buildTradeMarkers(trades, display.realToDisplay);
       return this._applyCandleDisplay(candles, display, { markers, position, symbol, livePrice });
     }
@@ -958,7 +984,14 @@
       const alignedHh = (chartData.hh50 || []).slice(offset);
       const alignedLl = (chartData.ll50 || []).slice(offset);
 
-      const display = buildChartDisplaySeries(candles, alignedSma, alignedHh, alignedLl, expectedInterval);
+      const display = buildChartDisplaySeries(
+        candles,
+        alignedSma,
+        alignedHh,
+        alignedLl,
+        expectedInterval,
+        !this.showIndicators,
+      );
       const markers = buildArrowMarkers(chartData.signals || [], display.realToDisplay);
 
       if (position) {

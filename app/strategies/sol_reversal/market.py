@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from app.config import RESOLUTION_SECONDS
+from app.indicators import candles_to_records
 from app.market_data import delta_client
 from app.research.candle_cache import fetch_candles_range, months_back_range
 from app.strategies.sol_reversal.ha import to_heikin_ashi
@@ -41,7 +41,19 @@ class SolMarketStore:
             self._apply_ohlc(df)
 
     def _apply_ohlc(self, df: pd.DataFrame) -> None:
-        self._ohlc = df.copy()
+        if df.empty:
+            self._ohlc = df.copy()
+            self._ha = pd.DataFrame()
+            self._atr = pd.Series(dtype=float)
+            return
+        display_df, stats = delta_client.resolve_ohlc_candles(df, SYMBOL, TIMEFRAME)
+        logger.info(
+            "SOL OHLC resolve: flat_before=%s flat_after=%s source=%s",
+            stats.get("flat_before"),
+            stats.get("flat_after"),
+            stats.get("ohlc_source"),
+        )
+        self._ohlc = display_df.copy()
         self._ha = to_heikin_ashi(self._ohlc)
         self._atr = compute_atr(self._ha, 14) if not self._ha.empty else pd.Series(dtype=float)
         if not self._ohlc.empty:
@@ -115,44 +127,74 @@ class SolMarketStore:
                 "last_candle_time": int(self._ohlc["time"].iloc[-1]) if not self._ohlc.empty else None,
             }
 
-    def chart_payload(self, bars: int = 300) -> dict[str, Any]:
+    def chart_payload(self, bars: int = 200) -> dict[str, Any]:
+        """BTC-terminal compatible chart payload (HA candles, no SMA/HH/LL)."""
+        from datetime import datetime
+
         with self._lock:
             ohlc = self._ohlc.tail(bars).copy()
             ha = self._ha.tail(bars).copy()
-        # Ensure JSON-safe int timestamps and valid OHLC ordering
-        ohlc_rows = []
-        for _, r in ohlc.iterrows():
-            o = float(r["open"])
-            h = float(r["high"])
-            l = float(r["low"])
-            c = float(r["close"])
-            ohlc_rows.append({
-                "time": int(r["time"]),
-                "open": o,
-                "high": max(h, o, c, l),
-                "low": min(l, o, c, h),
-                "close": c,
-                "volume": float(r.get("volume", 0)),
-            })
-        ha_rows = []
-        for _, r in ha.iterrows():
-            o = float(r["open"])
-            h = float(r["high"])
-            l = float(r["low"])
-            c = float(r["close"])
-            ha_rows.append({
-                "time": int(r["time"]),
-                "open": o,
-                "high": max(h, o, c, l),
-                "low": min(l, o, c, h),
-                "close": c,
-            })
+            last_price = self._last_price
+
+        if ha.empty:
+            return {
+                "symbol": "SOL",
+                "timeframe": TIMEFRAME,
+                "candles": [],
+                "sma84": [],
+                "hh50": [],
+                "ll50": [],
+                "signals": [],
+                "signal_context": {"live_price": last_price, "chart_timeframe": TIMEFRAME},
+            }
+
+        if not ohlc.empty and "volume" in ohlc.columns:
+            ha = ha.copy()
+            ha["volume"] = ohlc["volume"].astype(float).values
+
+        candle_times = [int(t) for t in ha["time"].tolist()]
+        candles = candles_to_records(ha)
+
+        signals: list[dict[str, Any]] = []
+        try:
+            from app.strategies.sol_reversal.repositories import SolPositionRepository
+
+            for tr in SolPositionRepository().list_closed(40):
+                entry_iso = tr.get("opened_at") or tr.get("entry_time")
+                if not entry_iso:
+                    continue
+                try:
+                    entry_unix = int(datetime.fromisoformat(entry_iso.replace("Z", "+00:00")).timestamp())
+                except (TypeError, ValueError):
+                    continue
+                snapped = min(candle_times, key=lambda t: abs(t - entry_unix))
+                if abs(snapped - entry_unix) > 600:
+                    continue
+                signals.append({
+                    "candle_time": snapped,
+                    "signal": tr.get("side", "BUY"),
+                    "timeframe": TIMEFRAME,
+                    "status": "TP_HIT" if float(tr.get("pnl_usd") or 0) >= 0 else "SL_HIT",
+                })
+        except Exception:
+            logger.exception("SOL chart trade markers failed")
+
         return {
-            "symbol": SYMBOL,
+            "symbol": "SOL",
             "timeframe": TIMEFRAME,
-            "interval_seconds": RESOLUTION_SECONDS[TIMEFRAME],
-            "ohlc": ohlc_rows,
-            "heikin_ashi": ha_rows,
+            "candles": candles,
+            "sma84": [],
+            "hh50": [],
+            "ll50": [],
+            "signals": signals,
+            "signal_context": {
+                "live_price": last_price,
+                "chart_timeframe": TIMEFRAME,
+                "signal_timeframe": TIMEFRAME,
+                "candle_count": len(candles),
+                "chart_display_source": "heikin_ashi_mark_ohlc",
+            },
+            "candle_counts": {"sent": len(candles)},
         }
 
     def closed_candle_index(self) -> int:

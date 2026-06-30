@@ -1,11 +1,47 @@
 (() => {
   let chartEngine = null;
-  let settingsCache = {};
+  const SOL_BARS_KEY = "solChartBars";
+  const DEFAULT_BARS = 200;
 
   const $ = (id) => document.getElementById(id);
 
   function statCard(label, value, cls) {
     return `<div class="stat-card ${cls || ""}"><span class="k">${label}</span><strong>${value ?? "—"}</strong></div>`;
+  }
+
+  function valCls(v) {
+    return v > 0 ? "opt-pos" : v < 0 ? "opt-neg" : "opt-warn";
+  }
+
+  function getBars() {
+    const sel = $("sol-bars-select");
+    if (sel) return parseInt(sel.value, 10) || DEFAULT_BARS;
+    return parseInt(localStorage.getItem(SOL_BARS_KEY), 10) || DEFAULT_BARS;
+  }
+
+  function buildChartEngine() {
+    if (chartEngine) return chartEngine;
+    chartEngine = ChartEngine.create({
+      container: $("chart-container"),
+      showIndicators: false,
+      pnlOverlay: $("trade-pnl-overlay"),
+      legend: {
+        chartSymbol: $("chart-symbol"),
+        legTime: $("leg-time"),
+        legO: $("leg-o"),
+        legH: $("leg-h"),
+        legL: $("leg-l"),
+        legC: $("leg-c"),
+        legV: $("leg-v"),
+        lastPrice: $("last-price"),
+        priceChange: $("price-change"),
+      },
+      onFootnote: (text) => {
+        const el = $("signal-marker-count");
+        if (el) el.textContent = text;
+      },
+    });
+    return chartEngine;
   }
 
   function renderKpis(data) {
@@ -20,10 +56,6 @@
       ${statCard("HA Candle", m.ha_candle?.color ?? "—", m.ha_candle?.color === "green" ? "opt-pos" : "opt-neg")}`;
     $("ws-status").textContent = m.ws_connected ? "WS Connected" : "REST Polling";
     $("sol-status-dot").className = `dot ${data.engine?.running ? "ok" : ""}`;
-  }
-
-  function valCls(v) {
-    return v > 0 ? "opt-pos" : v < 0 ? "opt-neg" : "opt-warn";
   }
 
   function renderPosition(pos) {
@@ -78,46 +110,31 @@
     </tr>`).join("");
   }
 
-  function buildChartEngine() {
-    if (chartEngine) return chartEngine;
-    chartEngine = ChartEngine.create({
-      container: $("sol-chart"),
-      showIndicators: false,
-    });
-    return chartEngine;
-  }
-
-  function haCandlesFromPayload(payload) {
-    const volByTime = new Map((payload.ohlc || []).map((c) => [c.time, Number(c.volume) || 0]));
-    return (payload.heikin_ashi || []).map((c) => ({
-      time: c.time,
-      open: c.open,
-      high: c.high,
-      low: c.low,
-      close: c.close,
-      volume: volByTime.get(c.time) || 0,
-    }));
-  }
-
-  function updateChart(payload, trades, status) {
+  function updateChart(chartData, status) {
     const engine = buildChartEngine();
-    if (!engine.ready && !engine.init()) return;
     if (!engine.ready) return;
-    const candles = haCandlesFromPayload(payload);
-    engine.updateCandles(
-      { candles },
-      {
-        timeframe: payload.timeframe || "5m",
-        windowSize: candles.length,
-        symbol: "SOL",
-        trades,
-        position: status?.position,
-        livePrice: status?.market?.last_price,
-      },
-    );
+    const bars = getBars();
+    const pos = status?.position;
+    const overlay = pos
+      ? {
+          ...pos,
+          symbol: "SOLUSDT",
+          quantity: pos.quantity ?? 0,
+          leverage: pos.leverage ?? 1,
+          margin_used: pos.margin_used ?? 0,
+        }
+      : null;
+    engine.update(chartData, {
+      windowSize: bars,
+      timeframe: chartData.timeframe || "5m",
+      signalTimeframe: "5m",
+      symbol: "SOL",
+      position: overlay,
+      signalQuality: null,
+    });
   }
 
-  function drawLine(canvasId, values, labels, color) {
+  function drawLine(canvasId, values, color) {
     const canvas = $(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -146,15 +163,12 @@
 
   async function loadResearch() {
     const eq = await DSE.fetchJson("/sol/api/research/equity");
-    const curve = eq.equity_curve || [];
-    drawLine("equity-chart", curve.map((p) => p.equity), curve.map((p) => p.time), "#22c55e");
+    drawLine("equity-chart", (eq.equity_curve || []).map((p) => p.equity), "#22c55e");
     const trades = await DSE.fetchJson("/sol/api/trades");
-    const pnls = (trades.trades || []).map((t) => parseFloat(t.pnl_usd || 0));
-    drawLine("pnl-chart", pnls, [], "#f0b90b");
+    drawLine("pnl-chart", (trades.trades || []).map((t) => parseFloat(t.pnl_usd || 0)), "#f0b90b");
   }
 
   function renderSettingsForm(s) {
-    settingsCache = { ...s };
     const fields = [
       ["min_red_candles", "Min Red Candles", "number"],
       ["max_green_candles", "Max Green Candles", "number"],
@@ -180,20 +194,27 @@
   }
 
   async function refresh() {
-    const status = await DSE.fetchJson("/sol/api/status");
+    const bars = getBars();
+    const [status, chartData, trades] = await Promise.all([
+      DSE.fetchJson("/sol/api/status"),
+      DSE.fetchJson(`/sol/api/chart?bars=${bars}`),
+      DSE.fetchJson("/sol/api/trades"),
+    ]);
     renderKpis(status);
     renderPosition(status.position);
     renderStats(status.statistics || {});
-    const chartData = await DSE.fetchJson("/sol/api/chart?bars=300");
-    const trades = await DSE.fetchJson("/sol/api/trades");
-    updateChart(chartData, trades.trades, status);
+    updateChart(chartData, status);
     renderTrades(trades.trades);
     if (!$("settings-form").children.length) {
       renderSettingsForm(status.settings || {});
     }
+    const bootErr = $("chart-boot-error");
+    if (bootErr && chartData.candles?.length) {
+      bootErr.hidden = true;
+    }
   }
 
-  $("save-settings").addEventListener("click", async () => {
+  $("save-settings")?.addEventListener("click", async () => {
     const updates = {};
     $("settings-form").querySelectorAll("[data-key]").forEach((el) => {
       const key = el.dataset.key;
@@ -208,16 +229,36 @@
     await refresh();
   });
 
-  $("export-csv").addEventListener("click", () => {
+  $("export-csv")?.addEventListener("click", () => {
     window.open("/sol/api/export/trades.csv", "_blank");
   });
 
-  buildChartEngine();
+  $("sol-bars-select")?.addEventListener("change", (e) => {
+    localStorage.setItem(SOL_BARS_KEY, e.target.value);
+    chartEngine?.resetPan();
+    refresh();
+  });
+
+  $("sol-chart-refresh")?.addEventListener("click", () => refresh());
+  $("chart-reset-scale")?.addEventListener("click", () => {
+    chartEngine?.resetView();
+    refresh();
+  });
+
+  const savedBars = localStorage.getItem(SOL_BARS_KEY);
+  if (savedBars && $("sol-bars-select")) $("sol-bars-select").value = savedBars;
+
   const engine = buildChartEngine();
   if (!engine.init()) {
+    const bootErr = $("chart-boot-error");
+    if (bootErr) {
+      bootErr.hidden = false;
+      bootErr.textContent = "Chart initializing…";
+    }
     window.addEventListener("chart-engine-ready", () => refresh(), { once: true });
+  } else {
+    refresh();
   }
-  refresh();
   loadResearch();
   setInterval(refresh, 5000);
 })();

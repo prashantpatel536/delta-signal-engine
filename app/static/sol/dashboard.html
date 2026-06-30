@@ -46,13 +46,44 @@
       <section class="sol-kpi-grid" id="kpi-grid"></section>
 
       <div class="sol-main-grid">
-        <section class="panel sol-chart-panel">
-          <div class="panel-head">
-            <h2>Chart — Heikin Ashi (5m)</h2>
-            <span class="muted chart-legend">Delta OHLC → HA · same as strategy</span>
+        <section class="panel sol-chart-panel terminal-chart-panel">
+          <div class="chart-controls-compact">
+            <div class="chart-controls-row row-primary">
+              <div class="chart-price-strip">
+                <h2 id="chart-symbol">SOLUSDT · HA 5m</h2>
+                <span class="live-price" id="last-price">—</span>
+                <span class="price-change" id="price-change"></span>
+              </div>
+              <div class="chart-controls-actions">
+                <label class="ctrl ctrl-inline ctrl-compact">
+                  <span>Bars</span>
+                  <select id="sol-bars-select">
+                    <option value="100">100</option>
+                    <option value="200" selected>200</option>
+                    <option value="300">300</option>
+                  </select>
+                </label>
+                <button type="button" id="sol-chart-refresh" class="btn-primary btn-sm">Refresh</button>
+              </div>
+            </div>
+            <div class="chart-legend chart-legend-compact sol-ha-legend">
+              <span class="leg-time" id="leg-time">—</span>
+              <span>O <b id="leg-o">—</b></span>
+              <span>H <b id="leg-h">—</b></span>
+              <span>L <b id="leg-l">—</b></span>
+              <span>C <b id="leg-c">—</b></span>
+              <span class="leg-sep">|</span>
+              <span>Vol <b id="leg-v">—</b></span>
+            </div>
           </div>
-          <div class="sol-chart-wrap">
-            <div id="sol-chart" class="sol-chart-container"></div>
+          <div class="chart-stage terminal-chart-stage">
+            <div id="trade-pnl-overlay" class="trade-pnl-overlay hidden"></div>
+            <div id="chart-container"></div>
+            <div id="chart-boot-error" class="chart-boot-error" hidden></div>
+          </div>
+          <div class="chart-foot chart-foot-debug">
+            <button type="button" id="chart-reset-scale" class="btn-secondary btn-sm chart-scale-btn">Auto-scale</button>
+            <span id="signal-marker-count" class="muted"></span>
           </div>
         </section>
         <section class="panel" id="position-panel">

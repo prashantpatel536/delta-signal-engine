@@ -3308,25 +3308,25 @@ select, button {
   grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
   gap: 0.65rem;
   margin-bottom: 0.65rem;
+  align-items: stretch;
 }
 
-.sol-chart-wrap {
-  position: relative;
-  min-height: 420px;
-  height: 420px;
-  background: #0b0e11;
+.sol-chart-panel.terminal-chart-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  padding: 0;
+  overflow: hidden;
 }
 
-.sol-chart-container {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 420px;
+.sol-chart-panel .terminal-chart-stage {
+  flex: 1 1 0;
+  min-height: 360px;
 }
 
-.chart-legend {
-  font-size: 0.72rem;
+.sol-chart-panel .chart-controls-compact,
+.sol-chart-panel .chart-foot {
+  flex-shrink: 0;
 }
 
 .sol-mode-pill {
