@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strategy Selection — Delta Terminal</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell strategy-selector-shell">
+  <main class="strategy-selector-main">
+    <header class="strategy-selector-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">Δ</div>
+        <div>
+          <div class="brand-title">DELTA</div>
+          <div class="brand-sub">TERMINAL</div>
+        </div>
+      </div>
+      <h1>Select Strategy Engine</h1>
+      <p class="muted">Each engine has isolated capital, database, and performance data.</p>
+    </header>
+
+    <div class="strategy-cards">
+      <article class="strategy-card strategy-card-live">
+        <div class="strategy-card-badge live">LIVE</div>
+        <h2>BTC Trend Engine</h2>
+        <dl class="strategy-meta">
+          <div><dt>Symbol</dt><dd>BTCUSDT</dd></div>
+          <div><dt>Mode</dt><dd>Live Trading</dd></div>
+        </dl>
+        <p class="strategy-desc">HH50 / LL50 breakout with SMA84 trend filter and paper execution.</p>
+        <a class="btn-primary strategy-open-btn" href="/btc">Open</a>
+      </article>
+
+      <article class="strategy-card strategy-card-paper">
+        <div class="strategy-card-badge paper">PAPER</div>
+        <h2>SOL Reversal Engine</h2>
+        <dl class="strategy-meta">
+          <div><dt>Symbol</dt><dd>SOLUSDT</dd></div>
+          <div><dt>Mode</dt><dd>Paper Trading</dd></div>
+        </dl>
+        <p class="strategy-desc">Heikin Ashi reversal system with ATR filter and lock-profit management.</p>
+        <a class="btn-primary strategy-open-btn" href="/sol">Open</a>
+      </article>
+
+      <article class="strategy-card strategy-card-future">
+        <div class="strategy-card-badge future">SOON</div>
+        <h2>Create New Strategy</h2>
+        <p class="strategy-desc">Modular engine slot for ETH, scalping, and custom research strategies.</p>
+        <button type="button" class="btn-secondary strategy-open-btn" disabled>Coming Soon</button>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

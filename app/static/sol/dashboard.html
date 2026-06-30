@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOL Reversal Engine — Delta Terminal</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+</head>
+<body class="app-shell sol-shell" data-page="sol-reversal">
+  <aside class="sidebar sidebar-narrow">
+    <div class="sidebar-brand">
+      <div class="brand-icon">Δ</div>
+      <div>
+        <div class="brand-title">SOL</div>
+        <div class="brand-sub">REVERSAL</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/"><span class="nav-icon">⌂</span> Strategy Hub</a>
+      <a class="nav-item active" href="/sol"><span class="nav-icon">◎</span> Dashboard</a>
+      <a class="nav-item" href="/sol#trades"><span class="nav-icon">⇄</span> Trade History</a>
+      <a class="nav-item" href="/sol#research"><span class="nav-icon">◔</span> Research</a>
+      <a class="nav-item" href="/sol#settings"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-status">
+      <span class="dot ok" id="sol-status-dot"></span>
+      <span id="sol-status-label">Paper</span>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">SOL Reversal Engine</h1>
+        <p class="page-sub">SOLUSDT · 5m Heikin Ashi · Delta Exchange · Paper only</p>
+      </div>
+      <div class="topbar-controls">
+        <span class="sol-mode-pill paper" id="mode-pill">Paper Mode</span>
+        <span class="muted" id="ws-status">WS —</span>
+      </div>
+    </header>
+
+    <main class="page-content sol-dashboard">
+      <section class="sol-kpi-grid" id="kpi-grid"></section>
+
+      <div class="sol-main-grid">
+        <section class="panel sol-chart-panel">
+          <div class="panel-head"><h2>Chart (Delta OHLC + HA)</h2></div>
+          <div id="sol-chart" class="sol-chart-container"></div>
+        </section>
+        <section class="panel" id="position-panel">
+          <div class="panel-head"><h2>Open Trade</h2></div>
+          <div class="pro-cards" id="position-cards"></div>
+        </section>
+      </div>
+
+      <section class="panel" id="stats-panel">
+        <div class="panel-head"><h2>Statistics</h2></div>
+        <div class="pro-cards" id="stats-cards"></div>
+      </section>
+
+      <section class="panel" id="trades">
+        <div class="panel-head">
+          <h2>Trade History</h2>
+          <button type="button" class="btn-secondary btn-sm" id="export-csv">Export CSV</button>
+        </div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr>
+                <th>Entry</th><th>Exit</th><th>Dir</th><th>Entry $</th><th>Exit $</th>
+                <th>PnL %</th><th>PnL $</th><th>Bars</th><th>Reason</th><th>MFE</th><th>MAE</th>
+              </tr>
+            </thead>
+            <tbody id="trades-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="research">
+        <div class="panel-head"><h2>Research</h2></div>
+        <div class="sol-charts-row">
+          <div class="chart-card"><h3>Equity Curve</h3><canvas id="equity-chart" height="160"></canvas></div>
+          <div class="chart-card"><h3>Trade PnL Distribution</h3><canvas id="pnl-chart" height="160"></canvas></div>
+        </div>
+      </section>
+
+      <section class="panel" id="settings">
+        <div class="panel-head"><h2>Strategy Settings</h2><button type="button" class="btn-primary btn-sm" id="save-settings">Save</button></div>
+        <div class="sigprob-form-grid" id="settings-form"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/common.js"></script>
+  <script src="/static/sol/dashboard.js"></script>
+</body>
+</html>

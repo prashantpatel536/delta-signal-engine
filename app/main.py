@@ -32,6 +32,15 @@ from app.debug_api import router as debug_router
 from app.research_optimizer_api import router as research_optimizer_router
 from app.research_signal_probability_api import router as signal_probability_router
 from app.research_sma_optimizer_api import router as sma_optimizer_router
+from app.strategies.sol_reversal.api import router as sol_reversal_router
+from app.strategies.sol_reversal.db import init_sol_db
+from app.strategies.sol_reversal.engine import sol_engine_loop
+from app.strategies.sol_reversal.market import (
+    delta_websocket_loop,
+    poll_ticker_loop,
+    refresh_candles_loop,
+    sol_market,
+)
 from app.settings_api import router as settings_router
 from app.telegram_api import router as telegram_router
 from app.validation_api import router as validation_router
@@ -273,12 +282,29 @@ async def lifespan(app: FastAPI):
         logger.exception("Initial market data refresh failed — chart may be empty until next cycle")
     refresh_task = asyncio.create_task(scheduler_loop())
     live_price_task = asyncio.create_task(live_price_loop())
+
+    # SOL Reversal Engine — fully isolated from BTC
+    init_sol_db()
+    try:
+        await asyncio.to_thread(sol_market.load_history, 6)
+        logger.info("SOL Reversal market history loaded")
+    except Exception:
+        logger.exception("SOL Reversal initial candle load failed")
+    sol_tasks = [
+        asyncio.create_task(sol_engine_loop()),
+        asyncio.create_task(poll_ticker_loop()),
+        asyncio.create_task(refresh_candles_loop()),
+        asyncio.create_task(delta_websocket_loop()),
+    ]
+
     try:
         yield
     finally:
         refresh_task.cancel()
         live_price_task.cancel()
-        for task in (refresh_task, live_price_task):
+        for t in sol_tasks:
+            t.cancel()
+        for task in (refresh_task, live_price_task, *sol_tasks):
             try:
                 await task
             except asyncio.CancelledError:
@@ -308,6 +334,7 @@ app.include_router(validation_router)
 app.include_router(research_optimizer_router)
 app.include_router(signal_probability_router)
 app.include_router(sma_optimizer_router)
+app.include_router(sol_reversal_router)
 app.include_router(debug_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -315,18 +342,28 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/", include_in_schema=False)
-def terminal_home() -> FileResponse:
+def strategy_selector() -> FileResponse:
+    return FileResponse(STATIC_DIR / "strategy-selector.html")
+
+
+@app.get("/btc", include_in_schema=False)
+def btc_terminal() -> FileResponse:
     return FileResponse(STATIC_DIR / "terminal.html")
+
+
+@app.get("/sol", include_in_schema=False)
+def sol_reversal_dashboard() -> FileResponse:
+    return FileResponse(STATIC_DIR / "sol" / "dashboard.html")
 
 
 @app.get("/dashboard", include_in_schema=False)
 def dashboard_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/", status_code=302)
+    return RedirectResponse(url="/btc", status_code=302)
 
 
 @app.get("/chart", include_in_schema=False)
 def chart_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/", status_code=302)
+    return RedirectResponse(url="/btc", status_code=302)
 
 
 @app.get("/history", include_in_schema=False)
