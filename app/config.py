@@ -17,7 +17,7 @@ MISSED_OPPORTUNITY_MONITOR_HOURS = int(os.getenv("MISSED_OPPORTUNITY_MONITOR_HOU
 DEFAULT_SIGNAL_TIMEFRAME = "5m"
 DEFAULT_LEVERAGE = 25
 DEFAULT_MARGIN_PERCENT = 50
-TIMEFRAMES = ("1m", "5m", "15m", "1h")
+TIMEFRAMES = ("1m", "3m", "5m", "15m", "30m", "1h", "4h", "1d")
 MARK_CANDLE_PREFIX = "MARK:"
 
 
@@ -42,9 +42,13 @@ SYMBOL_MAP: dict[str, str] = {
 
 RESOLUTION_SECONDS: dict[str, int] = {
     "1m": 60,
+    "3m": 180,
     "5m": 300,
     "15m": 900,
+    "30m": 1800,
     "1h": 3600,
+    "4h": 14400,
+    "1d": 86400,
 }
 
 

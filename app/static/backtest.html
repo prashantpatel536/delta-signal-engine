@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backtest — Delta Terminal</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="app-shell backtest-shell" data-page="backtest">
+  <aside class="sidebar sidebar-narrow" id="strategy-sidebar"></aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title" id="bt-title">Backtest</h1>
+        <p class="page-sub" id="bt-sub">Replay historical candles with current strategy logic</p>
+      </div>
+      <div class="topbar-controls">
+        <span class="muted" id="bt-status">Ready</span>
+      </div>
+    </header>
+
+    <main class="page-content backtest-page">
+      <section class="panel">
+        <div class="panel-head"><h2>Backtest Configuration</h2></div>
+        <div class="backtest-config-grid" id="bt-config-form"></div>
+        <div class="backtest-actions">
+          <button type="button" class="btn-secondary" id="bt-load-settings">Load Current Strategy Settings</button>
+          <button type="button" class="btn-primary" id="bt-run">Run Backtest</button>
+          <label class="ctrl-inline"><input type="checkbox" id="bt-save" checked /> Save run</label>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-results-panel" hidden>
+        <div class="panel-head">
+          <h2>Results</h2>
+          <div class="backtest-export-btns">
+            <button type="button" class="btn-secondary btn-sm" id="bt-export-csv">CSV</button>
+            <button type="button" class="btn-secondary btn-sm" id="bt-export-xlsx">Excel</button>
+            <button type="button" class="btn-secondary btn-sm" id="bt-export-json">JSON</button>
+            <button type="button" class="btn-secondary btn-sm" id="bt-export-pdf">PDF</button>
+          </div>
+        </div>
+        <div class="backtest-stats-grid" id="bt-stats-grid"></div>
+      </section>
+
+      <div class="backtest-charts-row" id="bt-charts" hidden>
+        <section class="panel chart-card-wide">
+          <div class="panel-head"><h2>Equity Curve</h2></div>
+          <canvas id="bt-equity-chart" height="220"></canvas>
+          <p class="muted bt-hover-tip" id="bt-equity-tip">Hover chart for details</p>
+        </section>
+        <section class="panel chart-card-wide">
+          <div class="panel-head"><h2>Drawdown</h2></div>
+          <canvas id="bt-dd-chart" height="180"></canvas>
+        </section>
+      </div>
+
+      <section class="panel" id="bt-monthly-panel" hidden>
+        <div class="panel-head"><h2>Monthly Report</h2></div>
+        <div class="table-wrap">
+          <table class="data-table compact-table">
+            <thead><tr><th>Month</th><th>Trades</th><th>Profit</th><th>Win Rate</th><th>PF</th></tr></thead>
+            <tbody id="bt-monthly-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-trades-panel" hidden>
+        <div class="panel-head"><h2>Trade List</h2></div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th>
+                <th>Price %</th><th>PnL $</th><th>Bars</th><th>Reason</th><th>MFE</th><th>MAE</th>
+              </tr>
+            </thead>
+            <tbody id="bt-trades-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-performance-panel" hidden>
+        <div class="panel-head"><h2>Performance</h2></div>
+        <div class="backtest-stats-grid" id="bt-perf-stats"></div>
+        <div class="backtest-charts-row">
+          <section class="panel chart-card">
+            <div class="panel-head"><h3>Trade PnL Distribution</h3></div>
+            <canvas id="bt-dist-pnl" height="140"></canvas>
+          </section>
+          <section class="panel chart-card">
+            <div class="panel-head"><h3>Holding Time Distribution</h3></div>
+            <canvas id="bt-dist-hold" height="140"></canvas>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-compare-panel">
+        <div class="panel-head">
+          <h2>Saved Runs</h2>
+          <button type="button" class="btn-secondary btn-sm" id="bt-compare-btn" disabled>Compare Selected</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr><th></th><th>Name</th><th>Date</th><th>Return %</th><th>Trades</th><th>PF</th><th>Max DD</th><th></th></tr>
+            </thead>
+            <tbody id="bt-runs-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-compare-results" hidden>
+        <div class="panel-head"><h2>Run Comparison</h2></div>
+        <div class="table-wrap">
+          <table class="data-table compact-table" id="bt-compare-table">
+            <thead><tr id="bt-compare-head"></tr></thead>
+            <tbody id="bt-compare-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="bt-trade-detail" hidden>
+        <div class="panel-head"><h2>Trade Details</h2></div>
+        <div class="pro-cards" id="bt-trade-detail-cards"></div>
+        <div id="bt-trade-mini-chart" class="sol-chart-wrap terminal-chart-stage" style="min-height:280px;position:relative">
+          <div id="bt-trade-chart-container" style="position:absolute;inset:0"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+  <script src="/static/chart-engine.js"></script>
+  <script src="/static/common.js"></script>
+  <script src="/static/strategy-nav.js"></script>
+  <script src="/static/backtest.js"></script>
+</body>
+</html>

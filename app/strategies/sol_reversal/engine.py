@@ -50,7 +50,9 @@ class SolReversalEngine:
 
         open_pos = self.paper.positions.get_open()
         if open_pos:
-            closed = self.paper.monitor(open_pos, high=high, low=low, close=close, settings=settings)
+            closed = self.paper.monitor(
+                open_pos, high=high, low=low, close=close, settings=settings, bar_time=candle_time
+            )
             if closed:
                 self.engine_repo.log("INFO", f"Closed {closed['side']} {closed['exit_reason']} pnl={closed['pnl_usd']}")
             open_pos = self.paper.positions.get_open()

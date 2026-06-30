@@ -1,17 +1,31 @@
-"""SOL Reversal paper trading — isolated from BTC account."""
+"""SOL Reversal paper trading — uses simulation.py (same logic as backtest)."""
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
-from app.contract_specs import contracts_from_notional, sizing_from_contracts
 from app.models import utc_now_iso
 from app.strategies.sol_reversal.repositories import (
     SolAccountRepository,
     SolPositionRepository,
     SolTradeRepository,
 )
-from app.strategies.sol_reversal.strategy import levels_for_side, price_move_pct
+from app.strategies.sol_reversal.simulation import (
+    open_position as sim_open,
+    pnl_at_price,
+    process_bar,
+    size_position,
+)
+
+
+def _iso_to_unix(iso: str | None) -> int:
+    if not iso:
+        return int(datetime.now(tz=timezone.utc).timestamp())
+    try:
+        return int(datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp())
+    except ValueError:
+        return int(datetime.now(tz=timezone.utc).timestamp())
 
 
 class SolPaperService:
@@ -27,47 +41,51 @@ class SolPaperService:
         return float(acct["balance"]) + unrealized
 
     def size_position(self, entry: float, settings: dict[str, Any], unrealized: float = 0.0) -> dict[str, Any]:
-        equity = self.equity(unrealized)
-        margin_pct = float(settings.get("position_size_pct", 50.0)) / 100.0
-        leverage = float(settings.get("leverage", 25.0))
-        margin = equity * margin_pct
-        notional = margin * leverage
-        contracts = contracts_from_notional(notional, entry, self.SYMBOL)
-        sized = sizing_from_contracts(contracts, entry, self.SYMBOL, leverage)
-        sized["margin_allocated"] = round(margin, 2)
-        sized["equity"] = round(equity, 2)
-        return sized
+        return size_position(self.equity(unrealized), entry, settings, self.SYMBOL) or {}
+
+    def _to_sim(self, position: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "symbol": position.get("symbol", self.SYMBOL),
+            "side": position["side"],
+            "entry": float(position["entry"]),
+            "entry_time": _iso_to_unix(position.get("opened_at")),
+            "stop_loss": float(position["stop_loss"]),
+            "take_profit": float(position["take_profit"]),
+            "quantity": float(position["quantity"]),
+            "leverage": float(position.get("leverage") or 25),
+            "margin_used": float(position.get("margin_used") or 0),
+            "position_value": float(position.get("position_value") or 0),
+            "lock_active": bool(position.get("lock_active")),
+            "lock_stop": position.get("lock_stop"),
+            "highest_profit_pct": float(position.get("highest_profit_pct") or 0),
+            "mfe_pct": float(position.get("mfe_pct") or 0),
+            "mae_pct": float(position.get("mae_pct") or 0),
+            "bars_held": int(position.get("bars_held") or 0),
+        }
 
     def open_trade(self, side: str, entry: float, settings: dict[str, Any]) -> dict[str, Any] | None:
         if self.positions.get_open():
             return None
-        sized = self.size_position(entry, settings)
-        if sized["contracts"] <= 0:
+        equity = self.equity()
+        sim = sim_open(side, entry, int(datetime.now(tz=timezone.utc).timestamp()), settings, equity, self.SYMBOL)
+        if not sim:
             return None
-        tp, sl = levels_for_side(side, entry, settings)
         return self.positions.open_position({
             "symbol": self.SYMBOL,
             "side": side,
             "entry": entry,
-            "stop_loss": sl,
-            "take_profit": tp,
-            "quantity": sized["quantity"],
+            "stop_loss": sim["stop_loss"],
+            "take_profit": sim["take_profit"],
+            "quantity": sim["quantity"],
             "leverage": settings.get("leverage", 25.0),
-            "margin_used": sized["margin_used"],
-            "position_value": sized["position_value"],
+            "margin_used": sim["margin_used"],
+            "position_value": sim["position_value"],
         })
 
     def unrealized_pnl(self, position: dict[str, Any], price: float) -> tuple[float, float]:
         """Returns (account PnL USD, SOL price move % from entry)."""
-        entry = float(position["entry"])
-        qty = float(position["quantity"])
-        side = position["side"]
-        move_pct = price_move_pct(side, entry, price)
-        if side == "BUY":
-            pnl = (price - entry) * qty
-        else:
-            pnl = (entry - price) * qty
-        return round(pnl, 4), move_pct
+        pnl, move_pct = pnl_at_price(self._to_sim(position), price)
+        return pnl, move_pct
 
     def monitor(
         self,
@@ -77,93 +95,68 @@ class SolPaperService:
         low: float,
         close: float,
         settings: dict[str, Any],
+        bar_time: int | None = None,
     ) -> dict[str, Any] | None:
         """Check TP/SL/lock on bar. Returns close payload if exited."""
-        side = position["side"]
-        entry = float(position["entry"])
-        sl = float(position["stop_loss"])
-        tp = float(position["take_profit"])
+        ts = bar_time or int(datetime.now(tz=timezone.utc).timestamp())
+        updated, closed = process_bar(
+            self._to_sim(position),
+            bar_time=ts,
+            high=high,
+            low=low,
+            close=close,
+            settings=settings,
+        )
         pos_id = int(position["id"])
 
-        _, pnl_pct_high = self.unrealized_pnl(position, high if side == "BUY" else low)
-        _, pnl_pct_low = self.unrealized_pnl(position, low if side == "BUY" else high)
-        mfe = max(float(position.get("mfe_pct") or 0), pnl_pct_high)
-        mae = min(float(position.get("mae_pct") or 0), pnl_pct_low)
-
-        lock_active = bool(position.get("lock_active"))
-        lock_stop = position.get("lock_stop")
-        # Lock trigger/distance = % SOL price move, not account ROE
-        highest_profit = max(float(position.get("highest_profit_pct") or 0), pnl_pct_high)
-
-        if settings.get("lock_profit_enabled") and highest_profit >= float(settings.get("lock_trigger_pct", 3.0)):
-            lock_active = True
-            dist = float(settings.get("lock_distance_pct", 3.0)) / 100.0
-            if side == "BUY":
-                peak = high
-                lock_stop = round(peak * (1 - dist), 4)
-                sl = max(sl, lock_stop)
-            else:
-                peak = low
-                lock_stop = round(peak * (1 + dist), 4)
-                sl = min(sl, lock_stop)
-
-        self.positions.update_position(pos_id, {
-            "lock_active": int(lock_active),
-            "lock_stop": lock_stop,
-            "highest_profit_pct": highest_profit,
-            "highest_price": high if side == "BUY" else low,
-            "mfe_pct": mfe,
-            "mae_pct": mae,
-            "stop_loss": sl,
-        })
-
-        exit_price = None
-        reason = None
-        if side == "BUY":
-            if low <= sl:
-                exit_price, reason = sl, "LOCK" if lock_active else "SL"
-            elif high >= tp:
-                exit_price, reason = tp, "TP"
-        else:
-            if high >= sl:
-                exit_price, reason = sl, "LOCK" if lock_active else "SL"
-            elif low <= tp:
-                exit_price, reason = tp, "TP"
-
-        if exit_price is None:
+        if updated and not closed:
+            self.positions.update_position(pos_id, {
+                "lock_active": int(updated["lock_active"]),
+                "lock_stop": updated.get("lock_stop"),
+                "highest_profit_pct": updated["highest_profit_pct"],
+                "highest_price": high if position["side"] == "BUY" else low,
+                "mfe_pct": updated["mfe_pct"],
+                "mae_pct": updated["mae_pct"],
+                "stop_loss": updated["stop_loss"],
+                "bars_held": updated["bars_held"],
+            })
             return None
 
-        pnl_usd, pnl_pct = self.unrealized_pnl(position, exit_price)
-        closed = self.positions.close_position(pos_id, {
+        if not closed:
+            return None
+
+        pnl_usd = closed["pnl_usd"]
+        pnl_pct = closed["price_move_pct"]
+        db_closed = self.positions.close_position(pos_id, {
             "closed_at": utc_now_iso(),
-            "exit_price": exit_price,
-            "exit_reason": reason,
+            "exit_price": closed["exit_price"],
+            "exit_reason": closed["exit_reason"],
             "pnl_usd": pnl_usd,
             "pnl_pct": pnl_pct,
-            "bars_held": 0,
-            "lock_active": int(lock_active),
-            "lock_stop": lock_stop,
-            "highest_profit_pct": highest_profit,
-            "mfe_pct": mfe,
-            "mae_pct": mae,
+            "bars_held": closed["bars_held"],
+            "lock_active": int(closed["lock_active"]),
+            "lock_stop": closed.get("lock_stop"),
+            "highest_profit_pct": closed["highest_profit_pct"],
+            "mfe_pct": closed["mfe_pct"],
+            "mae_pct": closed["mae_pct"],
         })
         self.accounts.apply_pnl(pnl_usd)
         self.trades.insert({
             "position_id": pos_id,
             "symbol": self.SYMBOL,
-            "side": side,
+            "side": closed["side"],
             "entry_time": position["opened_at"],
-            "exit_time": closed["closed_at"],
-            "entry": entry,
-            "exit": exit_price,
+            "exit_time": db_closed["closed_at"],
+            "entry": closed["entry_price"],
+            "exit": closed["exit_price"],
             "pnl_pct": pnl_pct,
             "pnl_usd": pnl_usd,
-            "bars_held": closed.get("bars_held") or 0,
-            "exit_reason": reason,
-            "mfe_pct": mfe,
-            "mae_pct": mae,
+            "bars_held": closed["bars_held"],
+            "exit_reason": closed["exit_reason"],
+            "mfe_pct": closed["mfe_pct"],
+            "mae_pct": closed["mae_pct"],
         })
-        return closed
+        return db_closed
 
     def statistics(self) -> dict[str, Any]:
         rows = self.positions.list_closed(10000)

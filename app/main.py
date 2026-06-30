@@ -34,6 +34,8 @@ from app.research_signal_probability_api import router as signal_probability_rou
 from app.research_sma_optimizer_api import router as sma_optimizer_router
 from app.strategies.sol_reversal.api import router as sol_reversal_router
 from app.strategies.sol_reversal.db import init_sol_db
+from app.backtest.api import router as backtest_router
+from app.backtest.db import init_backtest_db
 from app.strategies.sol_reversal.engine import sol_engine_loop
 from app.strategies.sol_reversal.market import (
     delta_websocket_loop,
@@ -285,6 +287,7 @@ async def lifespan(app: FastAPI):
 
     # SOL Reversal Engine — fully isolated from BTC
     init_sol_db()
+    init_backtest_db()
     try:
         await asyncio.to_thread(sol_market.load_history, 6)
         logger.info("SOL Reversal market history loaded")
@@ -335,6 +338,7 @@ app.include_router(research_optimizer_router)
 app.include_router(signal_probability_router)
 app.include_router(sma_optimizer_router)
 app.include_router(sol_reversal_router)
+app.include_router(backtest_router)
 app.include_router(debug_router)
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -364,6 +368,21 @@ def dashboard_redirect() -> RedirectResponse:
 @app.get("/chart", include_in_schema=False)
 def chart_redirect() -> RedirectResponse:
     return RedirectResponse(url="/btc", status_code=302)
+
+
+@app.get("/sol/backtest", include_in_schema=False)
+def sol_backtest_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "backtest.html")
+
+
+@app.get("/btc/backtest", include_in_schema=False)
+def btc_backtest_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "backtest.html")
+
+
+@app.get("/backtest/{strategy_id}", include_in_schema=False)
+def backtest_page(strategy_id: str) -> FileResponse:
+    return FileResponse(STATIC_DIR / "backtest.html")
 
 
 @app.get("/history", include_in_schema=False)
