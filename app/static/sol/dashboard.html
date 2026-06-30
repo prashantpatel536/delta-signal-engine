@@ -6,7 +6,7 @@
   <title>SOL Reversal Engine — Delta Terminal</title>
   <link rel="stylesheet" href="/static/styles.css" />
   <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
-  <script src="/static/sol/sol-chart.js"></script>
+  <script src="/static/chart-engine.js"></script>
 </head>
 <body class="app-shell sol-shell" data-page="sol-reversal">
   <aside class="sidebar sidebar-narrow">
@@ -51,7 +51,9 @@
             <h2>Chart — Heikin Ashi (5m)</h2>
             <span class="muted chart-legend">Delta OHLC → HA · same as strategy</span>
           </div>
-          <div id="sol-chart" class="sol-chart-container"></div>
+          <div class="sol-chart-wrap">
+            <div id="sol-chart" class="sol-chart-container"></div>
+          </div>
         </section>
         <section class="panel" id="position-panel">
           <div class="panel-head"><h2>Open Trade</h2></div>

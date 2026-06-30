@@ -210,6 +210,60 @@
     return markers.sort((a, b) => a.time - b.time);
   }
 
+  function snapTradeTime(unix, realToDisplay) {
+    if (!unix || !realToDisplay.size) return null;
+    let bestReal = null;
+    let bestD = Infinity;
+    for (const real of realToDisplay.keys()) {
+      const d = Math.abs(real - unix);
+      if (d < bestD) {
+        bestD = d;
+        bestReal = real;
+      }
+    }
+    return bestD <= 600 ? realToDisplay.get(bestReal) : null;
+  }
+
+  function buildTradeMarkers(trades, realToDisplay) {
+    const sorted = [...(trades || [])].sort(
+      (a, b) => Date.parse(b.closed_at || b.opened_at || 0) - Date.parse(a.closed_at || a.opened_at || 0),
+    );
+    const markers = [];
+    const seen = new Set();
+    for (const tr of sorted.slice(0, MAX_SIGNAL_MARKERS)) {
+      const isBuy = (tr.side || "").toUpperCase() === "BUY";
+      const pnl = Number(tr.pnl_pct ?? 0);
+      const win = pnl >= 0;
+      const entryUnix = Math.trunc(Date.parse(tr.opened_at || tr.entry_time || "") / 1000);
+      const exitUnix = Math.trunc(Date.parse(tr.closed_at || tr.exit_time || "") / 1000);
+      const entryT = snapTradeTime(entryUnix, realToDisplay);
+      const exitT = snapTradeTime(exitUnix, realToDisplay);
+      if (entryT && !seen.has(`e-${entryT}`)) {
+        seen.add(`e-${entryT}`);
+        markers.push({
+          time: entryT,
+          position: isBuy ? "belowBar" : "aboveBar",
+          shape: isBuy ? "arrowUp" : "arrowDown",
+          color: "#2962ff",
+          text: `${isBuy ? "BUY" : "SELL"} entry`,
+          size: 1,
+        });
+      }
+      if (exitT && !seen.has(`x-${exitT}`)) {
+        seen.add(`x-${exitT}`);
+        markers.push({
+          time: exitT,
+          position: isBuy ? "aboveBar" : "belowBar",
+          shape: "circle",
+          color: win ? TERMINAL.up : TERMINAL.down,
+          text: win ? `Profit +${Math.abs(pnl).toFixed(2)}%` : `Loss ${pnl.toFixed(2)}%`,
+          size: 1,
+        });
+      }
+    }
+    return markers.sort((a, b) => a.time - b.time);
+  }
+
   function formatSignalStatus(status) {
     if (!status) return "";
     if (status === "TP_HIT") return "TP HIT";
@@ -221,6 +275,7 @@
     constructor(options) {
       this.container = options.container;
       this.legend = options.legend || {};
+      this.showIndicators = options.showIndicators !== false;
       this.onFootnote = options.onFootnote;
       this.onTitle = options.onTitle;
       this.onPriceChange = options.onPriceChange;
@@ -685,32 +740,38 @@
         borderVisible: false,
       });
 
-      this.smaSeries = this.chart.addLineSeries({
-        color: TERMINAL.sma,
-        lineWidth: 2,
-        priceLineVisible: false,
-        lastValueVisible: true,
-        title: "SMA84",
-        autoscaleInfoProvider: NO_AUTOSCALE,
-      });
-      this.hhSeries = this.chart.addLineSeries({
-        color: TERMINAL.hh,
-        lineWidth: 1,
-        lineType: LightweightCharts.LineType.WithSteps,
-        priceLineVisible: false,
-        lastValueVisible: true,
-        title: "HH50",
-        autoscaleInfoProvider: NO_AUTOSCALE,
-      });
-      this.llSeries = this.chart.addLineSeries({
-        color: TERMINAL.ll,
-        lineWidth: 1,
-        lineType: LightweightCharts.LineType.WithSteps,
-        priceLineVisible: false,
-        lastValueVisible: true,
-        title: "LL50",
-        autoscaleInfoProvider: NO_AUTOSCALE,
-      });
+      if (this.showIndicators) {
+        this.smaSeries = this.chart.addLineSeries({
+          color: TERMINAL.sma,
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: true,
+          title: "SMA84",
+          autoscaleInfoProvider: NO_AUTOSCALE,
+        });
+        this.hhSeries = this.chart.addLineSeries({
+          color: TERMINAL.hh,
+          lineWidth: 1,
+          lineType: LightweightCharts.LineType.WithSteps,
+          priceLineVisible: false,
+          lastValueVisible: true,
+          title: "HH50",
+          autoscaleInfoProvider: NO_AUTOSCALE,
+        });
+        this.llSeries = this.chart.addLineSeries({
+          color: TERMINAL.ll,
+          lineWidth: 1,
+          lineType: LightweightCharts.LineType.WithSteps,
+          priceLineVisible: false,
+          lastValueVisible: true,
+          title: "LL50",
+          autoscaleInfoProvider: NO_AUTOSCALE,
+        });
+      } else {
+        this.smaSeries = null;
+        this.hhSeries = null;
+        this.llSeries = null;
+      }
 
       this.chart.applyOptions({
         localization: {
@@ -729,9 +790,9 @@
         }
         const realTime = self.context.displayToReal.get(param.time);
         const realCandle = realTime ? self.context.realCandles.get(realTime) : null;
-        const sma = param.seriesData.get(self.smaSeries)?.value;
-        const hh = param.seriesData.get(self.hhSeries)?.value;
-        const ll = param.seriesData.get(self.llSeries)?.value;
+        const sma = self.smaSeries ? param.seriesData.get(self.smaSeries)?.value : null;
+        const hh = self.hhSeries ? param.seriesData.get(self.hhSeries)?.value : null;
+        const ll = self.llSeries ? param.seriesData.get(self.llSeries)?.value : null;
         self.updateLegend(realCandle, sma, hh, ll);
 
         let hoverPrice = null;
@@ -781,6 +842,83 @@
       this._resizeObserver.observe(this.container);
     }
 
+    _applyCandleDisplay(candles, display, { markers, position, symbol, livePrice }) {
+      this.context = {
+        displayToReal: display.displayToReal,
+        realCandles: display.realCandles,
+        realToDisplay: display.realToDisplay,
+        displayCandles: display.displayCandles,
+        smaData: display.smaData,
+        hhData: display.hhData,
+        llData: display.llData,
+        latestCandle: candles[candles.length - 1] || null,
+        latestSma: null,
+        latestHh: null,
+        latestLl: null,
+      };
+
+      this.candleSeries.setData(display.displayCandles);
+      this.volumeSeries.setData(display.volumeData);
+      if (this.showIndicators) {
+        this.smaSeries.setData(display.smaData);
+        this.hhSeries.setData(display.hhData);
+        this.llSeries.setData(display.llData);
+      }
+
+      this.candleSeries.setMarkers(markers);
+
+      if (position) {
+        const lastClose = candles[candles.length - 1]?.close;
+        const overlay = {
+          ...position,
+          symbol: position.symbol || `${symbol}USDT`,
+          current_price: position.current_price ?? livePrice ?? lastClose,
+          leverage: position.leverage ?? 1,
+          margin_used: position.margin_used ?? 0,
+          quantity: position.quantity ?? 0,
+        };
+        this.clearSignalLines();
+        this.signalLevels = null;
+        this.setTradeOverlay(overlay);
+      } else {
+        this.setTradeOverlay(null);
+      }
+
+      this.refreshPriceScale();
+      const n = display.displayCandles.length;
+      if (n > 0 && !this.userHasPanned) this.scrollToLatest(n);
+      return n;
+    }
+
+    updateCandles(chartData, { timeframe = "5m", windowSize, symbol = "SOL", position, trades, livePrice } = {}) {
+      if (!this.ready && !this.init()) {
+        this._watchContainerSize();
+        return;
+      }
+      if (!this.ready) return;
+
+      const expectedInterval = INTERVAL_SECONDS[timeframe] || 300;
+      let rawCandles = chartData.candles || [];
+      if (livePrice != null && rawCandles.length) {
+        rawCandles = rawCandles.map((c, i) => {
+          if (i !== rawCandles.length - 1) return c;
+          const close = Number(livePrice);
+          return {
+            ...c,
+            close,
+            high: Math.max(Number(c.high), close),
+            low: Math.min(Number(c.low), close),
+          };
+        });
+      }
+
+      const { candles } = prepareCandleSeriesData(rawCandles, expectedInterval, windowSize);
+      const empty = [];
+      const display = buildChartDisplaySeries(candles, empty, empty, empty, expectedInterval);
+      const markers = buildTradeMarkers(trades, display.realToDisplay);
+      return this._applyCandleDisplay(candles, display, { markers, position, symbol, livePrice });
+    }
+
     update(chartData, { windowSize, timeframe, signalTimeframe, symbol, position, signalQuality }) {
       if (!this.ready) return;
 
@@ -821,43 +959,26 @@
       const alignedLl = (chartData.ll50 || []).slice(offset);
 
       const display = buildChartDisplaySeries(candles, alignedSma, alignedHh, alignedLl, expectedInterval);
-      this.context = {
-        displayToReal: display.displayToReal,
-        realCandles: display.realCandles,
-        realToDisplay: display.realToDisplay,
-        displayCandles: display.displayCandles,
-        smaData: display.smaData,
-        hhData: display.hhData,
-        llData: display.llData,
-        latestCandle: candles[candles.length - 1] || null,
-        latestSma: alignedSma[alignedSma.length - 1],
-        latestHh: alignedHh[alignedHh.length - 1],
-        latestLl: alignedLl[alignedLl.length - 1],
-      };
-
-      this.candleSeries.setData(display.displayCandles);
-      this.volumeSeries.setData(display.volumeData);
-      this.smaSeries.setData(display.smaData);
-      this.hhSeries.setData(display.hhData);
-      this.llSeries.setData(display.llData);
-
       const markers = buildArrowMarkers(chartData.signals || [], display.realToDisplay);
-      this.candleSeries.setMarkers(markers);
 
       if (position) {
         position = { ...position, current_price: position.current_price ?? candles[candles.length - 1]?.close };
-        this.clearSignalLines();
-        this.signalLevels = null;
-        this.setTradeOverlay(position);
+        this._applyCandleDisplay(candles, display, { markers, position, symbol, livePrice });
+        this.setSignalOverlay(null);
       } else {
-        this.setTradeOverlay(null);
+        this._applyCandleDisplay(candles, display, { markers, position: null, symbol, livePrice });
         this.setSignalOverlay(signalQuality);
       }
-      this.refreshPriceScale();
 
       const n = display.displayCandles.length;
+      const alignedSmaForLegend = (chartData.sma84 || []).slice(offset);
+      const alignedHhForLegend = (chartData.hh50 || []).slice(offset);
+      const alignedLlForLegend = (chartData.ll50 || []).slice(offset);
+      this.context.latestSma = alignedSmaForLegend[alignedSmaForLegend.length - 1];
+      this.context.latestHh = alignedHhForLegend[alignedHhForLegend.length - 1];
+      this.context.latestLl = alignedLlForLegend[alignedLlForLegend.length - 1];
+
       if (n > 0) {
-        if (!this.userHasPanned) this.scrollToLatest(n);
         const first = candles[0];
         const last = candles[n - 1];
         const change = last.close - first.open;
@@ -875,7 +996,12 @@
         if (this.legend.chartSymbol) {
           this.legend.chartSymbol.textContent = `${symbol}USDT`;
         }
-        this.updateLegend(last, alignedSma[n - 1], alignedHh[n - 1], alignedLl[n - 1]);
+        this.updateLegend(
+          last,
+          alignedSmaForLegend[alignedSmaForLegend.length - 1],
+          alignedHhForLegend[alignedHhForLegend.length - 1],
+          alignedLlForLegend[alignedLlForLegend.length - 1],
+        );
       }
 
       if (this.onFootnote) {

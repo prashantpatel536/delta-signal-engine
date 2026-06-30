@@ -78,15 +78,43 @@
     </tr>`).join("");
   }
 
-  function initChart() {
-    const el = $("sol-chart");
-    if (!el || typeof SolChartEngine === "undefined") return;
-    chartEngine = new SolChartEngine(el);
+  function buildChartEngine() {
+    if (chartEngine) return chartEngine;
+    chartEngine = ChartEngine.create({
+      container: $("sol-chart"),
+      showIndicators: false,
+    });
+    return chartEngine;
   }
 
-  function updateChart(payload, trades) {
-    if (!chartEngine || !payload) return;
-    chartEngine.update(payload, trades);
+  function haCandlesFromPayload(payload) {
+    const volByTime = new Map((payload.ohlc || []).map((c) => [c.time, Number(c.volume) || 0]));
+    return (payload.heikin_ashi || []).map((c) => ({
+      time: c.time,
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close,
+      volume: volByTime.get(c.time) || 0,
+    }));
+  }
+
+  function updateChart(payload, trades, status) {
+    const engine = buildChartEngine();
+    if (!engine.ready && !engine.init()) return;
+    if (!engine.ready) return;
+    const candles = haCandlesFromPayload(payload);
+    engine.updateCandles(
+      { candles },
+      {
+        timeframe: payload.timeframe || "5m",
+        windowSize: candles.length,
+        symbol: "SOL",
+        trades,
+        position: status?.position,
+        livePrice: status?.market?.last_price,
+      },
+    );
   }
 
   function drawLine(canvasId, values, labels, color) {
@@ -158,7 +186,7 @@
     renderStats(status.statistics || {});
     const chartData = await DSE.fetchJson("/sol/api/chart?bars=300");
     const trades = await DSE.fetchJson("/sol/api/trades");
-    updateChart(chartData, trades.trades);
+    updateChart(chartData, trades.trades, status);
     renderTrades(trades.trades);
     if (!$("settings-form").children.length) {
       renderSettingsForm(status.settings || {});
@@ -184,7 +212,11 @@
     window.open("/sol/api/export/trades.csv", "_blank");
   });
 
-  initChart();
+  buildChartEngine();
+  const engine = buildChartEngine();
+  if (!engine.init()) {
+    window.addEventListener("chart-engine-ready", () => refresh(), { once: true });
+  }
   refresh();
   loadResearch();
   setInterval(refresh, 5000);
