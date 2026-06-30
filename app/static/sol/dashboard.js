@@ -66,11 +66,12 @@
     $("position-cards").innerHTML = `
       ${statCard("Direction", pos.side, pos.side === "BUY" ? "opt-pos" : "opt-neg")}
       ${statCard("Entry", pos.entry)}
-      ${statCard("Current PnL %", `${pos.unrealized_pct}%`, valCls(pos.unrealized_pct))}
-      ${statCard("Current PnL $", pos.unrealized_usd, valCls(pos.unrealized_usd))}
-      ${statCard("Highest Profit %", `${pos.highest_profit_pct ?? 0}%`)}
-      ${statCard("Stop", pos.stop_loss)}
-      ${statCard("Take Profit", pos.take_profit)}
+      ${statCard("SOL Price Move", `${pos.price_move_pct ?? pos.unrealized_pct}%`, valCls(pos.price_move_pct ?? pos.unrealized_pct))}
+      ${statCard("Account PnL $", pos.unrealized_usd, valCls(pos.unrealized_usd))}
+      ${statCard("Account ROE", `${pos.roe_pct ?? 0}%`, valCls(pos.roe_pct))}
+      ${statCard("Peak Price Move", `${pos.highest_profit_pct ?? 0}%`)}
+      ${statCard("Stop", `${pos.stop_loss} (−${pos.stop_loss_price_pct ?? "?"}% price)`)}
+      ${statCard("Target", `${pos.take_profit} (+${pos.take_profit_price_pct ?? "?"}% price)`)}
       ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}
       ${statCard("Lock Stop", pos.lock_stop ?? "—")}`;
   }
@@ -176,11 +177,11 @@
       ["atr_filter_enabled", "ATR Filter", "checkbox"],
       ["atr_multiplier", "ATR Multiplier", "number"],
       ["atr_minimum", "ATR Minimum", "number"],
-      ["take_profit_pct", "Take Profit %", "number"],
-      ["stop_loss_pct", "Stop Loss %", "number"],
+      ["take_profit_pct", "Take Profit (SOL price %)", "number"],
+      ["stop_loss_pct", "Stop Loss (SOL price %)", "number"],
       ["lock_profit_enabled", "Lock Profit", "checkbox"],
-      ["lock_trigger_pct", "Lock Trigger %", "number"],
-      ["lock_distance_pct", "Lock Distance %", "number"],
+      ["lock_trigger_pct", "Lock Trigger (SOL price %)", "number"],
+      ["lock_distance_pct", "Lock Distance (SOL price %)", "number"],
       ["leverage", "Leverage", "number"],
       ["position_size_pct", "Position Size %", "number"],
     ];

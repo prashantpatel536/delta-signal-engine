@@ -11,7 +11,7 @@ from app.strategies.sol_reversal.repositories import (
     SolPositionRepository,
     SolTradeRepository,
 )
-from app.strategies.sol_reversal.strategy import levels_for_side
+from app.strategies.sol_reversal.strategy import levels_for_side, price_move_pct
 
 
 class SolPaperService:
@@ -58,16 +58,16 @@ class SolPaperService:
         })
 
     def unrealized_pnl(self, position: dict[str, Any], price: float) -> tuple[float, float]:
+        """Returns (account PnL USD, SOL price move % from entry)."""
         entry = float(position["entry"])
         qty = float(position["quantity"])
         side = position["side"]
+        move_pct = price_move_pct(side, entry, price)
         if side == "BUY":
             pnl = (price - entry) * qty
-            pnl_pct = (price - entry) / entry * 100.0
         else:
             pnl = (entry - price) * qty
-            pnl_pct = (entry - price) / entry * 100.0
-        return round(pnl, 4), round(pnl_pct, 4)
+        return round(pnl, 4), move_pct
 
     def monitor(
         self,
@@ -92,6 +92,7 @@ class SolPaperService:
 
         lock_active = bool(position.get("lock_active"))
         lock_stop = position.get("lock_stop")
+        # Lock trigger/distance = % SOL price move, not account ROE
         highest_profit = max(float(position.get("highest_profit_pct") or 0), pnl_pct_high)
 
         if settings.get("lock_profit_enabled") and highest_profit >= float(settings.get("lock_trigger_pct", 3.0)):

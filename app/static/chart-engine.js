@@ -281,7 +281,7 @@
           position: isBuy ? "aboveBar" : "belowBar",
           shape: "circle",
           color: win ? TERMINAL.up : TERMINAL.down,
-          text: win ? `Profit +${Math.abs(pnl).toFixed(2)}%` : `Loss ${pnl.toFixed(2)}%`,
+          text: win ? `+${Math.abs(pnl).toFixed(2)}% price` : `${pnl.toFixed(2)}% price`,
           size: 1,
         });
       }

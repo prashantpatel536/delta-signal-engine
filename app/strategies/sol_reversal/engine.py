@@ -9,7 +9,7 @@ from typing import Any
 from app.strategies.sol_reversal.market import sol_market
 from app.strategies.sol_reversal.paper import SolPaperService
 from app.strategies.sol_reversal.repositories import SolEngineRepository, SolSettingsRepository
-from app.strategies.sol_reversal.strategy import detect_signal_at_index
+from app.strategies.sol_reversal.strategy import detect_signal_at_index, target_price_pcts
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,10 @@ class SolReversalEngine:
         return self.settings_repo.get_all()
 
     def on_closed_candle(self) -> None:
+        engine_state = self.engine_repo.get()
+        if not bool(engine_state.get("running", 1)):
+            return
+
         idx = sol_market.closed_candle_index()
         if idx < 0:
             return
@@ -33,6 +37,12 @@ class SolReversalEngine:
         candle_time = int(ha.iloc[idx]["time"])
         if self._last_processed_candle == candle_time:
             return
+
+        # First tick after start: sync to current closed bar, don't trade stale history.
+        if self._last_processed_candle is None:
+            self._last_processed_candle = candle_time
+            return
+
         self._last_processed_candle = candle_time
 
         settings = self.settings()
@@ -73,12 +83,21 @@ class SolReversalEngine:
         pos_view = None
         if pos:
             price = snap.get("last_price") or float(pos["entry"])
-            unrealized, unrealized_pct = self.paper.unrealized_pnl(pos, price)
+            unrealized, price_pct = self.paper.unrealized_pnl(pos, price)
+            margin = float(pos.get("margin_used") or 0)
+            roe_pct = round(unrealized / margin * 100, 2) if margin > 0 else 0.0
+            tp_pct, sl_pct = target_price_pcts(
+                pos["side"], float(pos["entry"]), float(pos["take_profit"]), float(pos["stop_loss"])
+            )
             pos_view = {
                 **pos,
                 "current_price": price,
                 "unrealized_usd": unrealized,
-                "unrealized_pct": unrealized_pct,
+                "unrealized_pct": price_pct,
+                "price_move_pct": price_pct,
+                "roe_pct": roe_pct,
+                "take_profit_price_pct": tp_pct,
+                "stop_loss_price_pct": sl_pct,
                 "highest_profit_pct": pos.get("highest_profit_pct", 0),
                 "lock_active": bool(pos.get("lock_active")),
                 "lock_stop": pos.get("lock_stop"),

@@ -85,8 +85,34 @@ def levels_for_side(
     entry: float,
     settings: dict[str, Any],
 ) -> tuple[float, float]:
+    """TP/SL prices from % move in SOL price (not account ROE / leveraged PnL)."""
     tp_pct = float(settings.get("take_profit_pct", 7.0)) / 100.0
     sl_pct = float(settings.get("stop_loss_pct", 1.0)) / 100.0
     if side == "BUY":
         return round(entry * (1 + tp_pct), 4), round(entry * (1 - sl_pct), 4)
     return round(entry * (1 - tp_pct), 4), round(entry * (1 + sl_pct), 4)
+
+
+def price_move_pct(side: Side, entry: float, price: float) -> float:
+    """Signed % change in SOL price from entry (BUY: up = positive)."""
+    entry = float(entry)
+    price = float(price)
+    if entry <= 0:
+        return 0.0
+    if side == "BUY":
+        return round((price - entry) / entry * 100.0, 4)
+    return round((entry - price) / entry * 100.0, 4)
+
+
+def target_price_pcts(side: Side, entry: float, tp: float, sl: float) -> tuple[float, float]:
+    """TP and SL distances as positive % SOL price move from entry."""
+    entry = float(entry)
+    if entry <= 0:
+        return 0.0, 0.0
+    if side == "BUY":
+        tp_pct = round((float(tp) - entry) / entry * 100.0, 2)
+        sl_pct = round((entry - float(sl)) / entry * 100.0, 2)
+    else:
+        tp_pct = round((entry - float(tp)) / entry * 100.0, 2)
+        sl_pct = round((float(sl) - entry) / entry * 100.0, 2)
+    return tp_pct, sl_pct

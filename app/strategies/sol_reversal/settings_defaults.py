@@ -14,7 +14,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "strong_candle_body_pct": 0.15,
     "atr_filter_enabled": True,
     "atr_multiplier": 0.2,
-    "atr_minimum": 0.1,
+    "atr_minimum": 0.01,
     "atr_period": 14,
     "take_profit_pct": 7.0,
     "stop_loss_pct": 1.0,

@@ -27,6 +27,16 @@ def test_levels_for_buy():
     assert sl == 99.0
 
 
+def test_price_move_pct_not_leveraged_roe():
+    from app.strategies.sol_reversal.strategy import price_move_pct, target_price_pcts
+
+    # 1% SOL price up on BUY = 1% price move (not 25% ROE)
+    assert price_move_pct("BUY", 100.0, 101.0) == 1.0
+    tp_pct, sl_pct = target_price_pcts("BUY", 100.0, 107.0, 99.0)
+    assert tp_pct == 7.0
+    assert sl_pct == 1.0
+
+
 def test_sol_api_status_route():
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
