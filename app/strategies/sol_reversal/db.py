@@ -84,8 +84,18 @@ CREATE TABLE IF NOT EXISTS sol_engine_state (
     last_candle_time INTEGER,
     last_price REAL,
     last_signal TEXT,
+    debug_mode INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS sol_debug_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sol_debug_type ON sol_debug_events(event_type);
 """
 
 
@@ -93,6 +103,14 @@ def init_sol_db() -> None:
     SOL_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with get_sol_connection() as conn:
         conn.executescript(SCHEMA)
+        conn.commit()
+        _migrate_sol_db(conn)
+
+
+def _migrate_sol_db(conn: sqlite3.Connection) -> None:
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(sol_engine_state)").fetchall()}
+    if "debug_mode" not in cols:
+        conn.execute("ALTER TABLE sol_engine_state ADD COLUMN debug_mode INTEGER NOT NULL DEFAULT 0")
         conn.commit()
 
 

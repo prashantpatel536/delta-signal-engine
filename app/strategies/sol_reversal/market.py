@@ -201,6 +201,12 @@ class SolMarketStore:
         with self._lock:
             return len(self._ha) - 2 if len(self._ha) >= 2 else -1
 
+    def ha_bar_at(self, idx: int) -> tuple[float, float, float, float]:
+        """HA OHLC for closed bar at index (same series as signals)."""
+        with self._lock:
+            r = self._ha.iloc[idx]
+            return float(r["high"]), float(r["low"]), float(r["close"]), float(r["open"])
+
     def get_ha(self) -> pd.DataFrame:
         with self._lock:
             return self._ha.copy()

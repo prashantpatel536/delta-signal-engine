@@ -47,6 +47,8 @@ class SolSettingsRepository:
                 settings[row["key"]] = json.loads(row["value"])
             except json.JSONDecodeError:
                 settings[row["key"]] = row["value"]
+        settings.pop("strong_candle_body_pct", None)
+        settings.pop("atr_multiplier", None)
         return settings
 
     def update(self, updates: dict[str, Any]) -> dict[str, Any]:

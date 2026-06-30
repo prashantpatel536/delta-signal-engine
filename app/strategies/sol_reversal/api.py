@@ -11,6 +11,14 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.strategies.sol_reversal.debug import (
+    MAX_DEBUG_TRADES,
+    clear_debug_events,
+    debug_summary,
+    explain_signal_at_index,
+    list_debug_events,
+    log_debug_event,
+)
 from app.strategies.sol_reversal.engine import sol_engine
 from app.strategies.sol_reversal.market import sol_market
 from app.strategies.sol_reversal.repositories import SolEngineRepository, SolSettingsRepository
@@ -22,10 +30,10 @@ class SettingsUpdate(BaseModel):
     min_red_candles: int | None = None
     max_green_candles: int | None = None
     strong_candle_enabled: bool | None = None
-    strong_candle_body_pct: float | None = None
+    strong_candle_atr_mult: float | None = None
     atr_filter_enabled: bool | None = None
-    atr_multiplier: float | None = None
     atr_minimum: float | None = None
+    atr_period: int | None = None
     take_profit_pct: float | None = None
     stop_loss_pct: float | None = None
     lock_profit_enabled: bool | None = None
@@ -33,6 +41,8 @@ class SettingsUpdate(BaseModel):
     lock_distance_pct: float | None = None
     leverage: float | None = None
     position_size_pct: float | None = Field(default=None, ge=1, le=100)
+    debug_mode: bool | None = None
+    debug_log_bar_evals: bool | None = None
 
 
 @router.get("/status")
@@ -114,3 +124,56 @@ def export_json() -> Response:
         media_type="application/json",
         headers={"Content-Disposition": 'attachment; filename="sol-reversal-export.json"'},
     )
+
+
+@router.get("/debug/summary")
+def get_debug_summary() -> dict[str, Any]:
+    return {
+        "summary": debug_summary(),
+        "settings": {
+            "debug_mode": bool(sol_engine.settings().get("debug_mode")),
+            "debug_log_bar_evals": bool(sol_engine.settings().get("debug_log_bar_evals")),
+        },
+    }
+
+
+@router.get("/debug/events")
+def get_debug_events(
+    event_type: str | None = None,
+    limit: int = 500,
+) -> dict[str, Any]:
+    return {
+        "events": list_debug_events(event_type=event_type, limit=min(limit, 2000)),
+        "summary": debug_summary(),
+    }
+
+
+@router.get("/debug/trades")
+def get_debug_trades() -> dict[str, Any]:
+    """First 20 closed trades with paired open/signal context for TV comparison."""
+    opens = {e["payload"].get("position_id"): e for e in list_debug_events(event_type="TRADE_OPEN", limit=50)}
+    signals = list_debug_events(event_type="SIGNAL", limit=50)
+    closes = list_debug_events(event_type="TRADE_CLOSE", limit=MAX_DEBUG_TRADES)
+
+    paired = []
+    for close_evt in reversed(closes):
+        p = close_evt["payload"]
+        pid = p.get("position_id")
+        paired.append({
+            "trade_num": p.get("trade_num"),
+            "close": p,
+            "open": opens.get(pid, {}).get("payload") if pid else None,
+            "signal_eval": p.get("signal_eval"),
+        })
+    return {
+        "max_trades": MAX_DEBUG_TRADES,
+        "trades": paired,
+        "recent_signals": signals[:20],
+        "summary": debug_summary(),
+    }
+
+
+@router.delete("/debug/events")
+def delete_debug_events() -> dict[str, Any]:
+    deleted = clear_debug_events()
+    return {"deleted": deleted}

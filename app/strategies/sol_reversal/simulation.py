@@ -1,4 +1,4 @@
-"""Stateless bar simulation — shared by SOL paper trading and backtesting."""
+"""Stateless bar simulation — Pine Script exit logic (long-only)."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ def size_position(
     settings: dict[str, Any],
     symbol: str = "SOLUSDT",
 ) -> dict[str, Any] | None:
-    margin_pct = float(settings.get("position_size_pct", 50.0)) / 100.0
+    margin_pct = float(settings.get("position_size_pct", 2.0)) / 100.0
     leverage = float(settings.get("leverage", 25.0))
     margin = equity * margin_pct
     notional = margin * leverage
@@ -38,10 +38,10 @@ def open_position(
     sized = size_position(equity, entry, settings, symbol)
     if not sized:
         return None
-    tp, sl = levels_for_side(side, entry, settings)
+    tp, sl = levels_for_side("BUY", entry, settings)
     return {
         "symbol": symbol,
-        "side": side,
+        "side": "BUY",
         "entry": entry,
         "entry_time": entry_time,
         "stop_loss": sl,
@@ -52,6 +52,7 @@ def open_position(
         "position_value": sized["position_value"],
         "lock_active": False,
         "lock_stop": None,
+        "lock_high": None,
         "highest_profit_pct": 0.0,
         "mfe_pct": 0.0,
         "mae_pct": 0.0,
@@ -62,12 +63,8 @@ def open_position(
 def pnl_at_price(position: dict[str, Any], price: float) -> tuple[float, float]:
     entry = float(position["entry"])
     qty = float(position["quantity"])
-    side = position["side"]
-    move_pct = price_move_pct(side, entry, price)
-    if side == "BUY":
-        pnl = (price - entry) * qty
-    else:
-        pnl = (entry - price) * qty
+    pnl = (price - entry) * qty
+    move_pct = price_move_pct("BUY", entry, price)
     return round(pnl, 4), move_pct
 
 
@@ -81,37 +78,44 @@ def process_bar(
     settings: dict[str, Any],
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     """
-    Process one closed bar on an open position.
-    Returns (updated_position, closed_trade). closed_trade set when exited.
+    Process one bar on an open long — Pine TP/SL + continuous lock profit.
+    Returns (updated_position, closed_trade).
     """
-    side = position["side"]
     entry = float(position["entry"])
     sl = float(position["stop_loss"])
     tp = float(position["take_profit"])
+    base_sl = float(levels_for_side("BUY", entry, settings)[1])
 
-    _, pnl_pct_high = pnl_at_price(position, high if side == "BUY" else low)
-    _, pnl_pct_low = pnl_at_price(position, low if side == "BUY" else high)
+    _, pnl_pct_high = pnl_at_price(position, high)
+    _, pnl_pct_low = pnl_at_price(position, low)
     mfe = max(float(position.get("mfe_pct") or 0), pnl_pct_high)
     mae = min(float(position.get("mae_pct") or 0), pnl_pct_low)
 
-    lock_active = bool(position.get("lock_active"))
+    profit_pct_now = price_move_pct("BUY", entry, close)
+    lock_high = position.get("lock_high")
+    lock_active = False
     lock_stop = position.get("lock_stop")
-    highest_profit = max(float(position.get("highest_profit_pct") or 0), pnl_pct_high)
 
-    if settings.get("lock_profit_enabled") and highest_profit >= float(settings.get("lock_trigger_pct", 3.0)):
-        lock_active = True
-        dist = float(settings.get("lock_distance_pct", 3.0)) / 100.0
-        if side == "BUY":
-            lock_stop = round(high * (1 - dist), 4)
-            sl = max(sl, lock_stop)
+    if settings.get("lock_profit_enabled"):
+        trigger = float(settings.get("lock_trigger_pct", 20.0))
+        lock_sl_pct = float(settings.get("lock_distance_pct", 5.0)) / 100.0
+        if profit_pct_now >= trigger:
+            lock_high = high if lock_high is None else max(float(lock_high), high)
+            lock_stop = round(float(lock_high) * (1 - lock_sl_pct), 4)
+            sl = max(base_sl, lock_stop)
+            lock_active = True
         else:
-            lock_stop = round(low * (1 + dist), 4)
-            sl = min(sl, lock_stop)
+            lock_high = None
+            lock_stop = None
+            sl = base_sl
+
+    highest_profit = max(float(position.get("highest_profit_pct") or 0), profit_pct_now, pnl_pct_high)
 
     position = {
         **position,
         "lock_active": lock_active,
         "lock_stop": lock_stop,
+        "lock_high": lock_high,
         "highest_profit_pct": highest_profit,
         "mfe_pct": mfe,
         "mae_pct": mae,
@@ -121,23 +125,17 @@ def process_bar(
 
     exit_price = None
     reason = None
-    if side == "BUY":
-        if low <= sl:
-            exit_price, reason = sl, "LOCK" if lock_active else "SL"
-        elif high >= tp:
-            exit_price, reason = tp, "TP"
-    else:
-        if high >= sl:
-            exit_price, reason = sl, "LOCK" if lock_active else "SL"
-        elif low <= tp:
-            exit_price, reason = tp, "TP"
+    if low <= sl:
+        exit_price, reason = sl, "LOCK" if lock_active else "SL"
+    elif high >= tp:
+        exit_price, reason = tp, "TP"
 
     if exit_price is None:
         return position, None
 
     pnl_usd, price_move = pnl_at_price(position, exit_price)
     closed = {
-        "side": side,
+        "side": "BUY",
         "entry_time": int(position["entry_time"]),
         "exit_time": bar_time,
         "entry_price": entry,
@@ -152,7 +150,7 @@ def process_bar(
         "highest_profit_pct": highest_profit,
         "stop_loss": sl,
         "take_profit": tp,
-        "initial_stop": float(levels_for_side(side, entry, settings)[1]),
+        "initial_stop": base_sl,
         "quantity": position["quantity"],
         "leverage": position["leverage"],
         "margin_used": position["margin_used"],

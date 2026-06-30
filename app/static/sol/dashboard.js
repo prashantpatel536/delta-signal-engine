@@ -173,10 +173,11 @@
     const fields = [
       ["min_red_candles", "Min Red Candles", "number"],
       ["max_green_candles", "Max Green Candles", "number"],
-      ["strong_candle_enabled", "Strong Candle", "checkbox"],
-      ["atr_filter_enabled", "ATR Filter", "checkbox"],
-      ["atr_multiplier", "ATR Multiplier", "number"],
+      ["strong_candle_enabled", "Strong Candle (body > ATR×mult)", "checkbox"],
+      ["strong_candle_atr_mult", "Strong Candle ATR Mult", "number"],
+      ["atr_filter_enabled", "ATR Filter (atr > min)", "checkbox"],
       ["atr_minimum", "ATR Minimum", "number"],
+      ["atr_period", "ATR Period", "number"],
       ["take_profit_pct", "Take Profit (SOL price %)", "number"],
       ["stop_loss_pct", "Stop Loss (SOL price %)", "number"],
       ["lock_profit_enabled", "Lock Profit", "checkbox"],
@@ -184,6 +185,8 @@
       ["lock_distance_pct", "Lock Distance (SOL price %)", "number"],
       ["leverage", "Leverage", "number"],
       ["position_size_pct", "Position Size %", "number"],
+      ["debug_mode", "Debug Mode (Pine parity log)", "checkbox"],
+      ["debug_log_bar_evals", "Log Every Bar Eval", "checkbox"],
     ];
     $("settings-form").innerHTML = fields.map(([key, label, type]) => {
       const val = s[key];
@@ -192,6 +195,41 @@
       }
       return `<label>${label}<input type="number" step="any" data-key="${key}" value="${val}" /></label>`;
     }).join("");
+  }
+
+  async function loadDebug() {
+    try {
+      const data = await DSE.fetchJson("/sol/api/debug/summary");
+      const s = data.summary || {};
+      $("debug-summary-cards").innerHTML = [
+        ["Bar Evals", s.bar_evaluations],
+        ["Signals", s.signals],
+        ["Opens", s.trade_opens],
+        ["Closes", `${s.trade_closes} / ${s.max_trades}`],
+        ["Cap Reached", s.trade_cap_reached ? "Yes" : "No"],
+      ].map(([k, v]) => `<div class="stat-card"><span class="k">${k}</span><strong>${v ?? 0}</strong></div>`).join("");
+
+      const events = await DSE.fetchJson("/sol/api/debug/events?limit=100");
+      $("debug-events-body").innerHTML = (events.events || []).map((e, i) => {
+        const p = e.payload || {};
+        const detail = e.event_type === "BAR_EVAL"
+          ? `reds[1]=${p.pine_consec_reds_prev} greens=${p.pine_consec_greens_now} sig=${p.signal || "—"}`
+          : e.event_type === "TRADE_OPEN"
+            ? `entry=${p.entry} tp=${p.take_profit} sl=${p.stop_loss}`
+            : e.event_type === "TRADE_CLOSE"
+              ? `exit=${p.exit_price} ${p.exit_reason} pnl=${p.pnl_usd}`
+              : JSON.stringify(p).slice(0, 80);
+        return `<tr>
+          <td>${i + 1}</td>
+          <td>${e.event_type}</td>
+          <td>${(e.created_at || "").slice(0, 19)}</td>
+          <td>${p.side || p.signal || "—"}</td>
+          <td class="muted">${detail}</td>
+        </tr>`;
+      }).join("") || '<tr><td colspan="5" class="empty">No debug events — enable Debug Mode in Settings</td></tr>';
+    } catch (err) {
+      console.warn("debug load failed", err);
+    }
   }
 
   async function refresh() {
@@ -209,6 +247,7 @@
     if (!$("settings-form").children.length) {
       renderSettingsForm(status.settings || {});
     }
+    await loadDebug();
     const bootErr = $("chart-boot-error");
     if (bootErr && chartData.candles?.length) {
       bootErr.hidden = true;
@@ -232,6 +271,12 @@
 
   $("export-csv")?.addEventListener("click", () => {
     window.open("/sol/api/export/trades.csv", "_blank");
+  });
+
+  $("debug-refresh")?.addEventListener("click", () => loadDebug());
+  $("debug-clear")?.addEventListener("click", async () => {
+    await DSE.fetchJson("/sol/api/debug/events", { method: "DELETE" });
+    await loadDebug();
   });
 
   $("sol-bars-select")?.addEventListener("change", (e) => {

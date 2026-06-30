@@ -129,6 +129,27 @@
         <div class="panel-head"><h2>Strategy Settings</h2><button type="button" class="btn-primary btn-sm" id="save-settings">Save</button></div>
         <div class="sigprob-form-grid" id="settings-form"></div>
       </section>
+
+      <section class="panel" id="debug-panel">
+        <div class="panel-head">
+          <h2>Pine Parity Debug</h2>
+          <div>
+            <button type="button" class="btn-secondary btn-sm" id="debug-refresh">Refresh</button>
+            <button type="button" class="btn-secondary btn-sm" id="debug-clear">Clear Log</button>
+            <a class="btn-secondary btn-sm" href="/sol/api/debug/trades" target="_blank">Export JSON</a>
+          </div>
+        </div>
+        <p class="muted">Enable <strong>Debug Mode</strong> in Settings. Logs every signal and the first 20 trades with full filter breakdown for TradingView comparison.</p>
+        <div class="pro-cards" id="debug-summary-cards"></div>
+        <div class="table-wrap optimizer-table-wrap">
+          <table class="data-table compact-table">
+            <thead>
+              <tr><th>#</th><th>Event</th><th>Time</th><th>Side</th><th>Detail</th></tr>
+            </thead>
+            <tbody id="debug-events-body"></tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 

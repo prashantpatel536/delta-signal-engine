@@ -62,13 +62,13 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
     trades: list[dict[str, Any]] = []
     trade_num = 0
 
-    # Bar-by-bar replay — only closed bars, no look-ahead
+    # Bar-by-bar replay on HA series (same as Pine chart HA open/close)
     for idx in range(1, len(ha)):
         bar_time = int(ha.iloc[idx]["time"])
-        ohlc_row = display_df.iloc[idx]
-        high = float(ohlc_row["high"])
-        low = float(ohlc_row["low"])
-        close = float(ohlc_row["close"])
+        ha_row = ha.iloc[idx]
+        high = float(ha_row["high"])
+        low = float(ha_row["low"])
+        close = float(ha_row["close"])
 
         if position:
             position, closed = process_bar(
@@ -80,11 +80,11 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
                 settings=settings,
             )
             if closed:
-                exit_px = _apply_slippage(closed["exit_price"], closed["side"], False, slippage_pct)
+                exit_px = _apply_slippage(closed["exit_price"], "BUY", False, slippage_pct)
                 qty = float(closed["quantity"])
                 closed["exit_price"] = round(exit_px, 4)
                 pnl_usd, move_pct = pnl_at_price(
-                    {"side": closed["side"], "entry": closed["entry_price"], "quantity": closed["quantity"]},
+                    {"side": "BUY", "entry": closed["entry_price"], "quantity": closed["quantity"]},
                     exit_px,
                 )
                 comm = _commission_cost(qty * exit_px, commission_pct)
@@ -98,19 +98,46 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
                     "price_move_pct": move_pct,
                 })
 
-        if position is None and idx >= 1:
+        if position is None:
             signal = detect_signal_at_index(ha, settings, idx, atr=atr)
             if signal:
-                raw_entry = float(ha.iloc[idx]["close"])
-                entry = _apply_slippage(raw_entry, signal, True, slippage_pct)
+                raw_entry = close
+                entry = _apply_slippage(raw_entry, "BUY", True, slippage_pct)
                 position = open_position(
-                    signal, entry, bar_time, settings, equity, symbol=symbol
+                    "BUY", entry, bar_time, settings, equity, symbol=symbol
                 )
                 if position:
                     comm = _commission_cost(
                         float(position["quantity"]) * entry, commission_pct
                     )
                     equity -= comm
+                    # Pine: exit on same bar after entry
+                    position, closed = process_bar(
+                        position,
+                        bar_time=bar_time,
+                        high=high,
+                        low=low,
+                        close=close,
+                        settings=settings,
+                    )
+                    if closed:
+                        exit_px = _apply_slippage(closed["exit_price"], "BUY", False, slippage_pct)
+                        qty = float(closed["quantity"])
+                        closed["exit_price"] = round(exit_px, 4)
+                        pnl_usd, move_pct = pnl_at_price(
+                            {"side": "BUY", "entry": closed["entry_price"], "quantity": closed["quantity"]},
+                            exit_px,
+                        )
+                        comm_exit = _commission_cost(qty * exit_px, commission_pct)
+                        pnl_usd -= comm_exit
+                        equity += pnl_usd
+                        trade_num += 1
+                        trades.append({
+                            **closed,
+                            "trade_num": trade_num,
+                            "pnl_usd": round(pnl_usd, 4),
+                            "price_move_pct": move_pct,
+                        })
 
     equity_curve = build_equity_curve(initial_capital, trades)
     stats = aggregate_statistics(initial_capital, equity, trades, equity_curve)

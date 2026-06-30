@@ -9,9 +9,9 @@ from app.strategies.sol_reversal.strategy import levels_for_side
 
 
 def test_levels_price_based_not_roe():
-    tp, sl = levels_for_side("BUY", 100.0, {"take_profit_pct": 7.0, "stop_loss_pct": 1.0})
-    assert tp == 107.0
-    assert sl == 99.0
+    tp, sl = levels_for_side("BUY", 100.0, {"take_profit_pct": 40.0, "stop_loss_pct": 25.0})
+    assert tp == 140.0
+    assert sl == 75.0
 
 
 def test_process_bar_hits_take_profit():
@@ -19,11 +19,11 @@ def test_process_bar_hits_take_profit():
     pos = open_position("BUY", 100.0, 1000, settings, 1000.0)
     assert pos is not None
     _, closed = process_bar(
-        pos, bar_time=2000, high=108.0, low=99.5, close=107.0, settings=settings
+        pos, bar_time=2000, high=145.0, low=99.5, close=140.0, settings=settings
     )
     assert closed is not None
     assert closed["exit_reason"] == "TP"
-    assert closed["exit_price"] == 107.0
+    assert closed["exit_price"] == 140.0
 
 
 def test_aggregate_statistics_basic():

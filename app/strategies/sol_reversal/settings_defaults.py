@@ -1,4 +1,4 @@
-"""Default strategy settings for SOL Reversal Engine."""
+"""Default strategy settings — aligned to CE jumbo Pine Script inputs."""
 
 from __future__ import annotations
 
@@ -8,23 +8,24 @@ from typing import Any
 DEFAULT_SETTINGS: dict[str, Any] = {
     "symbol": "SOLUSDT",
     "timeframe": "5m",
-    "min_red_candles": 4,
-    "max_green_candles": 2,
+    "min_red_candles": 7,
+    "max_green_candles": 3,
     "strong_candle_enabled": True,
-    "strong_candle_body_pct": 0.15,
+    "strong_candle_atr_mult": 0.5,
     "atr_filter_enabled": True,
-    "atr_multiplier": 0.2,
-    "atr_minimum": 0.01,
+    "atr_minimum": 1.0,
     "atr_period": 14,
-    "take_profit_pct": 7.0,
-    "stop_loss_pct": 1.0,
+    "take_profit_pct": 40.0,
+    "stop_loss_pct": 25.0,
     "lock_profit_enabled": True,
-    "lock_trigger_pct": 3.0,
-    "lock_distance_pct": 3.0,
-    "initial_capital": 1000.0,
+    "lock_trigger_pct": 20.0,
+    "lock_distance_pct": 5.0,
+    "initial_capital": 100000.0,
     "leverage": 25.0,
-    "position_size_pct": 50.0,
+    "position_size_pct": 2.0,
     "ambiguous_bar_rule": "STOP_FIRST",
+    "debug_mode": False,
+    "debug_log_bar_evals": False,
 }
 
 
