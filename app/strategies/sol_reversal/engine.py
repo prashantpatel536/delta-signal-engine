@@ -14,6 +14,7 @@ from app.strategies.sol_reversal.debug import (
 from app.strategies.sol_reversal.market import sol_market
 from app.strategies.sol_reversal.paper import SolPaperService
 from app.strategies.sol_reversal.repositories import SolEngineRepository, SolSettingsRepository
+from app.strategies.sol_reversal.simulation import preview_open_position
 from app.strategies.sol_reversal.strategy import detect_buy_condition_at_index, levels_for_side, target_price_pcts
 
 logger = logging.getLogger(__name__)
@@ -207,21 +208,36 @@ class SolReversalEngine:
             unrealized, price_pct = self.paper.unrealized_pnl(pos, price)
             margin = float(pos.get("margin_used") or 0)
             roe_pct = round(unrealized / margin * 100, 2) if margin > 0 else 0.0
+            ha_high = None
+            if snap.get("ha_candle"):
+                ha_high = float(snap["ha_candle"].get("high") or price)
+            live = preview_open_position(
+                pos,
+                live_price=price,
+                settings=settings,
+                bar_high=ha_high,
+            )
             tp_pct, sl_pct = target_price_pcts(
-                "BUY", float(pos["entry"]), float(pos["take_profit"]), float(pos["stop_loss"])
+                "BUY",
+                float(pos["entry"]),
+                float(pos["take_profit"]),
+                float(live.get("stop_loss") or pos["stop_loss"]),
             )
             pos_view = {
                 **pos,
                 "current_price": price,
                 "unrealized_usd": unrealized,
                 "unrealized_pct": price_pct,
-                "price_move_pct": price_pct,
+                "price_move_pct": live.get("price_move_pct", price_pct),
                 "roe_pct": roe_pct,
                 "take_profit_price_pct": tp_pct,
                 "stop_loss_price_pct": sl_pct,
-                "highest_profit_pct": pos.get("highest_profit_pct", 0),
-                "lock_active": bool(pos.get("lock_active")),
-                "lock_stop": pos.get("lock_stop"),
+                "highest_profit_pct": live.get("highest_profit_pct", pos.get("highest_profit_pct", 0)),
+                "lock_active": live.get("lock_active", bool(pos.get("lock_active"))),
+                "lock_stop": live.get("lock_stop", pos.get("lock_stop")),
+                "stop_loss": live.get("stop_loss", pos.get("stop_loss")),
+                "lock_trigger_pct": live.get("lock_trigger_pct"),
+                "lock_profit_enabled": live.get("lock_profit_enabled"),
             }
 
         equity = float(acct["balance"]) + unrealized

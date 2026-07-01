@@ -61,6 +61,7 @@
       ${statCard("Entries (view)", sigCount ?? "—")}
       ${statCard("Min Red / SL%", `${minRed ?? "?"} / ${chartData?.signal_context?.settings_sl_pct ?? "?"}%`)}
       ${statCard("Fill mode", chartData?.signal_context?.fill_mode ?? "—", "muted")}
+      ${statCard("Markers", chartData?.signal_context?.marker_mode ?? "—", "muted")}
       ${statCard("Raw conditions", rawCount ?? "—", "muted")}`;
     $("ws-status").textContent = m.ws_connected ? "WS Connected" : "REST Polling";
     $("sol-status-dot").className = `dot ${data.engine?.running ? "ok" : ""}`;
@@ -78,6 +79,7 @@
       ${statCard("Account PnL $", pos.unrealized_usd, valCls(pos.unrealized_usd))}
       ${statCard("Account ROE", `${pos.roe_pct ?? 0}%`, valCls(pos.roe_pct))}
       ${statCard("Peak Price Move", `${pos.highest_profit_pct ?? 0}%`)}
+      ${statCard("Lock Trigger", pos.lock_profit_enabled ? `${pos.lock_trigger_pct ?? "?"}%` : "Off")}
       ${statCard("Stop", `${pos.stop_loss} (−${pos.stop_loss_price_pct ?? "?"}% price)`)}
       ${statCard("Target", `${pos.take_profit} (+${pos.take_profit_price_pct ?? "?"}% price)`)}
       ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}
@@ -131,6 +133,7 @@
           quantity: pos.quantity ?? 0,
           leverage: pos.leverage ?? 1,
           margin_used: pos.margin_used ?? 0,
+          unrealized_pnl: pos.unrealized_usd ?? 0,
         }
       : null;
     engine.update(chartData, {

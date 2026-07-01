@@ -74,6 +74,56 @@ def pnl_at_price(position: dict[str, Any], price: float) -> tuple[float, float]:
     return round(pnl, 4), move_pct
 
 
+def preview_open_position(
+    position: dict[str, Any],
+    *,
+    live_price: float,
+    settings: dict[str, Any],
+    bar_high: float | None = None,
+) -> dict[str, Any]:
+    """
+    Live lock/peak preview between closed HA bars (dashboard display).
+    Pine activates lock when bar *close* profit >= trigger; peak uses high.
+    """
+    entry = float(position["entry"])
+    close = float(live_price)
+    high = float(bar_high if bar_high is not None else live_price)
+    profit_now = price_move_pct("BUY", entry, close)
+    _, move_high = pnl_at_price(
+        {"entry": entry, "quantity": float(position.get("quantity") or 1), "side": "BUY"},
+        high,
+    )
+    peak = max(float(position.get("highest_profit_pct") or 0), profit_now, move_high)
+
+    lock_active = bool(position.get("lock_active"))
+    lock_stop = position.get("lock_stop")
+    effective_sl = float(position.get("stop_loss") or 0)
+    lock_high = position.get("highest_price")
+
+    if settings.get("lock_profit_enabled"):
+        trigger = float(settings.get("lock_trigger_pct", 20.0))
+        lock_sl_pct = float(settings.get("lock_distance_pct", 5.0)) / 100.0
+        if profit_now >= trigger:
+            lock_high = high if lock_high is None else max(float(lock_high), high)
+            lock_stop = round(float(lock_high) * (1 - lock_sl_pct), 4)
+            lock_active = True
+            _, base_sl = levels_for_side("BUY", entry, settings)
+            if base_sl is None:
+                effective_sl = float(lock_stop)
+            else:
+                effective_sl = max(base_sl, float(lock_stop))
+
+    return {
+        "highest_profit_pct": round(peak, 4),
+        "price_move_pct": profit_now,
+        "lock_active": lock_active,
+        "lock_stop": lock_stop,
+        "stop_loss": effective_sl,
+        "lock_trigger_pct": float(settings.get("lock_trigger_pct", 20.0)),
+        "lock_profit_enabled": bool(settings.get("lock_profit_enabled")),
+    }
+
+
 def process_bar(
     position: dict[str, Any],
     *,

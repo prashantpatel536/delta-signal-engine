@@ -129,11 +129,16 @@ class SolMarketStore:
             }
 
     def chart_payload(self, bars: int = 200) -> dict[str, Any]:
-        """HA chart + one BUY entry marker per trade (flat-only execution replay)."""
+        """HA chart + markers from real paper trades (no ghost replay while position open)."""
+        from app.strategies.sol_reversal.chart_markers import markers_from_paper_trades
         from app.strategies.sol_reversal.replay import markers_for_chart, raw_condition_markers, replay_markers
-        from app.strategies.sol_reversal.repositories import SolSettingsRepository
+        from app.strategies.sol_reversal.repositories import SolPositionRepository, SolSettingsRepository
 
         settings = SolSettingsRepository().get_all()
+        pos_repo = SolPositionRepository()
+        open_pos = pos_repo.get_open()
+        closed = pos_repo.list_closed(80)
+
         with self._lock:
             ohlc = self._ohlc.tail(bars).copy()
             ha = self._ha.tail(bars).copy()
@@ -156,15 +161,34 @@ class SolMarketStore:
             ha["volume"] = ohlc["volume"].astype(float).values
 
         candles = candles_to_records(ha)
-        replay = replay_markers(ha, settings)
-        signals = markers_for_chart(replay)
+        candle_times = [int(c["time"]) for c in candles]
+        paper_signals = markers_from_paper_trades(
+            candle_times,
+            open_position=open_pos,
+            closed_positions=closed,
+            timeframe=TIMEFRAME,
+        )
+
+        marker_source = "paper_trades"
+        if open_pos or paper_signals:
+            signals = paper_signals
+            replay = {"entries": [], "exits": [], "raw_conditions": [], "trades": []}
+        else:
+            replay = replay_markers(ha, settings)
+            signals = markers_for_chart(replay)
+            marker_source = "replay"
+            for sig in signals:
+                sig["timeframe"] = TIMEFRAME
+
         entry_times = {int(s["candle_time"]) for s in signals if s.get("status") == "ENTRY"}
-        for sig in signals:
-            sig["timeframe"] = TIMEFRAME
-        if settings.get("show_raw_ha_conditions"):
+        if settings.get("show_raw_ha_conditions") and not open_pos:
+            if not replay.get("raw_conditions"):
+                replay = replay_markers(ha, settings)
             for sig in raw_condition_markers(replay["raw_conditions"], entry_times=entry_times):
                 sig["timeframe"] = TIMEFRAME
                 signals.append(sig)
+
+        opened_at = open_pos.get("opened_at") if open_pos else None
 
         return {
             "symbol": "SOL",
@@ -182,15 +206,17 @@ class SolMarketStore:
                 "candle_count": len(candles),
                 "chart_display_source": "heikin_ashi",
                 "strategy_candle_mode": "heikin_ashi",
-                "entry_count": len(replay["entries"]),
-                "exit_count": len(replay["exits"]),
-                "raw_condition_count": len(replay["raw_conditions"]),
-                "trade_count": len(replay["trades"]),
+                "entry_count": len([s for s in signals if s.get("status") == "ENTRY"]),
+                "exit_count": len([s for s in signals if s.get("status") in ("TP_HIT", "SL_HIT", "LOCK_HIT")]),
+                "raw_condition_count": len(replay.get("raw_conditions", [])),
+                "trade_count": len(paper_signals) // 2 + (1 if open_pos else 0),
                 "settings_min_red": settings.get("min_red_candles"),
                 "settings_sl_pct": settings.get("stop_loss_pct"),
                 "fill_mode": "bar_close" if settings.get("process_orders_on_close") else "next_bar_open",
-                "entry_times": [e["candle_time"] for e in replay["entries"]],
-                "marker_mode": "executable_entries",
+                "entry_times": entry_times,
+                "marker_mode": marker_source,
+                "open_position_since": opened_at,
+                "has_open_position": open_pos is not None,
             },
             "candle_counts": {"sent": len(candles)},
         }

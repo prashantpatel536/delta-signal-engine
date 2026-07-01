@@ -420,6 +420,7 @@
       const entry = Number(position.entry);
       const sl = Number(position.stop_loss);
       const tp = Number(position.take_profit);
+      const lockStop = Number(position.lock_stop);
       const current = Number(position.current_price);
       const qty = Number(position.quantity);
       const lev = Number(position.leverage);
@@ -432,8 +433,11 @@
       const lines = [
         { price: tp, color: TERMINAL.up, title: "TP" },
         { price: entry, color: "#eaecef", title: entryTitle },
-        { price: sl, color: TERMINAL.down, title: "SL" },
       ];
+      if (position.lock_active && Number.isFinite(lockStop) && lockStop > 0) {
+        lines.push({ price: lockStop, color: TERMINAL.warn || "#f0b90b", title: "LOCK" });
+      }
+      lines.push({ price: sl, color: TERMINAL.down, title: "SL" });
 
       for (const spec of lines) {
         if (!Number.isFinite(spec.price)) continue;
@@ -457,7 +461,7 @@
       if (!this.pnlOverlayEl) return;
       const sideLabel = position.side === "BUY" ? "LONG" : "SHORT";
       const sideClass = position.side === "BUY" ? "long" : "short";
-      const pnl = Number(position.unrealized_pnl);
+      const pnl = Number(position.unrealized_pnl ?? position.unrealized_usd ?? 0);
       const pnlClass = pnl >= 0 ? "up" : "down";
       const qty = Number(position.quantity);
       const lev = Number(position.leverage);
