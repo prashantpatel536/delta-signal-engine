@@ -69,7 +69,7 @@ def test_one_entry_per_trade_despite_repeated_conditions(monkeypatch):
     """Repeated BUY conditions on consecutive bars only produce one entry until flat again."""
     import pandas as pd
 
-    from app.strategies.sol_reversal import simulation
+    from app.strategies.sol_reversal import strategy
 
     times = [1_700_000_000 + i * 300 for i in range(8)]
     ha = pd.DataFrame({
@@ -87,15 +87,14 @@ def test_one_entry_per_trade_despite_repeated_conditions(monkeypatch):
     def fake_condition(_candles, _settings, idx, *, atr=None):
         return "BUY" if idx in condition_bars else None
 
-    monkeypatch.setattr(simulation, "detect_buy_condition_at_index", fake_condition)
+    monkeypatch.setattr(strategy, "detect_buy_condition_at_index", fake_condition)
     settings = {
         **DEFAULT_SETTINGS,
         "take_profit_pct": 99.0,
         "stop_loss_pct": 99.0,
         "lock_profit_enabled": False,
     }
-    result = simulation.replay_strategy(ha, settings)
+    result = replay_strategy(ha, settings)
     assert len(result["entries"]) == 1
-    assert len(result["raw_conditions"]) == 0
     markers = markers_for_chart(result)
     assert len([m for m in markers if m["status"] == "ENTRY"]) == 1

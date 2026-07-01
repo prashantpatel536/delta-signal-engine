@@ -33,6 +33,7 @@ from app.research_optimizer_api import router as research_optimizer_router
 from app.research_signal_probability_api import router as signal_probability_router
 from app.research_sma_optimizer_api import router as sma_optimizer_router
 from app.strategies.sol_reversal.api import router as sol_reversal_router
+from app.strategies.sol_reversal.optimizer_api import router as sol_optimizer_router
 from app.strategies.sol_reversal.db import init_sol_db
 from app.backtest.api import router as backtest_router
 from app.backtest.db import init_backtest_db
@@ -338,6 +339,7 @@ app.include_router(research_optimizer_router)
 app.include_router(signal_probability_router)
 app.include_router(sma_optimizer_router)
 app.include_router(sol_reversal_router)
+app.include_router(sol_optimizer_router)
 app.include_router(backtest_router)
 app.include_router(debug_router)
 

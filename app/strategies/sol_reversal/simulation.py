@@ -263,134 +263,22 @@ def replay_strategy(
     """
     Bar-by-bar strategy replay (TradingView pyramiding=0).
 
-    - ``raw_conditions``: every bar where the HA BUY condition is true
-    - ``entries``: executable entries only when flat (one per trade)
-    - ``exits`` / ``trades``: closed positions
+    Thin wrapper around :class:`StrategyEngine` — same path as backtest and optimizer.
     """
-    import pandas as pd
-
-    from app.strategies.sol_reversal.indicators import compute_atr
+    from app.strategies.sol_reversal.strategy_engine import ExecutionConfig, StrategyEngine
 
     if candles.empty or len(candles) < 2:
         return {"entries": [], "exits": [], "raw_conditions": [], "trades": []}
 
-    if atr is None:
-        atr = compute_atr(candles, int(settings.get("atr_period", 14)))
-
-    raw = scan_buy_conditions(candles, settings, atr=atr)
-    entries: list[dict[str, Any]] = []
-    exits: list[dict[str, Any]] = []
-    trades: list[dict[str, Any]] = []
-    position: dict[str, Any] | None = None
-    equity = initial_equity
-    trade_num = 0
-    pending_signal = False
-    on_close_entry = bool(settings.get("process_orders_on_close", False))
-
-    def _close_position(closed: dict[str, Any]) -> None:
-        nonlocal trade_num, equity, position
-        trade_num += 1
-        equity += _append_exit(exits, trades, closed, trade_num=trade_num)
-        if on_close:
-            on_close(closed)
-        position = None
-
-    def _open_at(
-        idx: int,
-        bar_time: int,
-        entry_px: float,
-        *,
-        high: float,
-        low: float,
-        close: float,
-        signal_bar: int,
-    ) -> None:
-        nonlocal position, equity, pending_signal
-        entry = entry_px if entry_price_at is None else entry_price_at(idx, entry_px)
-        position = open_position("BUY", entry, bar_time, settings, equity)
-        if not position:
-            pending_signal = False
-            return
-        if on_open:
-            delta = on_open(position)
-            if delta:
-                equity += float(delta)
-        entry_rec = {
-            "candle_time": bar_time,
-            "signal": "BUY",
-            "status": "ENTRY",
-            "entry_price": entry,
-            "bar_index": idx,
-            "signal_bar_index": signal_bar,
-        }
-        entries.append(entry_rec)
-        if on_entry:
-            on_entry(entry_rec)
-        pending_signal = False
-        position, closed = process_bar(
-            position,
-            bar_time=bar_time,
-            high=high,
-            low=low,
-            close=close,
-            settings=settings,
-        )
-        if closed:
-            _close_position(closed)
-
-    for idx in range(1, len(candles)):
-        row = candles.iloc[idx]
-        bar_time = int(row["time"])
-        open_px = float(row["open"])
-        high = float(row["high"])
-        low = float(row["low"])
-        close = float(row["close"])
-
-        filled_this_bar = False
-        if position is None and pending_signal:
-            _open_at(
-                idx,
-                bar_time,
-                open_px,
-                high=high,
-                low=low,
-                close=close,
-                signal_bar=idx - 1,
-            )
-            filled_this_bar = position is not None or not pending_signal
-
-        if position and not filled_this_bar:
-            position, closed = process_bar(
-                position,
-                bar_time=bar_time,
-                high=high,
-                low=low,
-                close=close,
-                settings=settings,
-            )
-            if closed:
-                _close_position(closed)
-
-        if position is None and not pending_signal and detect_buy_condition_at_index(
-            candles, settings, idx, atr=atr
-        ):
-            if on_close_entry:
-                _open_at(
-                    idx,
-                    bar_time,
-                    close,
-                    high=high,
-                    low=low,
-                    close=close,
-                    signal_bar=idx,
-                )
-            else:
-                pending_signal = True
-
-    return {
-        "entries": entries,
-        "exits": exits,
-        "raw_conditions": raw,
-        "trades": trades,
-        "final_equity": equity,
-    }
+    execution = ExecutionConfig(initial_capital=initial_equity)
+    engine = StrategyEngine(settings, execution=execution, ha_candles=candles)
+    if atr is not None:
+        engine._atr = atr
+        engine._raw_conditions = scan_buy_conditions(candles, settings, atr=atr)
+    engine.set_execution_hooks(
+        entry_price_at=entry_price_at,
+        on_entry=on_entry,
+        on_open=on_open,
+        on_close=on_close,
+    )
+    return engine.run()
