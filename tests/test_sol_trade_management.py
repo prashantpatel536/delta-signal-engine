@@ -2,13 +2,9 @@
 
 import pandas as pd
 
+from app.strategies.sol_reversal.position_metrics import compute_position_metrics, lock_stop_price
 from app.strategies.sol_reversal.settings_defaults import DEFAULT_SETTINGS
-from app.strategies.sol_reversal.simulation import (
-    compute_lock_state,
-    open_position,
-    process_bar,
-    replay_strategy,
-)
+from app.strategies.sol_reversal.simulation import open_position, process_bar, replay_strategy
 from app.strategies.sol_reversal.strategy import levels_for_side
 
 
@@ -17,36 +13,36 @@ def _bars(rows: list[dict]) -> pd.DataFrame:
 
 
 def test_lock_stop_ratchet_matches_user_example():
-    """Lock stop trails peak upward only; never decreases on pullback."""
     entry = 72.28
     settings = {
         **DEFAULT_SETTINGS,
-        "enable_stop_loss": True,
-        "stop_loss_pct": 25.0,
         "lock_profit_enabled": True,
         "lock_trigger_pct": 3.0,
         "lock_distance_pct": 3.0,
     }
     pos = {
         "entry": entry,
-        "quantity": 1.0,
         "lock_active": True,
-        "lock_high": 74.50,
-        "lock_stop": round(74.50 * 0.97, 4),
+        "highest_since_entry": entry,
+        "highest_since_lock": 74.50,
+        "lock_stop": lock_stop_price(74.50, 3.0),
+        "initial_stop_loss": round(entry * 0.99, 4),
     }
-    state = compute_lock_state(pos, high=75.20, close=75.00, settings=settings)
-    assert state["lock_active"] is True
-    assert state["highest_price_since_lock"] == 75.20
-    assert state["lock_stop"] == round(75.20 * 0.97, 4)
+    state = compute_position_metrics(
+        pos, bar_high=75.20, bar_low=75.0, bar_close=75.00, settings=settings
+    )
+    assert state["highest_since_lock"] == 75.20
+    assert state["lock_stop"] == lock_stop_price(75.20, 3.0)
 
-    pullback = compute_lock_state(
-        {**pos, "lock_high": 75.80, "lock_stop": round(75.80 * 0.97, 4)},
-        high=75.00,
-        close=75.00,
+    pullback = compute_position_metrics(
+        {**pos, "highest_since_lock": 75.80, "lock_stop": lock_stop_price(75.80, 3.0)},
+        bar_high=75.00,
+        bar_low=74.9,
+        bar_close=75.00,
         settings=settings,
     )
-    assert pullback["highest_price_since_lock"] == 75.80
-    assert pullback["lock_stop"] == round(75.80 * 0.97, 4)
+    assert pullback["highest_since_lock"] == 75.80
+    assert pullback["lock_stop"] == lock_stop_price(75.80, 3.0)
 
 
 def test_lock_stays_active_after_pullback_below_trigger():
@@ -65,7 +61,7 @@ def test_lock_stays_active_after_pullback_below_trigger():
     pos, closed = process_bar(pos, bar_time=3, high=103.0, low=102.5, close=102.8, settings=settings)
     assert closed is None
     assert pos["lock_active"] is True
-    assert pos["lock_stop"] == round(104.0 * 0.97, 4)
+    assert pos["lock_stop"] == lock_stop_price(104.0, 3.0)
 
 
 def test_levels_respect_enable_toggles():

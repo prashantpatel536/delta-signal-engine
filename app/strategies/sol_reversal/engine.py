@@ -51,24 +51,19 @@ class SolReversalEngine:
         )
         if debug_on:
             still = self.paper.positions.get_open()
-            if still:
-                log_debug_event("LOCK_DEBUG", lock_debug_payload(
-                    self.paper._to_sim(still),
-                    high=ha_high,
-                    close=ha_close,
-                    settings=settings,
-                ))
-            elif closed:
-                log_debug_event("LOCK_DEBUG", {
-                    **lock_debug_payload(
-                        self.paper._to_sim(open_pos),
-                        high=ha_high,
-                        close=ha_close,
-                        settings=settings,
-                    ),
-                    "trade_closed": True,
-                    "exit_reason": closed.get("exit_reason"),
-                })
+            sim = self.paper._to_sim(still or open_pos)
+            debug_payload = lock_debug_payload(
+                sim,
+                high=ha_high,
+                low=ha_low,
+                close=ha_close,
+                settings=settings,
+            )
+            log_debug_event("LOCK_DEBUG", debug_payload)
+            if not debug_payload.get("validation_ok", True):
+                for err in debug_payload.get("validation_errors") or []:
+                    self.engine_repo.log("ERROR", f"Position metrics: {err}")
+                    log_debug_event("CALC_ERROR", debug_payload)
         if closed:
             self.engine_repo.log("INFO", f"Closed BUY {closed['exit_reason']} pnl={closed['pnl_usd']}")
             if debug_on:
@@ -225,49 +220,70 @@ class SolReversalEngine:
         pos_view = None
         if pos:
             price = snap.get("last_price") or float(pos["entry"])
-            unrealized, price_pct = self.paper.unrealized_pnl(pos, price)
+            unrealized, _price_pct = self.paper.unrealized_pnl(pos, price)
             margin = float(pos.get("margin_used") or 0)
             roe_pct = round(unrealized / margin * 100, 2) if margin > 0 else 0.0
-            ha_high = None
-            if snap.get("ha_candle"):
-                ha_high = float(snap["ha_candle"].get("high") or price)
-            live = preview_open_position(
+            ha = snap.get("ha_candle") or {}
+            ha_high = float(ha.get("high") or price)
+            ha_low = float(ha.get("low") or price)
+            metrics = preview_open_position(
                 pos,
                 live_price=price,
                 settings=settings,
                 bar_high=ha_high,
+                bar_low=ha_low,
             )
-            tp_pct, sl_pct = target_price_pcts(
+            tp_pct, orig_sl_pct = target_price_pcts(
                 "BUY",
                 float(pos["entry"]),
                 float(pos["take_profit"]),
-                float(live.get("original_stop_loss") or pos["stop_loss"]),
+                float(metrics.get("original_stop_loss") or pos["stop_loss"]),
             )
             eff_pct = target_price_pcts(
                 "BUY",
                 float(pos["entry"]),
                 float(pos["take_profit"]),
-                float(live.get("effective_stop") or pos["stop_loss"]),
+                float(metrics.get("effective_stop") or pos["stop_loss"]),
             )[1]
+            validation = metrics.get("validation") or {}
             pos_view = {
                 **pos,
                 "current_price": price,
                 "unrealized_usd": unrealized,
-                "unrealized_pct": price_pct,
-                "price_move_pct": live.get("price_move_pct", price_pct),
+                "price_move_pct": metrics.get("current_price_move_pct"),
                 "roe_pct": roe_pct,
                 "take_profit_price_pct": tp_pct,
-                "stop_loss_price_pct": sl_pct,
+                "stop_loss_price_pct": orig_sl_pct,
                 "effective_stop_price_pct": eff_pct,
-                "highest_profit_pct": live.get("highest_profit_pct", pos.get("highest_profit_pct", 0)),
-                "highest_price_since_lock": live.get("highest_price_since_lock"),
-                "original_stop_loss": live.get("original_stop_loss", pos.get("stop_loss")),
-                "effective_stop": live.get("effective_stop", pos.get("stop_loss")),
-                "lock_active": live.get("lock_active", bool(pos.get("lock_active"))),
-                "lock_stop": live.get("lock_stop", pos.get("lock_stop")),
-                "trigger_price": live.get("trigger_price"),
-                "lock_trigger_pct": live.get("lock_trigger_pct"),
-                "lock_profit_enabled": live.get("lock_profit_enabled"),
+                "entry_price": metrics.get("entry_price", pos["entry"]),
+                "highest_since_entry": metrics.get("highest_since_entry"),
+                "highest_since_lock": metrics.get("highest_since_lock"),
+                "highest_price_since_lock": metrics.get("highest_since_lock"),
+                "peak_price_move_pct": metrics.get("peak_price_move_pct"),
+                "highest_profit_pct": metrics.get("peak_price_move_pct"),
+                "original_stop_loss": metrics.get("original_stop_loss"),
+                "effective_stop": metrics.get("effective_stop"),
+                "lock_stop": metrics.get("lock_stop"),
+                "lock_active": metrics.get("lock_active"),
+                "trigger_price": metrics.get("trigger_price"),
+                "lock_trigger_pct": metrics.get("lock_trigger_pct"),
+                "lock_distance_pct": metrics.get("lock_distance_pct"),
+                "lock_profit_enabled": metrics.get("lock_profit_enabled"),
+                "validation": validation,
+                "metrics_debug": {
+                    "entry": metrics.get("entry_price"),
+                    "current": metrics.get("current_price"),
+                    "highest_since_entry": metrics.get("highest_since_entry"),
+                    "highest_since_lock": metrics.get("highest_since_lock"),
+                    "peak_pct": metrics.get("peak_price_move_pct"),
+                    "expected_peak_pct": validation.get("expected_peak_pct"),
+                    "original_sl": metrics.get("original_stop_loss"),
+                    "lock_stop": metrics.get("lock_stop"),
+                    "expected_lock_stop": validation.get("expected_lock_stop"),
+                    "effective_stop": metrics.get("effective_stop"),
+                    "ok": validation.get("ok", True),
+                    "errors": validation.get("errors", []),
+                },
             }
 
         equity = float(acct["balance"]) + unrealized

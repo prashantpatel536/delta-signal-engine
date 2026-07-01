@@ -70,22 +70,63 @@
   function renderPosition(pos) {
     if (!pos) {
       $("position-cards").innerHTML = '<p class="muted">No open position</p>';
+      $("validation-body").innerHTML = '<tr><td colspan="4" class="empty">No open position</td></tr>';
       return;
     }
     $("position-cards").innerHTML = `
-      ${statCard("Direction", pos.side, pos.side === "BUY" ? "opt-pos" : "opt-neg")}
-      ${statCard("Entry", pos.entry)}
-      ${statCard("SOL Price Move", `${pos.price_move_pct ?? pos.unrealized_pct}%`, valCls(pos.price_move_pct ?? pos.unrealized_pct))}
+      ${statCard("Entry Price", pos.entry_price ?? pos.entry)}
+      ${statCard("Current Price", pos.current_price)}
+      ${statCard("Highest Since Entry", pos.highest_since_entry ?? "—")}
+      ${statCard("Highest Since Lock", pos.highest_since_lock ?? "—")}
+      ${statCard("Peak Price Move", `${pos.peak_price_move_pct ?? pos.highest_profit_pct ?? 0}%`)}
+      ${statCard("Current Move", `${pos.price_move_pct ?? 0}%`, valCls(pos.price_move_pct))}
+      ${statCard("Original Stop", pos.original_stop_loss ?? pos.stop_loss)}
+      ${statCard("Lock Stop", pos.lock_stop ?? "—", pos.lock_active ? "opt-warn" : "muted")}
+      ${statCard("Effective Stop", pos.effective_stop ?? "—")}
+      ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}
+      ${statCard("Lock Trigger", pos.lock_profit_enabled ? `${pos.lock_trigger_pct}% @ ${pos.trigger_price}` : "Off")}
+      ${statCard("Lock Distance", pos.lock_distance_pct != null ? `${pos.lock_distance_pct}%` : "—")}
       ${statCard("Account PnL $", pos.unrealized_usd, valCls(pos.unrealized_usd))}
       ${statCard("Account ROE", `${pos.roe_pct ?? 0}%`, valCls(pos.roe_pct))}
-      ${statCard("Peak Price Move", `${pos.highest_profit_pct ?? 0}%`)}
-      ${statCard("Lock Trigger", pos.lock_profit_enabled ? `${pos.lock_trigger_pct ?? "?"}% @ ${pos.trigger_price ?? "?"}` : "Off")}
-      ${statCard("Highest Since Lock", pos.highest_price_since_lock ?? "—")}
-      ${statCard("Original Stop", `${pos.original_stop_loss ?? pos.stop_loss} (−${pos.stop_loss_price_pct ?? "?"}%)`)}
-      ${statCard("Lock Stop", pos.lock_stop ?? "—", pos.lock_active ? "opt-warn" : "muted")}
-      ${statCard("Effective Stop", `${pos.effective_stop ?? pos.stop_loss} (−${pos.effective_stop_price_pct ?? pos.stop_loss_price_pct ?? "?"}%)`)}
-      ${statCard("Target", `${pos.take_profit} (+${pos.take_profit_price_pct ?? "?"}% price)`)}
-      ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}`;
+      ${statCard("Target", `${pos.take_profit} (+${pos.take_profit_price_pct ?? "?"}%)`)}`;
+    renderValidation(pos.metrics_debug);
+  }
+
+  function renderValidation(m) {
+    const body = $("validation-body");
+    if (!body) return;
+    if (!m) {
+      body.innerHTML = '<tr><td colspan="4" class="empty">No validation data</td></tr>';
+      return;
+    }
+    const ok = (match) => (match ? "OK" : "MISMATCH");
+    const cls = (match) => (match ? "" : "opt-neg");
+    const peakMatch = Math.abs(Number(m.peak_pct) - Number(m.expected_peak_pct)) <= 0.001;
+    const lockMatch = m.expected_lock_stop == null
+      ? true
+      : Math.abs(Number(m.lock_stop) - Number(m.expected_lock_stop)) <= 0.001;
+    const rows = [
+      ["Entry", m.entry, "—", "—"],
+      ["Current", m.current, "—", "—"],
+      ["Highest Since Entry", m.highest_since_entry, "—", "—"],
+      ["Highest Since Lock", m.highest_since_lock ?? "—", "—", "—"],
+      ["Peak %", m.peak_pct, m.expected_peak_pct, ok(peakMatch)],
+      ["Original SL", m.original_sl, "—", "—"],
+      ["Lock Stop", m.lock_stop ?? "—", m.expected_lock_stop ?? "—", m.expected_lock_stop != null ? ok(lockMatch) : "—"],
+      ["Effective Stop", m.effective_stop, "—", "—"],
+    ];
+    body.innerHTML = rows.map(([field, val, exp, status]) => {
+      const bad = status === "MISMATCH";
+      return `<tr class="${bad ? "opt-neg" : ""}">
+        <td>${field}</td>
+        <td class="${bad ? "opt-neg" : ""}"><strong>${val ?? "—"}</strong></td>
+        <td class="muted">${exp}</td>
+        <td class="${cls(!bad && status === "OK")} ${bad ? "opt-neg" : ""}"><strong>${status}</strong></td>
+      </tr>`;
+    }).join("");
+    if (!m.ok && m.errors?.length) {
+      body.innerHTML += `<tr><td colspan="4" class="opt-neg">${m.errors.join("; ")}</td></tr>`;
+    }
   }
 
   function renderStats(s) {
@@ -232,7 +273,9 @@
         const detail = e.event_type === "BAR_EVAL"
           ? `reds[1]=${p.pine_consec_reds_prev} greens=${p.pine_consec_greens_now} sig=${p.signal || "—"}`
           : e.event_type === "LOCK_DEBUG"
-            ? `lock=${p.lock_active} peak=${p.highest_price_since_lock ?? "—"} lockSL=${p.calculated_lock_stop ?? "—"} eff=${p.effective_stop}`
+            ? `peak=${p.peak_price_move_pct ?? p.peak_pct} exp=${p.expected_peak_pct} lockSL=${p.lock_stop ?? p.calculated_lock_stop} eff=${p.effective_stop}`
+            : e.event_type === "CALC_ERROR"
+              ? (p.validation_errors || []).join("; ")
             : e.event_type === "TRADE_OPEN"
             ? `entry=${p.entry} tp=${p.take_profit} sl=${p.stop_loss}`
             : e.event_type === "TRADE_CLOSE"

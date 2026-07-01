@@ -112,6 +112,13 @@ def _migrate_sol_db(conn: sqlite3.Connection) -> None:
     if "debug_mode" not in cols:
         conn.execute("ALTER TABLE sol_engine_state ADD COLUMN debug_mode INTEGER NOT NULL DEFAULT 0")
         conn.commit()
+    pos_cols = {row[1] for row in conn.execute("PRAGMA table_info(sol_positions)").fetchall()}
+    if "highest_since_entry" not in pos_cols:
+        conn.execute("ALTER TABLE sol_positions ADD COLUMN highest_since_entry REAL")
+        conn.commit()
+    if "highest_since_lock" not in pos_cols:
+        conn.execute("ALTER TABLE sol_positions ADD COLUMN highest_since_lock REAL")
+        conn.commit()
 
 
 @contextmanager

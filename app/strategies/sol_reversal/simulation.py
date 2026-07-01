@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 from app.contract_specs import contracts_from_notional, sizing_from_contracts
+from app.strategies.sol_reversal.position_metrics import compute_position_metrics, metrics_debug_payload
 from app.strategies.sol_reversal.strategy import (
     detect_buy_condition_at_index,
     levels_for_side,
@@ -59,6 +60,8 @@ def open_position(
         "lock_active": False,
         "lock_stop": None,
         "lock_high": None,
+        "highest_since_entry": entry,
+        "highest_since_lock": None,
         "initial_stop_loss": sl if sl is not None else 0.0,
         "highest_profit_pct": 0.0,
         "mfe_pct": 0.0,
@@ -75,92 +78,25 @@ def pnl_at_price(position: dict[str, Any], price: float) -> tuple[float, float]:
     return round(pnl, 4), move_pct
 
 
-def compute_lock_state(
-    position: dict[str, Any],
-    *,
-    high: float,
-    close: float,
-    settings: dict[str, Any],
-) -> dict[str, Any]:
-    """
-  Trailing lock profit — once activated, lock stop ratchets up only (never decreases).
-
-    - Activate when high >= entry * (1 + trigger%) or close profit >= trigger%.
-    - After activation: highestPriceSinceLock = max(prev, high); lockStop trails peak.
-    - effectiveStop = max(originalStopLoss, lockStop).
-    """
-    entry = float(position["entry"])
-    _, original_sl = levels_for_side("BUY", entry, settings)
-
-    lock_active = bool(position.get("lock_active"))
-    highest_since_lock = position.get("lock_high")
-    prev_lock_stop = position.get("lock_stop")
-    lock_stop: float | None = float(prev_lock_stop) if prev_lock_stop is not None else None
-
-    trigger_pct = float(settings.get("lock_trigger_pct", 20.0))
-    lock_dist = float(settings.get("lock_distance_pct", 5.0)) / 100.0
-    trigger_price = round(entry * (1 + trigger_pct / 100.0), 4)
-    profit_close_pct = price_move_pct("BUY", entry, close)
-
-    if settings.get("lock_profit_enabled"):
-        should_activate = (
-            lock_active
-            or high >= trigger_price
-            or profit_close_pct >= trigger_pct
-        )
-        if should_activate:
-            lock_active = True
-            if highest_since_lock is None:
-                highest_since_lock = high
-            else:
-                highest_since_lock = max(float(highest_since_lock), high)
-            calculated = round(float(highest_since_lock) * (1 - lock_dist), 4)
-            lock_stop = calculated if lock_stop is None else max(lock_stop, calculated)
-
-    effective_stop = original_sl
-    if lock_active and lock_stop is not None:
-        effective_stop = lock_stop if original_sl is None else max(original_sl, lock_stop)
-
-    return {
-        "entry": entry,
-        "current_price": close,
-        "high": high,
-        "lock_active": lock_active,
-        "lock_high": highest_since_lock,
-        "highest_price_since_lock": highest_since_lock,
-        "lock_stop": lock_stop,
-        "original_stop_loss": original_sl,
-        "effective_stop": effective_stop,
-        "trigger_price": trigger_price,
-        "trigger_pct": trigger_pct,
-        "lock_distance_pct": float(settings.get("lock_distance_pct", 5.0)),
-        "profit_close_pct": profit_close_pct,
-    }
-
-
 def lock_debug_payload(
     position: dict[str, Any],
     *,
     high: float,
+    low: float,
     close: float,
     settings: dict[str, Any],
+    current_price: float | None = None,
 ) -> dict[str, Any]:
-    """Debug fields printed every candle while a position is open."""
-    state = compute_lock_state(position, high=high, close=close, settings=settings)
-    return {
-        "entry": state["entry"],
-        "current_price": state["current_price"],
-        "bar_high": high,
-        "highest_price_since_lock": state["highest_price_since_lock"],
-        "original_stop_loss": state["original_stop_loss"],
-        "calculated_lock_stop": state["lock_stop"],
-        "effective_stop": state["effective_stop"],
-        "trigger_price": state["trigger_price"],
-        "lock_active": state["lock_active"],
-        "lock_trigger_pct": state["trigger_pct"],
-        "lock_distance_pct": state["lock_distance_pct"],
-        "profit_close_pct": state["profit_close_pct"],
-    }
+    metrics = compute_position_metrics(
+        position,
+        bar_high=high,
+        bar_low=low,
+        bar_close=close,
+        settings=settings,
+        current_price=current_price,
+        update_peaks=True,
+    )
+    return metrics_debug_payload(metrics)
 
 
 def preview_open_position(
@@ -169,38 +105,21 @@ def preview_open_position(
     live_price: float,
     settings: dict[str, Any],
     bar_high: float | None = None,
+    bar_low: float | None = None,
 ) -> dict[str, Any]:
-    """Live lock preview between closed HA bars (dashboard display)."""
-    entry = float(position["entry"])
-    close = float(live_price)
-    high = float(bar_high if bar_high is not None else max(live_price, float(position.get("highest_price") or live_price)))
-    sim_pos = {
-        "entry": entry,
-        "lock_active": bool(position.get("lock_active")),
-        "lock_high": position.get("highest_price"),
-        "lock_stop": position.get("lock_stop"),
-        "quantity": position.get("quantity", 1),
-    }
-    state = compute_lock_state(sim_pos, high=high, close=close, settings=settings)
-    _, move_high = pnl_at_price(
-        {"entry": entry, "quantity": float(position.get("quantity") or 1), "side": "BUY"},
-        high,
+    """Live dashboard metrics — extends peaks with forming bar high, derives all fields."""
+    high = float(bar_high if bar_high is not None else live_price)
+    low = float(bar_low if bar_low is not None else live_price)
+    metrics = compute_position_metrics(
+        position,
+        bar_high=high,
+        bar_low=low,
+        bar_close=live_price,
+        settings=settings,
+        current_price=live_price,
+        update_peaks=True,
     )
-    profit_now = price_move_pct("BUY", entry, close)
-    peak = max(float(position.get("highest_profit_pct") or 0), profit_now, move_high)
-
-    return {
-        "highest_profit_pct": round(peak, 4),
-        "price_move_pct": profit_now,
-        "lock_active": state["lock_active"],
-        "lock_stop": state["lock_stop"],
-        "highest_price_since_lock": state["highest_price_since_lock"],
-        "original_stop_loss": state["original_stop_loss"],
-        "effective_stop": state["effective_stop"],
-        "trigger_price": state["trigger_price"],
-        "lock_trigger_pct": state["trigger_pct"],
-        "lock_profit_enabled": bool(settings.get("lock_profit_enabled")),
-    }
+    return metrics
 
 
 def process_bar(
@@ -217,41 +136,45 @@ def process_bar(
     Returns (updated_position, closed_trade).
     """
     entry = float(position["entry"])
-    base_tp, base_sl = levels_for_side("BUY", entry, settings)
+    base_tp, _ = levels_for_side("BUY", entry, settings)
     tp = base_tp
-    original_sl = position.get("initial_stop_loss")
-    if original_sl is None:
-        original_sl = base_sl
-    else:
-        original_sl = float(original_sl) if float(original_sl) > 0 else base_sl
 
     _, pnl_pct_high = pnl_at_price(position, high)
     _, pnl_pct_low = pnl_at_price(position, low)
     mfe = max(float(position.get("mfe_pct") or 0), pnl_pct_high)
     mae = min(float(position.get("mae_pct") or 0), pnl_pct_low)
 
-    lock_state = compute_lock_state(position, high=high, close=close, settings=settings)
-    lock_active = lock_state["lock_active"]
-    lock_stop = lock_state["lock_stop"]
-    lock_high = lock_state["lock_high"]
-    effective_stop = lock_state["effective_stop"]
-
-    profit_pct_now = price_move_pct("BUY", entry, close)
-    highest_profit = max(float(position.get("highest_profit_pct") or 0), profit_pct_now, pnl_pct_high)
+    metrics = compute_position_metrics(
+        position,
+        bar_high=high,
+        bar_low=low,
+        bar_close=close,
+        settings=settings,
+        update_peaks=True,
+    )
+    lock_active = metrics["lock_active"]
+    lock_stop = metrics["lock_stop"]
+    lock_high = metrics["highest_since_lock"]
+    effective_stop = metrics["effective_stop"]
+    original_sl = metrics["original_stop_loss"]
+    peak_pct = metrics["peak_price_move_pct"]
 
     position = {
         **position,
         "lock_active": lock_active,
         "lock_stop": lock_stop,
         "lock_high": lock_high,
+        "highest_since_entry": metrics["highest_since_entry"],
+        "highest_since_lock": metrics["highest_since_lock"],
         "initial_stop_loss": original_sl if original_sl is not None else 0.0,
         "effective_stop": effective_stop if effective_stop is not None else 0.0,
-        "highest_profit_pct": highest_profit,
+        "highest_profit_pct": peak_pct,
         "mfe_pct": mfe,
         "mae_pct": mae,
         "stop_loss": original_sl if original_sl is not None else 0.0,
         "take_profit": tp if tp is not None else round(entry * 10.0, 4),
         "bars_held": int(position.get("bars_held") or 0) + 1,
+        "metrics_validation": metrics["validation"],
     }
 
     exit_price = None
@@ -280,7 +203,10 @@ def process_bar(
         "mfe_pct": mfe,
         "mae_pct": mae,
         "lock_active": lock_active,
-        "highest_profit_pct": highest_profit,
+        "highest_profit_pct": peak_pct,
+        "highest_since_entry": metrics["highest_since_entry"],
+        "highest_since_lock": metrics["highest_since_lock"],
+        "peak_price_move_pct": peak_pct,
         "lock_stop": lock_stop,
         "lock_high": lock_high,
         "effective_stop": effective_stop,

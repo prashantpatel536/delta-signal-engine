@@ -1,4 +1,4 @@
-"""SOL Reversal paper trading — uses simulation.py (same logic as backtest)."""
+"""SOL paper trading — uses simulation.py (same logic as backtest)."""
 
 from __future__ import annotations
 
@@ -44,10 +44,14 @@ class SolPaperService:
         return size_position(self.equity(unrealized), entry, settings, self.SYMBOL) or {}
 
     def _to_sim(self, position: dict[str, Any]) -> dict[str, Any]:
+        entry = float(position["entry"])
+        highest_entry = position.get("highest_since_entry")
+        if highest_entry is None or float(highest_entry or 0) <= 0:
+            highest_entry = entry
         return {
             "symbol": position.get("symbol", self.SYMBOL),
             "side": position["side"],
-            "entry": float(position["entry"]),
+            "entry": entry,
             "entry_time": _iso_to_unix(position.get("opened_at")),
             "stop_loss": float(position["stop_loss"]),
             "initial_stop_loss": float(position["stop_loss"]),
@@ -58,7 +62,9 @@ class SolPaperService:
             "position_value": float(position.get("position_value") or 0),
             "lock_active": bool(position.get("lock_active")),
             "lock_stop": position.get("lock_stop"),
-            "lock_high": position.get("highest_price"),
+            "highest_since_entry": float(highest_entry),
+            "highest_since_lock": position.get("highest_since_lock") or position.get("highest_price"),
+            "lock_high": position.get("highest_since_lock") or position.get("highest_price"),
             "highest_profit_pct": float(position.get("highest_profit_pct") or 0),
             "mfe_pct": float(position.get("mfe_pct") or 0),
             "mae_pct": float(position.get("mae_pct") or 0),
@@ -82,6 +88,7 @@ class SolPaperService:
             "leverage": settings.get("leverage", 25.0),
             "margin_used": sim["margin_used"],
             "position_value": sim["position_value"],
+            "highest_since_entry": entry,
         })
 
     def unrealized_pnl(self, position: dict[str, Any], price: float) -> tuple[float, float]:
@@ -116,7 +123,9 @@ class SolPaperService:
                 "lock_active": int(updated["lock_active"]),
                 "lock_stop": updated.get("lock_stop"),
                 "highest_profit_pct": updated["highest_profit_pct"],
-                "highest_price": updated.get("lock_high"),
+                "highest_since_entry": updated.get("highest_since_entry"),
+                "highest_since_lock": updated.get("highest_since_lock"),
+                "highest_price": updated.get("highest_since_lock"),
                 "mfe_pct": updated["mfe_pct"],
                 "mae_pct": updated["mae_pct"],
                 "bars_held": updated["bars_held"],

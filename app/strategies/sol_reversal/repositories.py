@@ -87,6 +87,13 @@ class SolPositionRepository:
             )
             conn.commit()
             row = conn.execute("SELECT * FROM sol_positions WHERE id = ?", (cur.lastrowid,)).fetchone()
+            if data.get("highest_since_entry") is not None:
+                conn.execute(
+                    "UPDATE sol_positions SET highest_since_entry = ? WHERE id = ?",
+                    (float(data["highest_since_entry"]), cur.lastrowid),
+                )
+                conn.commit()
+                row = conn.execute("SELECT * FROM sol_positions WHERE id = ?", (cur.lastrowid,)).fetchone()
         return dict(row)
 
     def get_open(self) -> dict[str, Any] | None:
