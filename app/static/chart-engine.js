@@ -223,13 +223,17 @@
       const tfLabel = sig.timeframe || sig.signal_timeframe || "";
       const base = tfLabel ? `${sideLabel} (${tfLabel})` : sideLabel;
       const text = statusLabel ? `${base} · ${statusLabel}` : base;
+      const isEntry = sig.status === "ENTRY";
+      const isExit = sig.status === "TP_HIT" || sig.status === "SL_HIT" || sig.status === "LOCK_HIT";
+      const isCondition = sig.status === "HA_CONDITION" || sig.status === "HA_SIGNAL";
+      if (!isEntry && !isExit && !isCondition) continue;
       markers.push({
         time: displayTime,
         position: isBuy ? "belowBar" : "aboveBar",
-        shape: isBuy ? "arrowUp" : "arrowDown",
-        color: isBuy ? TERMINAL.up : TERMINAL.down,
+        shape: isExit ? "circle" : isBuy ? "arrowUp" : "arrowDown",
+        color: isEntry ? "#2962ff" : isExit ? TERMINAL.down : "#848e9c",
         text,
-        size: 1,
+        size: isCondition ? 0 : 1,
       });
     }
     return markers.sort((a, b) => a.time - b.time);
@@ -293,6 +297,9 @@
     if (!status) return "";
     if (status === "TP_HIT") return "TP HIT";
     if (status === "SL_HIT") return "SL HIT";
+    if (status === "LOCK_HIT") return "LOCK";
+    if (status === "ENTRY") return "entry";
+    if (status === "HA_CONDITION") return "condition";
     if (status === "HA_SIGNAL") return "Signal";
     return status;
   }
@@ -1042,9 +1049,17 @@
 
       if (this.onFootnote) {
         const sigTf = signalTimeframe || chartData.signal_context?.signal_timeframe || timeframe;
-        const sigN = chartData.signal_context?.strategy_signal_count;
-        const sigPart = sigN != null ? ` · ${sigN} HA signals in view` : "";
-        this.onFootnote(`${markers.length} markers · ${n} bars · chart ${timeframe} · signals ${sigTf}${sigPart}`);
+        const ec = chartData.signal_context?.entry_count;
+        const rc = chartData.signal_context?.raw_condition_count;
+        const minRed = chartData.signal_context?.settings_min_red;
+        const slPct = chartData.signal_context?.settings_sl_pct;
+        const extra = [
+          ec != null ? `${ec} entries` : "",
+          rc != null ? `${rc} raw conditions` : "",
+          minRed != null ? `minRed=${minRed}` : "",
+          slPct != null ? `SL=${slPct}%` : "",
+        ].filter(Boolean).join(" · ");
+        this.onFootnote(`${markers.length} markers · ${n} bars · chart ${timeframe}${extra ? ` · ${extra}` : ""}`);
       }
       if (this.onTitle) this.onTitle(symbol, timeframe);
 

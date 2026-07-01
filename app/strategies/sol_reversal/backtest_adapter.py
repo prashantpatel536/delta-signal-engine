@@ -17,8 +17,8 @@ from app.strategies.sol_reversal.ha import to_heikin_ashi
 from app.strategies.sol_reversal.indicators import compute_atr
 from app.strategies.sol_reversal.repositories import SolSettingsRepository
 from app.strategies.sol_reversal.settings_defaults import DEFAULT_SETTINGS
-from app.strategies.sol_reversal.simulation import open_position, pnl_at_price, process_bar
-from app.strategies.sol_reversal.strategy import detect_signal_at_index, scan_signals
+from app.strategies.sol_reversal.simulation import pnl_at_price, replay_strategy
+from app.strategies.sol_reversal.strategy import scan_buy_conditions
 
 SYMBOL = "SOLUSDT"
 
@@ -77,57 +77,35 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
     display_df, _ = delta_client.resolve_ohlc_candles(ohlc, symbol, timeframe)
     ha = to_heikin_ashi(display_df)
     atr = compute_atr(ha, int(settings.get("atr_period", 14)))
-    all_signals = scan_signals(ha, settings, atr=atr)
+    all_conditions = scan_buy_conditions(ha, settings, atr=atr)
 
     equity = initial_capital
-    position: dict[str, Any] | None = None
     trades: list[dict[str, Any]] = []
     trade_num = 0
 
-    for idx in range(1, len(ha)):
-        bar_time = int(ha.iloc[idx]["time"])
-        row = ha.iloc[idx]
-        high = float(row["high"])
-        low = float(row["low"])
-        close = float(row["close"])
+    def on_open(position: dict[str, Any]) -> float:
+        nonlocal equity
+        cost = _commission_cost(float(position["quantity"]) * float(position["entry"]), commission_pct)
+        equity -= cost
+        return -cost
 
-        if position:
-            position, closed = process_bar(
-                position,
-                bar_time=bar_time,
-                high=high,
-                low=low,
-                close=close,
-                settings=settings,
-            )
-            if closed:
-                closed, equity = _close_trade(
-                    closed, slippage_pct=slippage_pct, commission_pct=commission_pct, equity=equity
-                )
-                trade_num += 1
-                trades.append({**closed, "trade_num": trade_num})
+    def on_close(closed: dict[str, Any]) -> None:
+        nonlocal equity, trade_num
+        adjusted, equity = _close_trade(
+            closed, slippage_pct=slippage_pct, commission_pct=commission_pct, equity=equity
+        )
+        trade_num += 1
+        trades.append({**adjusted, "trade_num": trade_num})
 
-        if position is None:
-            signal = detect_signal_at_index(ha, settings, idx, atr=atr)
-            if signal:
-                entry = _apply_slippage(close, True, slippage_pct)
-                position = open_position("BUY", entry, bar_time, settings, equity, symbol=symbol)
-                if position:
-                    equity -= _commission_cost(float(position["quantity"]) * entry, commission_pct)
-                    position, closed = process_bar(
-                        position,
-                        bar_time=bar_time,
-                        high=high,
-                        low=low,
-                        close=close,
-                        settings=settings,
-                    )
-                    if closed:
-                        closed, equity = _close_trade(
-                            closed, slippage_pct=slippage_pct, commission_pct=commission_pct, equity=equity
-                        )
-                        trade_num += 1
-                        trades.append({**closed, "trade_num": trade_num})
+    replay_strategy(
+        ha,
+        settings,
+        atr=atr,
+        initial_equity=initial_capital,
+        entry_price_at=lambda _idx, close: _apply_slippage(close, True, slippage_pct),
+        on_open=on_open,
+        on_close=on_close,
+    )
 
     equity_curve = build_equity_curve(initial_capital, trades)
     stats = aggregate_statistics(initial_capital, equity, trades, equity_curve)
@@ -151,9 +129,11 @@ def run_sol_backtest(config: dict[str, Any]) -> dict[str, Any]:
             "candle_mode": "heikin_ashi",
             "note": "Matches Pine on TradingView when chart type is Heikin Ashi",
             "bars_in_range": len(ha),
-            "pine_signals_unfiltered": len(all_signals),
+            "buy_conditions_unfiltered": len(all_conditions),
             "trades_executed": len(trades),
-            "signal_times": [s["time"] for s in all_signals],
+            "condition_times": [s["time"] for s in all_conditions],
+            "pine_signals_unfiltered": len(all_conditions),
+            "signal_times": [s["time"] for s in all_conditions],
         },
     }
 

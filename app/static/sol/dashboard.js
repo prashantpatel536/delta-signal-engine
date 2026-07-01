@@ -48,7 +48,9 @@
   function renderKpis(data, chartData) {
     const m = data.market || {};
     const a = data.account || {};
-    const sigCount = chartData?.signal_context?.strategy_signal_count;
+    const sigCount = chartData?.signal_context?.entry_count;
+    const rawCount = chartData?.signal_context?.raw_condition_count;
+    const minRed = chartData?.signal_context?.settings_min_red;
     $("kpi-grid").innerHTML = `
       ${statCard("Status", data.engine?.running ? "Running" : "Stopped", "opt-pos")}
       ${statCard("Price", m.last_price?.toFixed(4) ?? "—")}
@@ -56,7 +58,9 @@
       ${statCard("Equity", `$${a.equity}`, valCls(a.equity - (a.initial_capital || 1000)))}
       ${statCard("Today's PnL", `$${a.realized_pnl?.toFixed(2) ?? 0}`, valCls(a.realized_pnl))}
       ${statCard("HA Candle", m.ha_candle?.color ?? "—", m.ha_candle?.color === "green" ? "opt-pos" : "opt-neg")}
-      ${statCard("HA Signals (view)", sigCount ?? "—")}`;
+      ${statCard("Entries (view)", sigCount ?? "—")}
+      ${statCard("Min Red / SL%", `${minRed ?? "?"} / ${chartData?.signal_context?.settings_sl_pct ?? "?"}%`)}
+      ${statCard("Raw conditions", rawCount ?? "—", "muted")}`;
     $("ws-status").textContent = m.ws_connected ? "WS Connected" : "REST Polling";
     $("sol-status-dot").className = `dot ${data.engine?.running ? "ok" : ""}`;
   }
@@ -190,6 +194,7 @@
       ["position_size_pct", "Position Size %", "number"],
       ["debug_mode", "Debug Mode (Pine parity log)", "checkbox"],
       ["debug_log_bar_evals", "Log Every Bar Eval", "checkbox"],
+      ["show_raw_ha_conditions", "Show raw HA conditions on chart", "checkbox"],
     ];
     $("settings-form").innerHTML = fields.map(([key, label, type]) => {
       const val = s[key];

@@ -128,54 +128,9 @@ class SolMarketStore:
                 "last_candle_time": int(self._ohlc["time"].iloc[-1]) if not self._ohlc.empty else None,
             }
 
-    def _ha_strategy_signals(self, ha: pd.DataFrame, settings: dict[str, Any]) -> list[dict[str, Any]]:
-        """Scan HA candles with current settings — matches engine / TV HA chart."""
-        from app.strategies.sol_reversal.strategy import scan_signals
-
-        if ha.empty or len(ha) < 2:
-            return []
-        period = int(settings.get("atr_period", 14))
-        atr = compute_atr(ha, period)
-        return [
-            {
-                "candle_time": int(s["time"]),
-                "signal": "BUY",
-                "timeframe": TIMEFRAME,
-                "status": "HA_SIGNAL",
-            }
-            for s in scan_signals(ha, settings, atr=atr)
-        ]
-
-    def _trade_chart_signals(self, candle_times: list[int]) -> list[dict[str, Any]]:
-        from datetime import datetime
-
-        signals: list[dict[str, Any]] = []
-        try:
-            from app.strategies.sol_reversal.repositories import SolPositionRepository
-
-            for tr in SolPositionRepository().list_closed(80):
-                entry_iso = tr.get("opened_at") or tr.get("entry_time")
-                if not entry_iso:
-                    continue
-                try:
-                    entry_unix = int(datetime.fromisoformat(entry_iso.replace("Z", "+00:00")).timestamp())
-                except (TypeError, ValueError):
-                    continue
-                snapped = min(candle_times, key=lambda t: abs(t - entry_unix))
-                if abs(snapped - entry_unix) > 600:
-                    continue
-                signals.append({
-                    "candle_time": snapped,
-                    "signal": tr.get("side", "BUY"),
-                    "timeframe": TIMEFRAME,
-                    "status": "TP_HIT" if float(tr.get("pnl_usd") or 0) >= 0 else "SL_HIT",
-                })
-        except Exception:
-            logger.exception("SOL chart trade markers failed")
-        return signals
-
     def chart_payload(self, bars: int = 200) -> dict[str, Any]:
-        """HA chart + strategy signal markers (HA open/close rules)."""
+        """HA chart + one BUY entry marker per trade (flat-only execution replay)."""
+        from app.strategies.sol_reversal.replay import markers_for_chart, raw_condition_markers, replay_markers
         from app.strategies.sol_reversal.repositories import SolSettingsRepository
 
         settings = SolSettingsRepository().get_all()
@@ -200,17 +155,16 @@ class SolMarketStore:
             ha = ha.copy()
             ha["volume"] = ohlc["volume"].astype(float).values
 
-        candle_times = [int(t) for t in ha["time"].tolist()]
         candles = candles_to_records(ha)
-
-        strategy_signals = self._ha_strategy_signals(ha, settings)
-        trade_signals = self._trade_chart_signals(candle_times)
-        by_time: dict[int, dict[str, Any]] = {}
-        for sig in strategy_signals:
-            by_time[int(sig["candle_time"])] = sig
-        for sig in trade_signals:
-            by_time[int(sig["candle_time"])] = sig
-        signals = list(by_time.values())
+        replay = replay_markers(ha, settings)
+        signals = markers_for_chart(replay)
+        entry_times = {int(s["candle_time"]) for s in signals if s.get("status") == "ENTRY"}
+        for sig in signals:
+            sig["timeframe"] = TIMEFRAME
+        if settings.get("show_raw_ha_conditions"):
+            for sig in raw_condition_markers(replay["raw_conditions"], entry_times=entry_times):
+                sig["timeframe"] = TIMEFRAME
+                signals.append(sig)
 
         return {
             "symbol": "SOL",
@@ -228,8 +182,14 @@ class SolMarketStore:
                 "candle_count": len(candles),
                 "chart_display_source": "heikin_ashi",
                 "strategy_candle_mode": "heikin_ashi",
-                "strategy_signal_count": len(strategy_signals),
-                "trade_marker_count": len(trade_signals),
+                "entry_count": len(replay["entries"]),
+                "exit_count": len(replay["exits"]),
+                "raw_condition_count": len(replay["raw_conditions"]),
+                "trade_count": len(replay["trades"]),
+                "settings_min_red": settings.get("min_red_candles"),
+                "settings_sl_pct": settings.get("stop_loss_pct"),
+                "entry_times": [e["candle_time"] for e in replay["entries"]],
+                "marker_mode": "executable_entries",
             },
             "candle_counts": {"sent": len(candles)},
         }

@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from app.contract_specs import contracts_from_notional, sizing_from_contracts
-from app.strategies.sol_reversal.strategy import levels_for_side, price_move_pct
+from app.strategies.sol_reversal.strategy import (
+    detect_buy_condition_at_index,
+    levels_for_side,
+    price_move_pct,
+    scan_buy_conditions,
+)
 
 
 def size_position(
@@ -156,3 +162,133 @@ def process_bar(
         "margin_used": position["margin_used"],
     }
     return None, closed
+
+
+def _exit_marker_status(reason: str) -> str:
+    if reason == "TP":
+        return "TP_HIT"
+    if reason == "SL":
+        return "SL_HIT"
+    return "LOCK_HIT"
+
+
+def _append_exit(
+    exits: list[dict[str, Any]],
+    trades: list[dict[str, Any]],
+    closed: dict[str, Any],
+    *,
+    trade_num: int,
+) -> float:
+    reason = closed["exit_reason"]
+    exits.append({
+        "candle_time": int(closed["exit_time"]),
+        "signal": "BUY",
+        "status": _exit_marker_status(reason),
+        "exit_reason": reason,
+        "pnl_pct": closed["price_move_pct"],
+        "trade_num": trade_num,
+    })
+    trades.append({**closed, "trade_num": trade_num})
+    return float(closed["pnl_usd"])
+
+
+def replay_strategy(
+    candles: Any,
+    settings: dict[str, Any],
+    *,
+    atr: Any | None = None,
+    initial_equity: float = 100_000.0,
+    entry_price_at: Callable[[int, float], float] | None = None,
+    on_entry: Callable[[dict[str, Any]], None] | None = None,
+    on_open: Callable[[dict[str, Any]], None] | None = None,
+    on_close: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """
+    Bar-by-bar strategy replay (TradingView pyramiding=0).
+
+    - ``raw_conditions``: every bar where the HA BUY condition is true
+    - ``entries``: executable entries only when flat (one per trade)
+    - ``exits`` / ``trades``: closed positions
+    """
+    import pandas as pd
+
+    from app.strategies.sol_reversal.indicators import compute_atr
+
+    if candles.empty or len(candles) < 2:
+        return {"entries": [], "exits": [], "raw_conditions": [], "trades": []}
+
+    if atr is None:
+        atr = compute_atr(candles, int(settings.get("atr_period", 14)))
+
+    raw = scan_buy_conditions(candles, settings, atr=atr)
+    entries: list[dict[str, Any]] = []
+    exits: list[dict[str, Any]] = []
+    trades: list[dict[str, Any]] = []
+    position: dict[str, Any] | None = None
+    equity = initial_equity
+    trade_num = 0
+
+    def _close_position(closed: dict[str, Any]) -> None:
+        nonlocal trade_num, equity, position
+        trade_num += 1
+        equity += _append_exit(exits, trades, closed, trade_num=trade_num)
+        if on_close:
+            on_close(closed)
+        position = None
+
+    for idx in range(1, len(candles)):
+        row = candles.iloc[idx]
+        bar_time = int(row["time"])
+        high = float(row["high"])
+        low = float(row["low"])
+        close = float(row["close"])
+
+        if position:
+            position, closed = process_bar(
+                position,
+                bar_time=bar_time,
+                high=high,
+                low=low,
+                close=close,
+                settings=settings,
+            )
+            if closed:
+                _close_position(closed)
+
+        # Executable entry: flat only — repeated BUY conditions while in trade are ignored.
+        if position is None and detect_buy_condition_at_index(candles, settings, idx, atr=atr):
+            entry = close if entry_price_at is None else entry_price_at(idx, close)
+            position = open_position("BUY", entry, bar_time, settings, equity)
+            if position:
+                if on_open:
+                    delta = on_open(position)
+                    if delta:
+                        equity += float(delta)
+                entry_rec = {
+                    "candle_time": bar_time,
+                    "signal": "BUY",
+                    "status": "ENTRY",
+                    "entry_price": entry,
+                    "bar_index": idx,
+                }
+                entries.append(entry_rec)
+                if on_entry:
+                    on_entry(entry_rec)
+                position, closed = process_bar(
+                    position,
+                    bar_time=bar_time,
+                    high=high,
+                    low=low,
+                    close=close,
+                    settings=settings,
+                )
+                if closed:
+                    _close_position(closed)
+
+    return {
+        "entries": entries,
+        "exits": exits,
+        "raw_conditions": raw,
+        "trades": trades,
+        "final_equity": equity,
+    }

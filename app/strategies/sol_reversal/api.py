@@ -43,6 +43,7 @@ class SettingsUpdate(BaseModel):
     position_size_pct: float | None = Field(default=None, ge=1, le=100)
     debug_mode: bool | None = None
     debug_log_bar_evals: bool | None = None
+    show_raw_ha_conditions: bool | None = None
 
 
 @router.get("/status")

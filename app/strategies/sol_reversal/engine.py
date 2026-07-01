@@ -14,7 +14,7 @@ from app.strategies.sol_reversal.debug import (
 from app.strategies.sol_reversal.market import sol_market
 from app.strategies.sol_reversal.paper import SolPaperService
 from app.strategies.sol_reversal.repositories import SolEngineRepository, SolSettingsRepository
-from app.strategies.sol_reversal.strategy import detect_signal_at_index, levels_for_side, target_price_pcts
+from app.strategies.sol_reversal.strategy import detect_buy_condition_at_index, levels_for_side, target_price_pcts
 
 logger = logging.getLogger(__name__)
 
@@ -108,37 +108,41 @@ class SolReversalEngine:
             self._monitor_bar(open_pos, idx=idx, candle_time=candle_time, settings=settings, debug_on=debug_on)
             open_pos = self.paper.positions.get_open()
 
-        if open_pos is None:
-            signal = explain.get("signal") or detect_signal_at_index(ha, settings, idx, atr=atr)
-            if signal:
+        buy_condition = explain.get("signal") or detect_buy_condition_at_index(ha, settings, idx, atr=atr)
+        if open_pos is None and buy_condition:
+            if debug_on:
+                log_debug_event("BUY_CONDITION", explain)
+            entry = ha_close
+            tp, sl = levels_for_side("BUY", entry, settings)
+            opened = self.paper.open_trade(buy_condition, entry, settings)
+            if opened:
+                self.engine_repo.log("INFO", f"Opened BUY @ {entry}")
+                self.engine_repo.update(last_signal=buy_condition)
                 if debug_on:
-                    log_debug_event("SIGNAL", explain)
-                entry = ha_close
-                tp, sl = levels_for_side("BUY", entry, settings)
-                opened = self.paper.open_trade(signal, entry, settings)
-                if opened:
-                    self.engine_repo.log("INFO", f"Opened BUY @ {entry}")
-                    self.engine_repo.update(last_signal=signal)
-                    if debug_on:
-                        log_debug_event("TRADE_OPEN", {
-                            "position_id": opened.get("id"),
-                            "side": "BUY",
-                            "entry": entry,
-                            "entry_time": candle_time,
-                            "take_profit": tp,
-                            "stop_loss": sl,
-                            "signal_eval": explain,
-                            "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close},
-                            "entry_price_source": "ha_close",
-                        })
-                    # Pine: exit logic runs same bar after entry
-                    still_open = self.paper.positions.get_open()
-                    if still_open:
-                        self._monitor_bar(
-                            still_open, idx=idx, candle_time=candle_time, settings=settings, debug_on=debug_on
-                        )
-                elif debug_on:
-                    log_debug_event("TRADE_OPEN_FAILED", {"signal": signal, "entry": entry, "reason": "sizing_or_blocked"})
+                    log_debug_event("TRADE_OPEN", {
+                        "position_id": opened.get("id"),
+                        "side": "BUY",
+                        "entry": entry,
+                        "entry_time": candle_time,
+                        "take_profit": tp,
+                        "stop_loss": sl,
+                        "signal_eval": explain,
+                        "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close},
+                        "entry_price_source": "ha_close",
+                    })
+                still_open = self.paper.positions.get_open()
+                if still_open:
+                    self._monitor_bar(
+                        still_open, idx=idx, candle_time=candle_time, settings=settings, debug_on=debug_on
+                    )
+            elif debug_on:
+                log_debug_event("TRADE_OPEN_FAILED", {
+                    "signal": buy_condition,
+                    "entry": entry,
+                    "reason": "sizing_or_blocked",
+                })
+        elif open_pos is not None and buy_condition and debug_on:
+            log_debug_event("BUY_CONDITION_SUPPRESSED", {**explain, "reason": "position_open"})
 
         snap = sol_market.snapshot()
         self.engine_repo.update(

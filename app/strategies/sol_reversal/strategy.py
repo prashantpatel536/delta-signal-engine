@@ -38,14 +38,17 @@ def _passes_atr(atr_val: float, settings: dict[str, Any]) -> bool:
     return float(atr_val) > float(settings.get("atr_minimum", 1.0))
 
 
-def detect_signal_at_index(
+def detect_buy_condition_at_index(
     candles: pd.DataFrame,
     settings: dict[str, Any],
     idx: int,
     *,
     atr: pd.Series | None = None,
 ) -> Side | None:
-    """Evaluate long entry — mirrors Pine longSignal on chart candles."""
+    """
+    Raw strategy condition (Pine longSignal) — ignores open position.
+    Fires on every bar where HA reversal filters pass; use replay/execution for entries.
+    """
     if idx < 1 or idx >= len(candles):
         return None
 
@@ -75,20 +78,20 @@ def detect_signal_at_index(
     return "BUY"
 
 
-def scan_signals(
+def scan_buy_conditions(
     candles: pd.DataFrame,
     settings: dict[str, Any],
     *,
     atr: pd.Series | None = None,
 ) -> list[dict[str, Any]]:
-    """List every bar where Pine longSignal would fire (ignores open position)."""
+    """Every bar where the raw BUY condition is true (not executable entries)."""
     if candles.empty:
         return []
     if atr is None:
         atr = compute_atr(candles, int(settings.get("atr_period", 14)))
     out: list[dict[str, Any]] = []
     for idx in range(1, len(candles)):
-        if detect_signal_at_index(candles, settings, idx, atr=atr):
+        if detect_buy_condition_at_index(candles, settings, idx, atr=atr):
             row = candles.iloc[idx]
             out.append({
                 "idx": idx,
@@ -97,6 +100,11 @@ def scan_signals(
                 "close": float(row["close"]),
             })
     return out
+
+
+# Backward-compatible aliases
+detect_signal_at_index = detect_buy_condition_at_index
+scan_signals = scan_buy_conditions
 
 
 def levels_for_side(

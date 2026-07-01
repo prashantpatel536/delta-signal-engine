@@ -26,6 +26,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "ambiguous_bar_rule": "STOP_FIRST",
     "debug_mode": False,
     "debug_log_bar_evals": False,
+    "show_raw_ha_conditions": False,
 }
 
 
