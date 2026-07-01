@@ -79,11 +79,13 @@
       ${statCard("Account PnL $", pos.unrealized_usd, valCls(pos.unrealized_usd))}
       ${statCard("Account ROE", `${pos.roe_pct ?? 0}%`, valCls(pos.roe_pct))}
       ${statCard("Peak Price Move", `${pos.highest_profit_pct ?? 0}%`)}
-      ${statCard("Lock Trigger", pos.lock_profit_enabled ? `${pos.lock_trigger_pct ?? "?"}%` : "Off")}
-      ${statCard("Stop", `${pos.stop_loss} (−${pos.stop_loss_price_pct ?? "?"}% price)`)}
+      ${statCard("Lock Trigger", pos.lock_profit_enabled ? `${pos.lock_trigger_pct ?? "?"}% @ ${pos.trigger_price ?? "?"}` : "Off")}
+      ${statCard("Highest Since Lock", pos.highest_price_since_lock ?? "—")}
+      ${statCard("Original Stop", `${pos.original_stop_loss ?? pos.stop_loss} (−${pos.stop_loss_price_pct ?? "?"}%)`)}
+      ${statCard("Lock Stop", pos.lock_stop ?? "—", pos.lock_active ? "opt-warn" : "muted")}
+      ${statCard("Effective Stop", `${pos.effective_stop ?? pos.stop_loss} (−${pos.effective_stop_price_pct ?? pos.stop_loss_price_pct ?? "?"}%)`)}
       ${statCard("Target", `${pos.take_profit} (+${pos.take_profit_price_pct ?? "?"}% price)`)}
-      ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}
-      ${statCard("Lock Stop", pos.lock_stop ?? "—")}`;
+      ${statCard("Lock Active", pos.lock_active ? "Yes" : "No", pos.lock_active ? "opt-warn" : "")}`;
   }
 
   function renderStats(s) {
@@ -229,7 +231,9 @@
         const p = e.payload || {};
         const detail = e.event_type === "BAR_EVAL"
           ? `reds[1]=${p.pine_consec_reds_prev} greens=${p.pine_consec_greens_now} sig=${p.signal || "—"}`
-          : e.event_type === "TRADE_OPEN"
+          : e.event_type === "LOCK_DEBUG"
+            ? `lock=${p.lock_active} peak=${p.highest_price_since_lock ?? "—"} lockSL=${p.calculated_lock_stop ?? "—"} eff=${p.effective_stop}`
+            : e.event_type === "TRADE_OPEN"
             ? `entry=${p.entry} tp=${p.take_profit} sl=${p.stop_loss}`
             : e.event_type === "TRADE_CLOSE"
               ? `exit=${p.exit_price} ${p.exit_reason} pnl=${p.pnl_usd}`

@@ -14,7 +14,7 @@ from app.strategies.sol_reversal.debug import (
 from app.strategies.sol_reversal.market import sol_market
 from app.strategies.sol_reversal.paper import SolPaperService
 from app.strategies.sol_reversal.repositories import SolEngineRepository, SolSettingsRepository
-from app.strategies.sol_reversal.simulation import preview_open_position
+from app.strategies.sol_reversal.simulation import lock_debug_payload, preview_open_position
 from app.strategies.sol_reversal.strategy import detect_buy_condition_at_index, levels_for_side, target_price_pcts
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,26 @@ class SolReversalEngine:
             settings=settings,
             bar_time=candle_time,
         )
+        if debug_on:
+            still = self.paper.positions.get_open()
+            if still:
+                log_debug_event("LOCK_DEBUG", lock_debug_payload(
+                    self.paper._to_sim(still),
+                    high=ha_high,
+                    close=ha_close,
+                    settings=settings,
+                ))
+            elif closed:
+                log_debug_event("LOCK_DEBUG", {
+                    **lock_debug_payload(
+                        self.paper._to_sim(open_pos),
+                        high=ha_high,
+                        close=ha_close,
+                        settings=settings,
+                    ),
+                    "trade_closed": True,
+                    "exit_reason": closed.get("exit_reason"),
+                })
         if closed:
             self.engine_repo.log("INFO", f"Closed BUY {closed['exit_reason']} pnl={closed['pnl_usd']}")
             if debug_on:
@@ -221,8 +241,14 @@ class SolReversalEngine:
                 "BUY",
                 float(pos["entry"]),
                 float(pos["take_profit"]),
-                float(live.get("stop_loss") or pos["stop_loss"]),
+                float(live.get("original_stop_loss") or pos["stop_loss"]),
             )
+            eff_pct = target_price_pcts(
+                "BUY",
+                float(pos["entry"]),
+                float(pos["take_profit"]),
+                float(live.get("effective_stop") or pos["stop_loss"]),
+            )[1]
             pos_view = {
                 **pos,
                 "current_price": price,
@@ -232,10 +258,14 @@ class SolReversalEngine:
                 "roe_pct": roe_pct,
                 "take_profit_price_pct": tp_pct,
                 "stop_loss_price_pct": sl_pct,
+                "effective_stop_price_pct": eff_pct,
                 "highest_profit_pct": live.get("highest_profit_pct", pos.get("highest_profit_pct", 0)),
+                "highest_price_since_lock": live.get("highest_price_since_lock"),
+                "original_stop_loss": live.get("original_stop_loss", pos.get("stop_loss")),
+                "effective_stop": live.get("effective_stop", pos.get("stop_loss")),
                 "lock_active": live.get("lock_active", bool(pos.get("lock_active"))),
                 "lock_stop": live.get("lock_stop", pos.get("lock_stop")),
-                "stop_loss": live.get("stop_loss", pos.get("stop_loss")),
+                "trigger_price": live.get("trigger_price"),
                 "lock_trigger_pct": live.get("lock_trigger_pct"),
                 "lock_profit_enabled": live.get("lock_profit_enabled"),
             }

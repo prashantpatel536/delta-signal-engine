@@ -50,6 +50,7 @@ class SolPaperService:
             "entry": float(position["entry"]),
             "entry_time": _iso_to_unix(position.get("opened_at")),
             "stop_loss": float(position["stop_loss"]),
+            "initial_stop_loss": float(position["stop_loss"]),
             "take_profit": float(position["take_profit"]),
             "quantity": float(position["quantity"]),
             "leverage": float(position.get("leverage") or 25),
@@ -118,10 +119,9 @@ class SolPaperService:
                 "highest_price": updated.get("lock_high"),
                 "mfe_pct": updated["mfe_pct"],
                 "mae_pct": updated["mae_pct"],
-                "stop_loss": updated["stop_loss"],
                 "bars_held": updated["bars_held"],
             })
-            return None
+            return updated
 
         if not closed:
             return None

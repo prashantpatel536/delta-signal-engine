@@ -418,7 +418,8 @@
       }
 
       const entry = Number(position.entry);
-      const sl = Number(position.stop_loss);
+      const sl = Number(position.original_stop_loss ?? position.stop_loss);
+      const effectiveSl = Number(position.effective_stop ?? sl);
       const tp = Number(position.take_profit);
       const lockStop = Number(position.lock_stop);
       const current = Number(position.current_price);
@@ -435,9 +436,12 @@
         { price: entry, color: "#eaecef", title: entryTitle },
       ];
       if (position.lock_active && Number.isFinite(lockStop) && lockStop > 0) {
-        lines.push({ price: lockStop, color: TERMINAL.warn || "#f0b90b", title: "LOCK" });
+        lines.push({ price: lockStop, color: "#f0b90b", title: "LOCK" });
       }
-      lines.push({ price: sl, color: TERMINAL.down, title: "SL" });
+      lines.push({ price: sl, color: TERMINAL.down, title: "SL (orig)" });
+      if (position.lock_active && Number.isFinite(effectiveSl) && Math.abs(effectiveSl - sl) > 1e-6) {
+        lines.push({ price: effectiveSl, color: "#e67e22", title: "SL (effective)" });
+      }
 
       for (const spec of lines) {
         if (!Number.isFinite(spec.price)) continue;

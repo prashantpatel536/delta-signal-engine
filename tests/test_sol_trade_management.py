@@ -3,12 +3,69 @@
 import pandas as pd
 
 from app.strategies.sol_reversal.settings_defaults import DEFAULT_SETTINGS
-from app.strategies.sol_reversal.simulation import open_position, process_bar, replay_strategy
+from app.strategies.sol_reversal.simulation import (
+    compute_lock_state,
+    open_position,
+    process_bar,
+    replay_strategy,
+)
 from app.strategies.sol_reversal.strategy import levels_for_side
 
 
 def _bars(rows: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(rows)
+
+
+def test_lock_stop_ratchet_matches_user_example():
+    """Lock stop trails peak upward only; never decreases on pullback."""
+    entry = 72.28
+    settings = {
+        **DEFAULT_SETTINGS,
+        "enable_stop_loss": True,
+        "stop_loss_pct": 25.0,
+        "lock_profit_enabled": True,
+        "lock_trigger_pct": 3.0,
+        "lock_distance_pct": 3.0,
+    }
+    pos = {
+        "entry": entry,
+        "quantity": 1.0,
+        "lock_active": True,
+        "lock_high": 74.50,
+        "lock_stop": round(74.50 * 0.97, 4),
+    }
+    state = compute_lock_state(pos, high=75.20, close=75.00, settings=settings)
+    assert state["lock_active"] is True
+    assert state["highest_price_since_lock"] == 75.20
+    assert state["lock_stop"] == round(75.20 * 0.97, 4)
+
+    pullback = compute_lock_state(
+        {**pos, "lock_high": 75.80, "lock_stop": round(75.80 * 0.97, 4)},
+        high=75.00,
+        close=75.00,
+        settings=settings,
+    )
+    assert pullback["highest_price_since_lock"] == 75.80
+    assert pullback["lock_stop"] == round(75.80 * 0.97, 4)
+
+
+def test_lock_stays_active_after_pullback_below_trigger():
+    entry = 100.0
+    settings = {
+        **DEFAULT_SETTINGS,
+        "lock_profit_enabled": True,
+        "lock_trigger_pct": 3.0,
+        "lock_distance_pct": 3.0,
+        "stop_loss_pct": 25.0,
+    }
+    pos = open_position("BUY", entry, 1, settings, 10_000.0)
+    assert pos is not None
+    pos, _ = process_bar(pos, bar_time=2, high=104.0, low=103.0, close=103.5, settings=settings)
+    assert pos["lock_active"] is True
+    pos, closed = process_bar(pos, bar_time=3, high=103.0, low=102.5, close=102.8, settings=settings)
+    assert closed is None
+    assert pos["lock_active"] is True
+    assert pos["lock_stop"] == round(104.0 * 0.97, 4)
 
 
 def test_levels_respect_enable_toggles():
