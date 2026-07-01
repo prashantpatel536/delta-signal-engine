@@ -97,6 +97,9 @@ def explain_signal_at_index(
             "strong_candle_atr_mult": settings.get("strong_candle_atr_mult"),
             "atr_filter_enabled": settings.get("atr_filter_enabled"),
             "atr_minimum": settings.get("atr_minimum"),
+            "enable_take_profit": settings.get("enable_take_profit"),
+            "enable_stop_loss": settings.get("enable_stop_loss"),
+            "process_orders_on_close": settings.get("process_orders_on_close"),
             "take_profit_pct": settings.get("take_profit_pct"),
             "stop_loss_pct": settings.get("stop_loss_pct"),
             "lock_profit_enabled": settings.get("lock_profit_enabled"),
@@ -174,7 +177,7 @@ def clear_debug_events() -> int:
 def debug_summary() -> dict[str, Any]:
     with get_sol_connection() as conn:
         signals = conn.execute(
-            "SELECT COUNT(*) AS c FROM sol_debug_events WHERE event_type = 'SIGNAL'"
+            "SELECT COUNT(*) AS c FROM sol_debug_events WHERE event_type IN ('SIGNAL', 'BUY_CONDITION')"
         ).fetchone()["c"]
         entries = conn.execute(
             "SELECT COUNT(*) AS c FROM sol_debug_events WHERE event_type = 'TRADE_OPEN'"

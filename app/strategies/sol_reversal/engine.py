@@ -25,6 +25,7 @@ class SolReversalEngine:
         self.settings_repo = SolSettingsRepository()
         self.engine_repo = SolEngineRepository()
         self._last_processed_candle: int | None = None
+        self._pending_entry: bool = False
 
     def settings(self) -> dict[str, Any]:
         return self.settings_repo.get_all()
@@ -108,16 +109,16 @@ class SolReversalEngine:
             self._monitor_bar(open_pos, idx=idx, candle_time=candle_time, settings=settings, debug_on=debug_on)
             open_pos = self.paper.positions.get_open()
 
-        buy_condition = explain.get("signal") or detect_buy_condition_at_index(ha, settings, idx, atr=atr)
-        if open_pos is None and buy_condition:
-            if debug_on:
-                log_debug_event("BUY_CONDITION", explain)
-            entry = ha_close
+        on_close_entry = bool(settings.get("process_orders_on_close", False))
+
+        if open_pos is None and self._pending_entry:
+            self._pending_entry = False
+            entry = ha_open
             tp, sl = levels_for_side("BUY", entry, settings)
-            opened = self.paper.open_trade(buy_condition, entry, settings)
+            opened = self.paper.open_trade("BUY", entry, settings)
             if opened:
-                self.engine_repo.log("INFO", f"Opened BUY @ {entry}")
-                self.engine_repo.update(last_signal=buy_condition)
+                self.engine_repo.log("INFO", f"Opened BUY @ {entry} (next-bar open fill)")
+                self.engine_repo.update(last_signal="BUY")
                 if debug_on:
                     log_debug_event("TRADE_OPEN", {
                         "position_id": opened.get("id"),
@@ -126,9 +127,9 @@ class SolReversalEngine:
                         "entry_time": candle_time,
                         "take_profit": tp,
                         "stop_loss": sl,
-                        "signal_eval": explain,
-                        "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close},
-                        "entry_price_source": "ha_close",
+                        "fill_mode": "next_bar_open",
+                        "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close, "open": ha_open},
+                        "entry_price_source": "ha_open",
                     })
                 still_open = self.paper.positions.get_open()
                 if still_open:
@@ -137,10 +138,51 @@ class SolReversalEngine:
                     )
             elif debug_on:
                 log_debug_event("TRADE_OPEN_FAILED", {
-                    "signal": buy_condition,
+                    "signal": "BUY",
                     "entry": entry,
-                    "reason": "sizing_or_blocked",
+                    "reason": "pending_fill_failed",
                 })
+            open_pos = self.paper.positions.get_open()
+
+        buy_condition = explain.get("signal") or detect_buy_condition_at_index(ha, settings, idx, atr=atr)
+        if open_pos is None and not self._pending_entry and buy_condition:
+            if debug_on:
+                log_debug_event("BUY_CONDITION", explain)
+            if on_close_entry:
+                entry = ha_close
+                tp, sl = levels_for_side("BUY", entry, settings)
+                opened = self.paper.open_trade(buy_condition, entry, settings)
+                if opened:
+                    self.engine_repo.log("INFO", f"Opened BUY @ {entry}")
+                    self.engine_repo.update(last_signal=buy_condition)
+                    if debug_on:
+                        log_debug_event("TRADE_OPEN", {
+                            "position_id": opened.get("id"),
+                            "side": "BUY",
+                            "entry": entry,
+                            "entry_time": candle_time,
+                            "take_profit": tp,
+                            "stop_loss": sl,
+                            "signal_eval": explain,
+                            "fill_mode": "bar_close",
+                            "ha_bar": {"high": ha_high, "low": ha_low, "close": ha_close},
+                            "entry_price_source": "ha_close",
+                        })
+                    still_open = self.paper.positions.get_open()
+                    if still_open:
+                        self._monitor_bar(
+                            still_open, idx=idx, candle_time=candle_time, settings=settings, debug_on=debug_on
+                        )
+                elif debug_on:
+                    log_debug_event("TRADE_OPEN_FAILED", {
+                        "signal": buy_condition,
+                        "entry": entry,
+                        "reason": "sizing_or_blocked",
+                    })
+            else:
+                self._pending_entry = True
+                if debug_on:
+                    log_debug_event("ENTRY_PENDING", {**explain, "fill": "next_bar_open"})
         elif open_pos is not None and buy_condition and debug_on:
             log_debug_event("BUY_CONDITION_SUPPRESSED", {**explain, "reason": "position_open"})
 

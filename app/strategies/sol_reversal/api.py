@@ -36,6 +36,9 @@ class SettingsUpdate(BaseModel):
     atr_period: int | None = None
     take_profit_pct: float | None = None
     stop_loss_pct: float | None = None
+    enable_take_profit: bool | None = None
+    enable_stop_loss: bool | None = None
+    process_orders_on_close: bool | None = None
     lock_profit_enabled: bool | None = None
     lock_trigger_pct: float | None = None
     lock_distance_pct: float | None = None

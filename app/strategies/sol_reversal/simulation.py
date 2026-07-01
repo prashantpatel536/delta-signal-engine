@@ -50,8 +50,8 @@ def open_position(
         "side": "BUY",
         "entry": entry,
         "entry_time": entry_time,
-        "stop_loss": sl,
-        "take_profit": tp,
+        "stop_loss": sl if sl is not None else 0.0,
+        "take_profit": tp if tp is not None else round(entry * 10.0, 4),
         "quantity": sized["quantity"],
         "leverage": float(settings.get("leverage", 25.0)),
         "margin_used": sized["margin_used"],
@@ -88,9 +88,9 @@ def process_bar(
     Returns (updated_position, closed_trade).
     """
     entry = float(position["entry"])
-    sl = float(position["stop_loss"])
-    tp = float(position["take_profit"])
-    base_sl = float(levels_for_side("BUY", entry, settings)[1])
+    base_tp, base_sl = levels_for_side("BUY", entry, settings)
+    tp = base_tp
+    sl = base_sl
 
     _, pnl_pct_high = pnl_at_price(position, high)
     _, pnl_pct_low = pnl_at_price(position, low)
@@ -108,7 +108,10 @@ def process_bar(
         if profit_pct_now >= trigger:
             lock_high = high if lock_high is None else max(float(lock_high), high)
             lock_stop = round(float(lock_high) * (1 - lock_sl_pct), 4)
-            sl = max(base_sl, lock_stop)
+            if sl is None:
+                sl = lock_stop
+            else:
+                sl = max(sl, lock_stop)
             lock_active = True
         else:
             lock_high = None
@@ -125,15 +128,16 @@ def process_bar(
         "highest_profit_pct": highest_profit,
         "mfe_pct": mfe,
         "mae_pct": mae,
-        "stop_loss": sl,
+        "stop_loss": sl if sl is not None else 0.0,
+        "take_profit": tp if tp is not None else round(entry * 10.0, 4),
         "bars_held": int(position.get("bars_held") or 0) + 1,
     }
 
     exit_price = None
     reason = None
-    if low <= sl:
+    if sl is not None and low <= sl:
         exit_price, reason = sl, "LOCK" if lock_active else "SL"
-    elif high >= tp:
+    elif tp is not None and high >= tp:
         exit_price, reason = tp, "TP"
 
     if exit_price is None:
@@ -154,9 +158,9 @@ def process_bar(
         "mae_pct": mae,
         "lock_active": lock_active,
         "highest_profit_pct": highest_profit,
-        "stop_loss": sl,
-        "take_profit": tp,
-        "initial_stop": base_sl,
+        "stop_loss": sl if sl is not None else 0.0,
+        "take_profit": tp if tp is not None else round(entry * 10.0, 4),
+        "initial_stop": base_sl if base_sl is not None else 0.0,
         "quantity": position["quantity"],
         "leverage": position["leverage"],
         "margin_used": position["margin_used"],
@@ -227,6 +231,8 @@ def replay_strategy(
     position: dict[str, Any] | None = None
     equity = initial_equity
     trade_num = 0
+    pending_signal = False
+    on_close_entry = bool(settings.get("process_orders_on_close", False))
 
     def _close_position(closed: dict[str, Any]) -> None:
         nonlocal trade_num, equity, position
@@ -236,14 +242,71 @@ def replay_strategy(
             on_close(closed)
         position = None
 
+    def _open_at(
+        idx: int,
+        bar_time: int,
+        entry_px: float,
+        *,
+        high: float,
+        low: float,
+        close: float,
+        signal_bar: int,
+    ) -> None:
+        nonlocal position, equity, pending_signal
+        entry = entry_px if entry_price_at is None else entry_price_at(idx, entry_px)
+        position = open_position("BUY", entry, bar_time, settings, equity)
+        if not position:
+            pending_signal = False
+            return
+        if on_open:
+            delta = on_open(position)
+            if delta:
+                equity += float(delta)
+        entry_rec = {
+            "candle_time": bar_time,
+            "signal": "BUY",
+            "status": "ENTRY",
+            "entry_price": entry,
+            "bar_index": idx,
+            "signal_bar_index": signal_bar,
+        }
+        entries.append(entry_rec)
+        if on_entry:
+            on_entry(entry_rec)
+        pending_signal = False
+        position, closed = process_bar(
+            position,
+            bar_time=bar_time,
+            high=high,
+            low=low,
+            close=close,
+            settings=settings,
+        )
+        if closed:
+            _close_position(closed)
+
     for idx in range(1, len(candles)):
         row = candles.iloc[idx]
         bar_time = int(row["time"])
+        open_px = float(row["open"])
         high = float(row["high"])
         low = float(row["low"])
         close = float(row["close"])
 
-        if position:
+        filled_this_bar = False
+        if position is None and pending_signal:
+            _open_at(
+                idx,
+                bar_time,
+                open_px,
+                high=high,
+                low=low,
+                close=close,
+                signal_bar=idx - 1,
+            )
+            filled_this_bar = position is not None or not pending_signal
+
+        if position and not filled_this_bar:
             position, closed = process_bar(
                 position,
                 bar_time=bar_time,
@@ -255,35 +318,21 @@ def replay_strategy(
             if closed:
                 _close_position(closed)
 
-        # Executable entry: flat only — repeated BUY conditions while in trade are ignored.
-        if position is None and detect_buy_condition_at_index(candles, settings, idx, atr=atr):
-            entry = close if entry_price_at is None else entry_price_at(idx, close)
-            position = open_position("BUY", entry, bar_time, settings, equity)
-            if position:
-                if on_open:
-                    delta = on_open(position)
-                    if delta:
-                        equity += float(delta)
-                entry_rec = {
-                    "candle_time": bar_time,
-                    "signal": "BUY",
-                    "status": "ENTRY",
-                    "entry_price": entry,
-                    "bar_index": idx,
-                }
-                entries.append(entry_rec)
-                if on_entry:
-                    on_entry(entry_rec)
-                position, closed = process_bar(
-                    position,
-                    bar_time=bar_time,
+        if position is None and not pending_signal and detect_buy_condition_at_index(
+            candles, settings, idx, atr=atr
+        ):
+            if on_close_entry:
+                _open_at(
+                    idx,
+                    bar_time,
+                    close,
                     high=high,
                     low=low,
                     close=close,
-                    settings=settings,
+                    signal_bar=idx,
                 )
-                if closed:
-                    _close_position(closed)
+            else:
+                pending_signal = True
 
     return {
         "entries": entries,

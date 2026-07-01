@@ -188,6 +188,7 @@ class SolMarketStore:
                 "trade_count": len(replay["trades"]),
                 "settings_min_red": settings.get("min_red_candles"),
                 "settings_sl_pct": settings.get("stop_loss_pct"),
+                "fill_mode": "bar_close" if settings.get("process_orders_on_close") else "next_bar_open",
                 "entry_times": [e["candle_time"] for e in replay["entries"]],
                 "marker_mode": "executable_entries",
             },

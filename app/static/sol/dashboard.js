@@ -60,6 +60,7 @@
       ${statCard("HA Candle", m.ha_candle?.color ?? "—", m.ha_candle?.color === "green" ? "opt-pos" : "opt-neg")}
       ${statCard("Entries (view)", sigCount ?? "—")}
       ${statCard("Min Red / SL%", `${minRed ?? "?"} / ${chartData?.signal_context?.settings_sl_pct ?? "?"}%`)}
+      ${statCard("Fill mode", chartData?.signal_context?.fill_mode ?? "—", "muted")}
       ${statCard("Raw conditions", rawCount ?? "—", "muted")}`;
     $("ws-status").textContent = m.ws_connected ? "WS Connected" : "REST Polling";
     $("sol-status-dot").className = `dot ${data.engine?.running ? "ok" : ""}`;
@@ -187,6 +188,9 @@
       ["atr_period", "ATR Period", "number"],
       ["take_profit_pct", "Take Profit (SOL price %)", "number"],
       ["stop_loss_pct", "Stop Loss (SOL price %)", "number"],
+      ["enable_take_profit", "Enable Take Profit (Pine enableTP)", "checkbox"],
+      ["enable_stop_loss", "Enable Stop Loss (Pine enableSL)", "checkbox"],
+      ["process_orders_on_close", "Fill entries on signal bar close (Pine process_orders_on_close)", "checkbox"],
       ["lock_profit_enabled", "Lock Profit", "checkbox"],
       ["lock_trigger_pct", "Lock Trigger (SOL price %)", "number"],
       ["lock_distance_pct", "Lock Distance (SOL price %)", "number"],

@@ -111,11 +111,18 @@ def levels_for_side(
     side: Side,
     entry: float,
     settings: dict[str, Any],
-) -> tuple[float, float]:
-    """TP/SL from % move in price (Pine tpPerc / slPerc)."""
-    tp_pct = float(settings.get("take_profit_pct", 40.0)) / 100.0
-    sl_pct = float(settings.get("stop_loss_pct", 25.0)) / 100.0
-    return round(entry * (1 + tp_pct), 4), round(entry * (1 - sl_pct), 4)
+) -> tuple[float | None, float | None]:
+    """TP/SL from % move in price (Pine tpPerc / slPerc). None when toggle disabled."""
+    entry = float(entry)
+    tp: float | None = None
+    sl: float | None = None
+    if settings.get("enable_take_profit", True):
+        tp_pct = float(settings.get("take_profit_pct", 40.0)) / 100.0
+        tp = round(entry * (1 + tp_pct), 4)
+    if settings.get("enable_stop_loss", True):
+        sl_pct = float(settings.get("stop_loss_pct", 25.0)) / 100.0
+        sl = round(entry * (1 - sl_pct), 4)
+    return tp, sl
 
 
 def price_move_pct(side: str, entry: float, price: float) -> float:
@@ -127,11 +134,11 @@ def price_move_pct(side: str, entry: float, price: float) -> float:
     return round((price - entry) / entry * 100.0, 4)
 
 
-def target_price_pcts(side: str, entry: float, tp: float, sl: float) -> tuple[float, float]:
+def target_price_pcts(side: str, entry: float, tp: float | None, sl: float | None) -> tuple[float, float]:
     """TP and SL distances as positive % price move from entry."""
     entry = float(entry)
     if entry <= 0:
         return 0.0, 0.0
-    tp_pct = round((float(tp) - entry) / entry * 100.0, 2)
-    sl_pct = round((entry - float(sl)) / entry * 100.0, 2)
+    tp_pct = round((float(tp) - entry) / entry * 100.0, 2) if tp is not None else 0.0
+    sl_pct = round((entry - float(sl)) / entry * 100.0, 2) if sl is not None else 0.0
     return tp_pct, sl_pct
